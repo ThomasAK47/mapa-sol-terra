@@ -1,0 +1,18 @@
+# Finais de linha: no repositório e na pasta de trabalho, tudo usa LF (padrão
+# Unix). Isso evita que scripts criados no Windows quebrem no macOS/Linux e
+# mantém os diffs limpos no GitHub.
+* text=auto eol=lf
+
+# Exceção: o Prompt de Comando do Windows precisa de CRLF nos arquivos .bat.
+*.bat text eol=crlf
+
+# Arquivos binários: nunca converter.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.pdf   binary

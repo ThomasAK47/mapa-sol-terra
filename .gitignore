@@ -1,0 +1,19 @@
+# Cópias automáticas diárias: ficam só no seu computador.
+data/backups/
+
+# Arquivo temporário usado durante a gravação (existe só por instantes).
+data/*.tmp
+
+# Configurações locais de ferramentas (Claude Code, editores).
+.claude/
+.vscode/
+.idea/
+
+# Arquivos gerados pelo Python.
+__pycache__/
+*.pyc
+
+# Arquivos de sistema.
+.DS_Store
+Thumbs.db
+desktop.ini
