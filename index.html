@@ -62,8 +62,15 @@
                   markerUnits="strokeWidth" orient="auto">
             <path class="seta-destaque" d="M0 0L10 5L0 10z"/>
           </marker>
+          <!-- Pontinho no lado do pai, nas linhas pai → filho. -->
+          <marker id="junta" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.4" markerHeight="3.4"
+                  markerUnits="strokeWidth" orient="auto">
+            <circle class="junta" cx="5" cy="5" r="4.5"/>
+          </marker>
         </defs>
-        <g id="linhas-conexoes"></g>
+        <g id="linhas-familia"></g>        <!-- pai → filho -->
+        <g id="linhas-conexoes"></g>       <!-- conexões comuns -->
+        <g id="linhas-redirecionadas"></g> <!-- conexões de cards escondidos (tracejadas) -->
         <path id="rascunho-conexao" d="M0 0"/>
       </svg>
       <!-- Textos das conexões (atrás dos cards, exceto os em destaque). -->
@@ -95,6 +102,13 @@
               title="Desfazer (Ctrl+Z)" aria-label="Desfazer"></button>
       <button id="bt-refazer" class="botao icone so-edicao" type="button" data-icone="refazer"
               title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer"></button>
+      <span class="separador" aria-hidden="true"></span>
+      <!-- Busca: filtra por título, descrição e tags (js/busca.js). -->
+      <label class="busca" data-icone="busca" title="Buscar cards (Ctrl+F). Enter vai ao próximo; Esc limpa.">
+        <input id="campo-busca" type="search" placeholder="Buscar" autocomplete="off" spellcheck="false"
+               aria-label="Buscar cards por título, descrição ou tag">
+        <span id="contador-busca" class="contador-busca" aria-live="polite"></span>
+      </label>
     </div>
 
     <div class="barra-grupo barra-direita">
@@ -143,8 +157,11 @@
         <div><dt>Clique no card</dt><dd>modo foco</dd></div>
         <div><dt>Arrastar o fundo</dt><dd>mover o mapa</dd></div>
         <div class="so-edicao"><dt>Arrastar um card</dt><dd>mover o card</dd></div>
+        <div class="so-edicao"><dt>Alt + arrastar um card</dt><dd>mover sem os filhos</dd></div>
         <div class="so-edicao"><dt>Arrastar a bolinha ○ da borda</dt><dd>nova conexão</dd></div>
         <div><dt>Clique no texto da conexão</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ler</dd></div>
+        <div><dt>Clique no +N / − do card</dt><dd>expandir / recolher filhos</dd></div>
+        <div><dt>Ctrl+F · Enter</dt><dd>buscar · próximo resultado</dd></div>
         <div class="so-edicao"><dt>Ctrl+Z · Ctrl+Shift+Z</dt><dd>desfazer · refazer</dd></div>
         <div class="so-edicao"><dt>Delete</dt><dd>excluir o card selecionado</dd></div>
         <div class="so-edicao"><dt>Enter</dt><dd>editar o card selecionado</dd></div>

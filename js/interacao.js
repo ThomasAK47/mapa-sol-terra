@@ -1,7 +1,9 @@
 // =============================================================================
 // interacao.js — traduz mouse e toque em ações no mapa:
 //   • arrastar o fundo (ou com o botão do meio) → mover o mapa;
-//   • arrastar um card → mover o card (no modo somente leitura, move o mapa);
+//   • arrastar um card → mover o card e seus descendentes (com Alt, só o
+//     card); no modo somente leitura, arrastar um card move o mapa;
+//   • clicar no "+N" / "−" de um card pai → expandir / recolher os filhos;
 //   • arrastar a alça ○ na borda de um card até outro card → nova conexão;
 //   • clicar num card → selecionar (modo foco); clicar no fundo → desmarcar;
 //   • clicar no texto de uma conexão → abrir o editor da conexão;
@@ -11,7 +13,7 @@
 // sozinho naquela direção. A roda do mouse e o touchpad ficam em camera.js.
 // =============================================================================
 
-import { abrirLinkDocs, criarCard, criarConexao } from './acoes.js';
+import { abrirLinkDocs, alternarRecolhido, criarCard, criarConexao, expandirCards } from './acoes.js';
 import { toast } from './avisos.js';
 import { aoMudarCamera, areaUtil, moverPor, telaParaMundo, zoomNoPonto } from './camera.js';
 import { marcarAlvoDeConexao, marcarArrastando } from './cards.js';
@@ -21,6 +23,7 @@ import {
   alterarDuranteGesto, buscarCard, cancelarGesto, concluirGesto, geometria, iniciarGesto,
   obterDados, podeEditar, selecionar,
 } from './estado.js';
+import { descendentes } from './hierarquia.js';
 import { definirPosicaoAbsoluta, posicaoAbsoluta } from './modelo.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 
@@ -86,11 +89,24 @@ function encerrarArrasto() {
   palco.classList.remove('panoramica', 'arrastando', 'conectando');
 }
 
+/**
+ * Faz o #palco continuar recebendo o movimento mesmo se o cursor sair dele.
+ * Se o ponteiro já tiver sido solto nesse instante, o navegador recusa; o
+ * gesto continua funcionando sem a captura.
+ */
+function capturarPonteiro(ponteiro) {
+  try {
+    palco.setPointerCapture(ponteiro);
+  } catch {
+    /* ponteiro já solto: nada a fazer */
+  }
+}
+
 // --- Pressionar / mover / soltar ---------------------------------------------------
 
 function aoPressionar(evento) {
-  if (evento.button === 2) return;                                   // botão direito: menu do navegador
-  if (evento.target.closest('.card-acao, .rotulo-conexao')) return;  // tratados no clique
+  if (evento.button === 2) return;                                                    // botão direito: menu do navegador
+  if (evento.target.closest('.card-acao, .rotulo-conexao, .card-recolher')) return;  // tratados no clique
   ponteiros.set(evento.pointerId, { x: evento.clientX, y: evento.clientY });
 
   if (ponteiros.size === 2) {
@@ -115,7 +131,7 @@ function aoPressionar(evento) {
 
 function iniciarPanoramica(ponteiro, inicio, ultimo, moveu) {
   acao = { tipo: 'panoramica', ponteiro, inicio, ultimo, moveu };
-  palco.setPointerCapture(ponteiro);
+  capturarPonteiro(ponteiro);
   palco.classList.add('panoramica');
 }
 
@@ -137,7 +153,7 @@ function aoMover(evento) {
   } else if (acao.tipo === 'card-pressionado') {
     if (distancia(acao.inicio, ponto) <= LIMIAR_ARRASTO) return;
     if (podeEditar()) {
-      iniciarArrastoDeCard(evento.pointerId, ponto);
+      iniciarArrastoDeCard(evento.pointerId, ponto, evento.altKey);
     } else {
       // Somente leitura: arrastar um card move o mapa.
       const inicio = acao.inicio;
@@ -190,7 +206,7 @@ function aoCancelarPonteiro(evento) {
 
 // --- Arrastar cards ------------------------------------------------------------------
 
-function iniciarArrastoDeCard(ponteiro, ponto) {
+function iniciarArrastoDeCard(ponteiro, ponto, soOCard) {
   const id = acao.id;
   const card = buscarCard(id);
   if (!card || !iniciarGesto('Mover card')) {
@@ -198,14 +214,15 @@ function iniciarArrastoDeCard(ponteiro, ponto) {
     return;
   }
   const geo = geometria();
-  // (Fase 3: os cards filhos também entrarão nesta lista.)
-  const ids = [id];
+  // Os descendentes (filhos, netos…, mesmo escondidos) vão junto, a não ser
+  // que a tecla Alt esteja pressionada.
+  const ids = soOCard ? [id] : [id, ...descendentes(id)];
   const origens = new Map(ids.map((i) => [i, posicaoAbsoluta(buscarCard(i), geo)]));
   acao = {
     tipo: 'arrastando-card', id, ids, origens, ponteiro,
     inicioNoMundo: telaParaMundo(acao.inicio.x, acao.inicio.y),
   };
-  palco.setPointerCapture(ponteiro);
+  capturarPonteiro(ponteiro);
   palco.classList.add('arrastando');
   marcarArrastando(id, true);
   selecionar(id);
@@ -247,7 +264,7 @@ function finalizarArrasto(terminado) {
 
 function iniciarCriacaoDeConexao(ponteiro, idDe, ponto) {
   acao = { tipo: 'criando-conexao', de: idDe, alvo: null, ponteiro };
-  palco.setPointerCapture(ponteiro);
+  capturarPonteiro(ponteiro);
   palco.classList.add('conectando');
   atualizarCriacaoDeConexao(ponto);
 }
@@ -325,7 +342,7 @@ function atualizarPinca() {
 
 function aoDuploClique(evento) {
   const alvo = document.elementFromPoint(evento.clientX, evento.clientY);
-  if (!alvo || !palco.contains(alvo) || alvo.closest('.card-acao, .rotulo-conexao, .alca')) return;
+  if (!alvo || !palco.contains(alvo) || alvo.closest('.card-acao, .rotulo-conexao, .alca, .card-recolher')) return;
   const elementoCard = alvo.closest('.card');
   if (elementoCard) {
     abrirPainel(elementoCard.dataset.id);
@@ -341,7 +358,19 @@ function aoClicar(evento) {
   const rotulo = evento.target.closest('.rotulo-conexao');
   if (rotulo) {
     evento.stopPropagation();
-    abrirEditorConexao(rotulo.dataset.id);
+    if (rotulo.dataset.expandir) {
+      // "3 conexões" de cards escondidos: expande quem os esconde.
+      expandirCards(rotulo.dataset.expandir.split(','));
+    } else if (rotulo.dataset.id) {
+      abrirEditorConexao(rotulo.dataset.id);
+    }
+    return;
+  }
+  const recolher = evento.target.closest('.card-recolher');
+  if (recolher) {
+    evento.stopPropagation();
+    const id = recolher.closest('.card')?.dataset.id;
+    if (id) alternarRecolhido(id);
     return;
   }
   const botao = evento.target.closest('.card-acao');

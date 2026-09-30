@@ -128,8 +128,22 @@ body:not(.somente-leitura) .so-leitura { display: none !important; }
 .linha-conexao.direcional { marker-end: url(#seta); }
 .linha-conexao.em-foco { stroke: #fff; }
 .linha-conexao.em-foco.direcional { marker-end: url(#seta-destaque); }
+/* Conexões de cards escondidos: tracejadas (o traço vem do grupo, em js/conexoes.js). */
+.linha-conexao.redirecionada { stroke: #7a7a7a; }
+.linha-conexao.redirecionada.em-foco { stroke: #fff; }
 .seta { fill: #8c8c8c; }
 .seta-destaque { fill: #fff; }
+
+/* Linhas pai → filho: retas, finas, mais escuras, sem seta nem texto. */
+.linha-familia {
+  fill: none;
+  stroke: #4f4f4f;
+  stroke-linecap: round;
+  marker-start: url(#junta);
+  transition: opacity 0.15s ease;
+}
+.linha-familia.em-foco { stroke: #a8a8a8; }
+.junta { fill: #6a6a6a; }
 
 #rascunho-conexao {
   display: none;
@@ -166,6 +180,8 @@ body:not(.somente-leitura) .so-leitura { display: none !important; }
   color: #8a8a8a;
   font-weight: 700;
 }
+.rotulo-conexao.redirecionado { border-style: dashed; }
+.rotulo-conexao.agregado { color: #c4c4c4; font-weight: 600; }
 /* Em destaque: por cima dos cards. Com o zoom afastado, js/conexoes.js
    aumenta estes textos para continuarem legíveis. */
 .rotulo-conexao.em-foco {
@@ -182,8 +198,15 @@ body:not(.somente-leitura) .so-leitura { display: none !important; }
    arrasto, quando é preciso ver tudo). */
 #palco.modo-foco:not(.arrastando):not(.conectando) .card:not(.em-foco) { opacity: 0.2; }
 #palco.modo-foco:not(.arrastando):not(.conectando) .linha-conexao:not(.em-foco),
+#palco.modo-foco:not(.arrastando):not(.conectando) .linha-familia:not(.em-foco),
 #palco.modo-foco:not(.arrastando):not(.conectando) .rotulo-conexao:not(.em-foco) { opacity: 0.12; }
 #palco.conectando { cursor: crosshair; }
+
+/* Busca: resultados em destaque, o resto esmaecido. */
+#palco.modo-busca .card:not(.resultado-busca):not(.contem-resultado) { opacity: 0.16; }
+#palco.modo-busca .linha-conexao,
+#palco.modo-busca .linha-familia,
+#palco.modo-busca .rotulo-conexao { opacity: 0.1; }
 
 /* ---------------------------------------------------------------------------
    Cards
@@ -220,6 +243,48 @@ body.somente-leitura .card { cursor: pointer; }
   outline-color: #fff;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 12px 32px rgba(0, 0, 0, 0.6);
 }
+
+/* Tamanho pelo nível hierárquico: filhos menores que os pais. A escala é
+   aplicada em volta do centro, que continua em left/top. */
+.card.nivel-1 { transform: translate(-50%, -50%) scale(0.85); }
+.card.nivel-2 { transform: translate(-50%, -50%) scale(0.72); }
+.card.nivel-3 { transform: translate(-50%, -50%) scale(0.62); }
+
+/* Resultados da busca. */
+.card.resultado-busca .card-corpo { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6), 0 10px 28px rgba(0, 0, 0, 0.55); }
+.card.resultado-atual .card-corpo { box-shadow: 0 0 0 3px #fff, 0 0 36px rgba(255, 255, 255, 0.4); }
+/* Pai recolhido que esconde um resultado: contorno tracejado. */
+.card.contem-resultado .card-corpo { outline: 2px dashed rgba(255, 255, 255, 0.85); outline-offset: 4px; }
+
+/* Botão no canto de um card pai: "+N" (recolhido, sempre visível) ou "−"
+   (expandido, aparece com o mouse em cima). */
+.card-recolher {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1.5px solid #fff;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(40%, -40%);
+  cursor: pointer;
+}
+.card-recolher .ico { width: 12px; height: 12px; stroke-width: 2.4; }
+.card-recolher.expandido { opacity: 0; transition: opacity 0.12s ease; }
+.card:hover .card-recolher.expandido,
+.card.selecionado .card-recolher.expandido { opacity: 1; }
+.card-recolher:hover { background: #fff; color: #111; border-color: #111; }
+#palco[data-detalhe="baixo"] .card-recolher.expandido { display: none; }
 
 /* Alças: bolinhas nas bordas. Arrastar uma delas até outro card cria uma
    conexão. Aparecem com o mouse sobre o card (ou no card selecionado). */
@@ -465,6 +530,36 @@ a.botao { text-decoration: none; }
 
 @keyframes pulsar { 50% { opacity: 0.3; } }
 
+/* Campo de busca na barra. */
+.busca {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 230px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie-2);
+  color: var(--texto-3);
+  cursor: text;
+}
+.busca:focus-within { border-color: #6d6d6d; color: var(--texto-2); }
+.busca .ico { width: 15px; height: 15px; }
+.busca input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--texto);
+  font-size: 13px;
+}
+.busca input::placeholder { color: #5f5f5f; }
+.busca input::-webkit-search-cancel-button { filter: grayscale(1) invert(0.6); cursor: pointer; }
+.contador-busca { flex: none; font-size: 11.5px; color: var(--texto-2); white-space: nowrap; }
+
 .selo {
   display: inline-flex;
   align-items: center;
@@ -647,6 +742,19 @@ select.entrada { cursor: pointer; }
 }
 .chips-leitura { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips-leitura .chip { padding-right: 10px; }
+
+.linha-rotulo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lista-familia { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-botao {
+  max-width: 100%;
+  padding: 4px 10px;
+  border: 1px solid var(--borda-forte);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip-botao:hover { border-color: #6d6d6d; color: #fff; }
 
 .lista-conexoes { display: flex; flex-direction: column; gap: 6px; }
 .item-conexao {
@@ -889,11 +997,15 @@ body.falha-ao-iniciar .tela-inicial-caixa p { color: var(--texto); }
    Telas estreitas
    ------------------------------------------------------------------------ */
 
+@media (max-width: 1180px) {
+  .busca { width: 170px; }
+}
 @media (max-width: 960px) {
   .botao .rotulo { display: none; }
   .botao:not(.icone) { width: 32px; padding: 0; justify-content: center; }
   .marca-nome { display: none; }
   .status { min-width: 0; }
+  .busca { width: 140px; }
 }
 @media (max-width: 560px) {
   :root { --largura-painel: 100vw; }

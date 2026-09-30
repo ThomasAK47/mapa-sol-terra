@@ -8,9 +8,14 @@ import { confirmar, toast } from './avisos.js';
 import { enquadrar, irPara, obterCamera } from './camera.js';
 import { limitesDosCards } from './cards.js';
 import {
-  alterar, buscarCard, buscarConexao, descartarUltimaSe, geometria, obterDados, selecionar, ui,
+  alterar, avisarMudancaVisual, buscarCard, buscarConexao, descartarUltimaSe, geometria, obterDados,
+  podeEditar, selecionar, ui,
 } from './estado.js';
 import { SOL, TERRA } from './fundo.js';
+import {
+  ancestraisRecolhidos, definirRecolhimentoLocal, descendentes, esquecerExpansaoTemporaria,
+  estaRecolhido, hierarquia, podeSerPai,
+} from './hierarquia.js';
 import { definirPosicaoAbsoluta, novoCard, posicaoAbsoluta } from './modelo.js';
 import { agoraISO, gerarId, limitar, linkSeguro, plural } from './util.js';
 
@@ -126,6 +131,79 @@ export function abrirLinkDocs(id) {
   const url = linkSeguro(card?.linkDocs);
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
   else toast('O link do Docs deste card não é válido (ele precisa começar com https://).');
+}
+
+// --- Hierarquia (pai e filhos) ------------------------------------------------------
+
+/**
+ * Recolhe (esconde os descendentes) ou expande um card pai. No modo de edição
+ * isso é salvo e entra no desfazer; na vitrine, vale só para quem está vendo.
+ */
+export function alternarRecolhido(id) {
+  const card = buscarCard(id);
+  if (!card || !hierarquia().filhos.get(id)?.length) return;
+  const recolher = !estaRecolhido(card);
+  esquecerExpansaoTemporaria(id); // a pessoa decidiu: vale mais que a busca
+  if (!podeEditar()) {
+    definirRecolhimentoLocal(id, recolher);
+    avisarMudancaVisual();
+  } else if (card.recolhido === recolher) {
+    avisarMudancaVisual(); // só desfez uma expansão temporária da busca
+  } else {
+    alterar(recolher ? 'Recolher filhos' : 'Expandir filhos', (d) => {
+      const alvo = d.cards.find((c) => c.id === id);
+      if (alvo) alvo.recolhido = recolher;
+    });
+  }
+  // Se o card selecionado ficou escondido, a seleção passa para o pai.
+  if (recolher && ui.selecionado && descendentes(id).includes(ui.selecionado)) selecionar(id);
+}
+
+/** Expande estes cards (ex.: ao clicar em "3 conexões" de cards escondidos). */
+export function expandirCards(ids) {
+  const alvo = ids.filter((id) => estaRecolhido(buscarCard(id)));
+  if (alvo.length === 0) return;
+  for (const id of alvo) esquecerExpansaoTemporaria(id);
+  if (!podeEditar()) {
+    for (const id of alvo) definirRecolhimentoLocal(id, false);
+    avisarMudancaVisual();
+    return;
+  }
+  alterar('Expandir filhos', (d) => {
+    for (const card of d.cards) if (alvo.includes(card.id)) card.recolhido = false;
+  });
+}
+
+/** Mostra um card escondido, expandindo os pais recolhidos que o escondem. */
+export function expandirAte(id) {
+  expandirCards(ancestraisRecolhidos(id));
+}
+
+/**
+ * Define o card pai (ou nenhum). Impede ciclos (um card não pode ser pai de
+ * um ancestral seu) e expande o novo pai se ele estiver recolhido, para o
+ * card não sumir da tela.
+ */
+export function definirPai(id, idPai) {
+  const card = buscarCard(id);
+  const novoPai = idPai || null;
+  if (!card || card.pai === novoPai) return false;
+  if (novoPai && !podeSerPai(id, novoPai)) {
+    toast('Esse card não pode ser o pai: ele é descendente deste (formaria um ciclo).');
+    return false;
+  }
+  const aExpandir = novoPai
+    ? [novoPai, ...ancestraisRecolhidos(novoPai)].filter((p) => estaRecolhido(buscarCard(p)))
+    : [];
+  alterar('Mudar card pai', (d) => {
+    const alvo = d.cards.find((c) => c.id === id);
+    if (!alvo) return;
+    alvo.pai = novoPai;
+    alvo.atualizadoEm = agoraISO();
+    for (const c of d.cards) if (aExpandir.includes(c.id)) c.recolhido = false;
+  });
+  for (const p of aExpandir) esquecerExpansaoTemporaria(p);
+  return true;
 }
 
 // --- Conexões ---------------------------------------------------------------------

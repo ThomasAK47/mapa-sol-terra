@@ -81,6 +81,40 @@ os dois assuntos se relacionam.
   naquela direção.
 - Enter confirma o texto; Shift+Enter quebra a linha.
 
+### Cards pai e filhos
+
+Um card pode ter um **card pai**, escolhido no campo "Card pai" do painel.
+Cards de nível mais alto aparecem maiores; filhos e netos, menores. Uma linha
+fina e escura, com um pontinho do lado do pai, liga pai e filho.
+
+| Ação | Como |
+|---|---|
+| Definir o pai | Campo "Card pai" no painel (um card não pode ser pai de um ancestral seu) |
+| Recolher os filhos | Botão **−** no canto do card pai (aparece com o mouse em cima), ou "Recolher" no painel |
+| Expandir | Clique no **+N** do card recolhido (N = quantos cards estão escondidos) |
+| Mover o pai com os filhos | Arraste o card pai: filhos e netos vão junto |
+| Mover só o pai | Segure **Alt** enquanto arrasta |
+| Excluir um pai | Os filhos sobem um nível (passam a ser filhos do avô) |
+
+- Com um pai recolhido, as conexões dos cards escondidos passam a sair dele,
+  **tracejadas**. Se forem várias entre os mesmos dois cards, viram uma linha só
+  ("3 conexões"); clique nela para expandir e ver cada uma.
+- Na versão publicada (vitrine), os visitantes também podem recolher e expandir,
+  mas isso vale só para a tela deles.
+
+### Busca
+
+Digite no campo **Buscar** da barra (atalho **Ctrl+F**). Os cards que têm as
+palavras no título, na descrição ou nas tags ficam em destaque, e o mapa vai até
+o primeiro.
+
+- Não importam acentos nem maiúsculas ("ionosferico" encontra "Ionosférico").
+  Com várias palavras, todas precisam aparecer.
+- **Enter** vai ao próximo resultado, **Shift+Enter** ao anterior, **Esc** limpa.
+- Um resultado escondido dentro de um pai recolhido aparece enquanto você busca;
+  ao limpar a busca, o pai volta a ficar recolhido. A busca nunca altera o
+  arquivo.
+
 ## Guardar uma cópia no GitHub
 
 O repositório é <https://github.com/ThomasAK47/mapa-sol-terra>. Para enviar

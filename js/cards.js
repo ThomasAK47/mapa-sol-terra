@@ -5,26 +5,33 @@
 // left/top recebem a posição do CENTRO do card no mundo (o CSS desloca metade
 // do tamanho). A cada mudança nos dados, renderizar() compara a tela com os
 // dados e só altera o necessário.
+//
+// Hierarquia: cards de nível mais alto são maiores (classes nivel-1, nivel-2,
+// nivel-3 reduzem a escala); cards dentro de um pai recolhido ficam
+// escondidos, e o pai mostra um contador "+N" (que também é o botão de
+// expandir). Busca e modo foco viram classes nos cards e no #palco.
 // =============================================================================
 
 import { aoMudarCamera } from './camera.js';
+import { resultadosDaBusca } from './busca.js';
 import { assinar, geometria, obterDados, ui } from './estado.js';
 import { focoAtual } from './foco.js';
+import { escalaDoNivel, estaRecolhido, hierarquia } from './hierarquia.js';
 import { posicaoAbsoluta } from './modelo.js';
-import { el, icone } from './util.js';
+import { el, icone, plural } from './util.js';
 
 const LIMITE_DESCRICAO = 240; // o card mostra só o começo da descrição
 const TAMANHO_PADRAO = { largura: 220, altura: 76 };
 const LADOS_DAS_ALCAS = ['topo', 'direita', 'base', 'esquerda'];
 
-const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, assinatura, X, Y, … }
-const tamanhos = new Map();  // id → { largura, altura } em unidades do mundo
+const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, recolher, … }
+const tamanhos = new Map();  // id → { largura, altura } medidos (sem a escala do nível)
 const aposRenderizar = [];   // funções chamadas depois de cada renderização
 let camada = null;
 let palco = null;
 let renderPendente = false;
 let nivelDeDetalhe = null;
-let emModoFoco = false;
+const estadoDoPalco = { 'modo-foco': false, 'modo-busca': false };
 
 export function iniciarCards(elementoCamada, elementoPalco) {
   camada = elementoCamada;
@@ -55,18 +62,41 @@ export function aoRenderizarCards(funcao) {
   aposRenderizar.push(funcao);
 }
 
+function marcarPalco(classe, sim) {
+  if (estadoDoPalco[classe] !== sim) {
+    estadoDoPalco[classe] = sim;
+    palco.classList.toggle(classe, sim);
+  }
+}
+
+/** Liga/desliga uma classe no card, só tocando no DOM quando muda. */
+function marcar(item, classe, sim) {
+  if ((item.classes[classe] ?? false) !== sim) {
+    item.classes[classe] = sim;
+    item.raiz.classList.toggle(classe, sim);
+  }
+}
+
 /** Atualiza a tela para refletir os dados (pode ser chamado a qualquer hora). */
 export function renderizarAgora() {
   const dados = obterDados();
   if (!dados || !camada) return;
   const geo = geometria();
+  const h = hierarquia();
   const foco = focoAtual();
+  const busca = resultadosDaBusca();
   const presentes = new Set();
   const paraMedir = [];
 
-  if (Boolean(foco) !== emModoFoco) {
-    emModoFoco = Boolean(foco);
-    palco.classList.toggle('modo-foco', emModoFoco);
+  marcarPalco('modo-foco', Boolean(foco));
+  marcarPalco('modo-busca', Boolean(busca));
+  // Pais recolhidos que escondem algum resultado da busca.
+  const contemResultado = new Set();
+  if (busca) {
+    for (const id of busca.ids) {
+      const rep = h.representante.get(id);
+      if (rep && rep !== id) contemResultado.add(rep);
+    }
   }
 
   for (const card of dados.cards) {
@@ -77,6 +107,14 @@ export function renderizarAgora() {
       itens.set(card.id, item);
       camada.append(item.raiz);
     }
+
+    const visivel = h.visiveis.has(card.id);
+    if (item.oculto !== !visivel) {
+      item.oculto = !visivel;
+      item.raiz.hidden = !visivel;
+    }
+    if (!visivel) continue; // escondido dentro de um pai recolhido
+
     if (atualizarConteudo(item, card)) paraMedir.push(item);
     const { X, Y } = posicaoAbsoluta(card, geo);
     if (item.X !== X) {
@@ -87,16 +125,20 @@ export function renderizarAgora() {
       item.raiz.style.top = `${Y}px`;
       item.Y = Y;
     }
-    const selecionado = ui.selecionado === card.id;
-    if (item.selecionado !== selecionado) {
-      item.selecionado = selecionado;
-      item.raiz.classList.toggle('selecionado', selecionado);
+
+    const nivel = Math.min(h.nivel.get(card.id) ?? 0, 3);
+    if (item.nivel !== nivel) {
+      if (item.nivel) item.raiz.classList.remove(`nivel-${item.nivel}`);
+      if (nivel) item.raiz.classList.add(`nivel-${nivel}`);
+      item.nivel = nivel;
     }
-    const emFoco = Boolean(foco?.cards.has(card.id));
-    if (item.emFoco !== emFoco) {
-      item.emFoco = emFoco;
-      item.raiz.classList.toggle('em-foco', emFoco);
-    }
+    atualizarBotaoRecolher(item, card, h);
+
+    marcar(item, 'selecionado', ui.selecionado === card.id);
+    marcar(item, 'em-foco', Boolean(foco?.cards.has(card.id)));
+    marcar(item, 'resultado-busca', Boolean(busca?.ids.has(card.id)));
+    marcar(item, 'resultado-atual', busca?.atual === card.id);
+    marcar(item, 'contem-resultado', contemResultado.has(card.id));
   }
 
   for (const [id, item] of itens) {
@@ -108,8 +150,8 @@ export function renderizarAgora() {
   }
 
   // Mede depois de todas as mudanças (uma única leitura de layout).
-  // offsetWidth/offsetHeight ignoram o zoom: o resultado já está em
-  // unidades do mundo.
+  // offsetWidth/offsetHeight ignoram o zoom e a escala do nível: o resultado
+  // está em unidades do mundo, para o card em tamanho normal.
   for (const item of paraMedir) {
     tamanhos.set(item.id, { largura: item.raiz.offsetWidth, altura: item.raiz.offsetHeight });
   }
@@ -121,15 +163,20 @@ function criarItem(id) {
   const titulo = el('div', { class: 'card-titulo' });
   const descricao = el('div', { class: 'card-descricao' });
   const icones = el('div', { class: 'card-icones' });
+  // Botão no canto: "+N" num pai recolhido (expande); "−" num pai expandido (recolhe).
+  const recolher = el('button', { class: 'card-recolher', type: 'button', hidden: true });
   // Alças nas bordas: arrastar uma delas até outro card cria uma conexão.
   const alcas = LADOS_DAS_ALCAS.map((lado) => el('span', {
     class: `alca alca-${lado}`,
     title: 'Arraste até outro card para criar uma conexão',
   }));
   const raiz = el('div', { class: 'card', 'data-id': id },
-    el('div', { class: 'card-corpo' }, titulo, descricao, icones, alcas),
+    el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alcas),
   );
-  return { id, raiz, titulo, descricao, icones, assinatura: null, X: null, Y: null, selecionado: false, emFoco: false };
+  return {
+    id, raiz, titulo, descricao, icones, recolher,
+    assinatura: null, X: null, Y: null, nivel: 0, oculto: false, estadoRecolher: null, classes: {},
+  };
 }
 
 /** Atualiza o texto do card. Devolve true se algo mudou (precisa medir). */
@@ -158,6 +205,30 @@ function botaoDeAcao(acao, nomeIcone, dica) {
   return el('button', { class: 'card-acao', type: 'button', 'data-acao': acao, title: dica, 'aria-label': dica }, icone(nomeIcone));
 }
 
+/** Contador "+N" (pai recolhido) ou botão "−" (pai expandido). */
+function atualizarBotaoRecolher(item, card, h) {
+  const nFilhos = h.filhos.get(card.id)?.length ?? 0;
+  const recolhido = nFilhos > 0 && estaRecolhido(card);
+  const escondidos = recolhido ? (h.totalDescendentes.get(card.id) ?? 0) : 0;
+  const estado = nFilhos === 0 ? '' : recolhido ? `+${escondidos}` : `-${nFilhos}`;
+  if (item.estadoRecolher === estado) return;
+  item.estadoRecolher = estado;
+
+  const botao = item.recolher;
+  botao.hidden = nFilhos === 0;
+  if (nFilhos === 0) return;
+  botao.classList.toggle('recolhido', recolhido);
+  botao.classList.toggle('expandido', !recolhido);
+  if (recolhido) {
+    botao.textContent = `+${escondidos}`;
+    botao.title = `Expandir (${plural(escondidos, 'card escondido', 'cards escondidos')})`;
+  } else {
+    botao.replaceChildren(icone('menos'));
+    botao.title = nFilhos === 1 ? 'Recolher o card filho' : `Recolher os ${nFilhos} cards filhos`;
+  }
+  botao.setAttribute('aria-label', botao.title);
+}
+
 /**
  * Faixa de zoom, usada pelo CSS: esconde a descrição quando o zoom está
  * longe (o texto ficaria ilegível) e ajusta o tamanho das alças.
@@ -173,9 +244,11 @@ function atualizarNivelDeDetalhe(camera) {
 
 // --- Consultas usadas por outros módulos -----------------------------------------
 
-/** Tamanho do card em unidades do mundo. */
+/** Tamanho do card em unidades do mundo (já com a escala do nível). */
 export function tamanhoDoCard(id) {
-  return tamanhos.get(id) ?? TAMANHO_PADRAO;
+  const tamanho = tamanhos.get(id) ?? TAMANHO_PADRAO;
+  const escala = escalaDoNivel(itens.get(id)?.nivel ?? 0);
+  return { largura: tamanho.largura * escala, altura: tamanho.altura * escala };
 }
 
 /** Marca visualmente o card que está sendo arrastado. */
@@ -188,13 +261,15 @@ export function marcarAlvoDeConexao(id, sim) {
   itens.get(id)?.raiz.classList.toggle('alvo-conexao', sim);
 }
 
-/** Retângulo que contém todos os cards (ou null se não há cards). */
+/** Retângulo que contém todos os cards visíveis (ou null se não há nenhum). */
 export function limitesDosCards() {
   const dados = obterDados();
-  if (!dados || dados.cards.length === 0) return null;
+  if (!dados) return null;
+  const { visiveis } = hierarquia();
   const geo = geometria();
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const card of dados.cards) {
+    if (!visiveis.has(card.id)) continue;
     const { X, Y } = posicaoAbsoluta(card, geo);
     const { largura, altura } = tamanhoDoCard(card.id);
     minX = Math.min(minX, X - largura / 2);
@@ -202,5 +277,6 @@ export function limitesDosCards() {
     minY = Math.min(minY, Y - altura / 2);
     maxY = Math.max(maxY, Y + altura / 2);
   }
+  if (minX === Infinity) return null;
   return { x: minX, y: minY, largura: maxX - minX, altura: maxY - minY };
 }

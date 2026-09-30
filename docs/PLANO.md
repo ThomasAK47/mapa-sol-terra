@@ -179,7 +179,16 @@ arquivo.
   - conexões internas ao grupo recolhido somem;
   - recolher e expandir é salvo e entra no desfazer.
 - **Busca:** ignora acentos e maiúsculas. Enter vai ao próximo resultado. Se o
-  resultado estiver num pai recolhido, o pai é expandido.
+  resultado estiver num pai recolhido, o pai é expandido **temporariamente**: ele
+  volta a ficar recolhido quando a busca é limpa, e a busca nunca altera o
+  arquivo (decisão da Fase 3).
+- **Acréscimos da Fase 3:**
+  - o painel mostra os cards filhos, com botão recolher/expandir, e o pai é
+    clicável;
+  - clicar numa linha "N conexões" (de cards escondidos) expande os pais que os
+    escondem;
+  - no modo foco, o pai e os filhos do card também ficam em destaque;
+  - enquanto há uma busca ativa, o modo foco fica suspenso.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

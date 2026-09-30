@@ -40,6 +40,16 @@ export function gerarDadosDeTeste(quantidade = 150) {
     dados.cards.push(card);
   }
 
+  // Hierarquia: em cada bloco de 10 cards, o 1º é pai dos 3 seguintes e o 5º
+  // é neto (filho do 4º). Um a cada três pais começa recolhido, para o teste
+  // incluir cards escondidos e conexões redirecionadas.
+  dados.cards.forEach((card, i) => {
+    const resto = i % 10;
+    if (resto >= 1 && resto <= 3) card.pai = dados.cards[i - resto].id;
+    if (resto === 4) card.pai = dados.cards[i - 1].id;
+    if (resto === 0 && (i / 10) % 3 === 0) card.recolhido = true;
+  });
+
   // Conexões ligando cada card a vizinhos próximos na lista.
   const idsConexoes = new Set();
   for (let k = 0; k < quantidade * 2 && quantidade > 1; k++) {

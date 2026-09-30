@@ -17,6 +17,7 @@ const LIMITE_HISTORICO = 100;          // ações guardadas para desfazer
 const JANELA_AGRUPAMENTO_MS = 1500;    // digitação contínua vira uma só ação
 
 let dados = null;
+let versao = 0;                        // aumenta a cada mudança (para caches)
 const pilhaDesfazer = [];              // itens: { dados, rotulo, marca }
 const pilhaRefazer = [];
 let ultimoGrupo = null;
@@ -62,14 +63,26 @@ export function geometria() {
 /**
  * Registra uma função chamada a cada mudança. Ela recebe { tipo, rotulo },
  * onde tipo é 'tudo' (dados trocados), 'dados' (alteração comum),
- * 'gesto' (arrasto em andamento) ou 'selecao'.
+ * 'gesto' (arrasto em andamento), 'selecao' ou 'visual' (algo que muda só
+ * a tela, como recolher um card na vitrine ou o resultado de uma busca).
  */
 export function assinar(ouvinte) {
   ouvintes.add(ouvinte);
   return () => ouvintes.delete(ouvinte);
 }
 
+/** Número que muda a cada alteração de dados (ou visual): serve para caches. */
+export function versaoDosDados() {
+  return versao;
+}
+
+/** Avisa a tela de uma mudança que não vai para o arquivo (nem para o desfazer). */
+export function avisarMudancaVisual() {
+  notificar({ tipo: 'visual' });
+}
+
 function notificar(mudanca) {
+  if (mudanca.tipo !== 'selecao') versao++;
   for (const ouvinte of ouvintes) {
     try {
       ouvinte(mudanca);

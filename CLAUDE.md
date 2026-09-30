@@ -28,7 +28,9 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   completa, desfazer/refazer, modo somente leitura, `iniciar.*`, modo `?teste`
 - [x] Fase 2: conexões (arrasto por alça, texto, direção, várias por par, editor,
   lista no painel), modo foco, mapa andando sozinho perto da borda ao arrastar
-- [ ] Fase 3: hierarquia (pai/filho, tamanhos, recolher/expandir) e busca
+- [x] Fase 3: hierarquia (card pai no painel, tamanhos por nível, recolher/expandir
+  com "+N", linhas pai → filho, conexões redirecionadas e agrupadas, arrastar pai
+  com filhos / Alt só o pai) e busca (Ctrl+F, Enter/Shift+Enter, expansão temporária)
 - [ ] Fase 4: animações (manifesto, iframe sandbox, `_modelo.html`, demonstração, `CONTRATO.md`)
 - [ ] Fase 5: efeitos visuais, botão de desempenho, README e CLAUDE.md finais, GitHub Pages
 
@@ -40,9 +42,12 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   `file://`).
 - **Camadas da tela, de trás para frente:**
   1. `<canvas id="fundo">`: Sol, Terra e limites das zonas;
-  2. `#mundo`: recebe um único `transform` de pan/zoom. Contém, nesta ordem, o
-     `<svg id="camada-conexoes">` (curvas e setas), os textos das conexões
-     (HTML) e os cards (HTML);
+  2. `#mundo`: recebe um único `transform` de pan/zoom. Contém, nesta ordem:
+     - o `<svg id="camada-conexoes">`, com os grupos `#linhas-familia`
+       (pai → filho), `#linhas-conexoes` (conexões) e `#linhas-redirecionadas`
+       (tracejadas);
+     - os textos das conexões (HTML);
+     - os cards (HTML);
   3. `#rotulos-zonas`: nomes presos ao topo;
   4. interface: barra, painel, faixas, toasts, `<dialog>`.
 
@@ -54,13 +59,15 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
 | `js/camera.js` | Pan/zoom, roda/touchpad/pinça, área útil, posição guardada |
 | `js/fundo.js` | Canvas: Sol, Terra com linhas de campo, limites e nomes das zonas |
-| `js/cards.js` | Desenho dos cards (reconciliação por id), tamanhos medidos, faixa de zoom (`data-detalhe`: baixo/medio/alto/perto), alças, classes do modo foco. Chama `aoRenderizarCards` no fim |
-| `js/conexoes.js` | Curvas SVG (Bézier quadrática, leque por par), setas, textos no meio, linha provisória, espessura constante na tela |
+| `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, classes `nivel-1..3` (escala), botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica a escala do nível), faixa de zoom (`data-detalhe`), alças. Chama `aoRenderizarCards` no fim |
+| `js/conexoes.js` | Linhas pai → filho; conexões como curvas SVG (Bézier quadrática, leque por par de cards **visíveis**), setas, textos no meio; conexões de cards escondidos redirecionadas ao representante (tracejadas; várias viram "N conexões", com `data-expandir`); linha provisória; espessura constante na tela |
+| `js/hierarquia.js` | `hierarquia()` em cache: filhos, nível, representante visível, visíveis, total de descendentes. `descendentes`, `podeSerPai`, `ancestraisRecolhidos`, `estaRecolhido` (considera o recolhimento local da vitrine e as expansões temporárias da busca) |
+| `js/busca.js` | Campo de busca: `filtrarCards` (função pura), resultados na ordem do mapa, Enter/Shift+Enter/Esc, expansão temporária de pais recolhidos |
 | `js/editor-conexao.js` | Janelinha presa ao meio da conexão: texto, inverter, com/sem seta, excluir (ou só leitura) |
-| `js/foco.js` | `focoAtual()`: card selecionado + vizinhos, ou a conexão aberta no editor |
+| `js/foco.js` | `focoAtual()`: card selecionado + vizinhos (pelas pontas visíveis) + pai e filhos (`familia`), ou a conexão aberta no editor. Fica suspenso durante a busca |
 | `js/interacao.js` | Ponteiro: pan, arrastar card, arrastar alça (nova conexão), clique, duplo clique, pinça, mapa andando sozinho perto da borda |
-| `js/painel.js` | Painel lateral (edição e leitura), com a lista de conexões do card |
-| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
+| `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, conexões do card |
+| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
 | `js/barra.js` | Barra de ferramentas, indicador de salvamento, menu de opções, atalhos |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
@@ -88,7 +95,16 @@ tivesse existido. Card criado e deixado vazio usa o mesmo mecanismo
 **Ordem de desenho:** `estado` notifica → `cards.renderizarAgora()` (no próximo
 quadro) → no fim, `aoRenderizarCards` → `conexoes` (que dependem da posição e
 do tamanho dos cards). O modo foco (`ui.selecionado` / `ui.conexaoAberta`) é
-aplicado com as classes `.modo-foco` no `#palco` e `.em-foco` nos elementos.
+aplicado com as classes `.modo-foco` no `#palco` e `.em-foco` nos elementos; a
+busca, com `.modo-busca`, `.resultado-busca`, `.resultado-atual` e
+`.contem-resultado` (pai recolhido que esconde um resultado).
+
+**Mudanças que não vão para o arquivo:** recolher/expandir na vitrine
+(`definirRecolhimentoLocal`) e as expansões temporárias da busca
+(`expandirTemporariamente` / `limparExpansoesTemporarias`) só mudam a tela. Elas
+avisam os módulos com `estado.avisarMudancaVisual()` (notificação `'visual'`, que
+não salva nem entra no desfazer). Caches como `hierarquia()` usam
+`versaoDosDados()`, que muda a cada notificação, exceto `'selecao'`.
 
 ## Modelo de dados (versão 1)
 
@@ -175,8 +191,15 @@ aplicado com as classes `.modo-foco` no `#palco` e `.em-foco` nos elementos.
 - **Desempenho:** `?teste=150` na URL. No console, `await mapaDepuracao.medirPanZoom()`.
 - **Depuração:** `window.mapaDepuracao` expõe `estado`, `camera`,
   `persistencia` e `acoes`.
-- **Lógica sem navegador:** `js/modelo.js` e `js/estado.js` não dependem de
-  navegador e podem ser testados com Node (`node --input-type=module`).
+- **Lógica sem navegador:** `modelo`, `estado`, `hierarquia`, `foco`, `acoes`
+  (exceto o que abre janelas ou avisos) e `busca.filtrarCards` rodam no Node
+  (`node --input-type=module`). Use como base uma cópia fixa dos dados de exemplo
+  (ex.: `git show b10e48d:data/estudos.json`), **nunca** o `data/estudos.json`
+  atual, que muda com o uso.
+- **Gestos simulados:** dá para disparar `PointerEvent`s sintéticos num card (por
+  exemplo, com `altKey` para testar Alt + arrastar). A captura do ponteiro é
+  protegida (`capturarPonteiro`), porque o navegador a recusa para ponteiros
+  simulados.
 
 ## Armadilhas conhecidas
 

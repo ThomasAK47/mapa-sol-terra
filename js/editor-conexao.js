@@ -211,13 +211,16 @@ function garantirVisivel() {
   if (!visivel) irPara(ponto, obterCamera().escala);
 }
 
-/** Coloca a janelinha logo abaixo (ou acima) do meio da conexão. */
+/**
+ * Coloca a janelinha logo abaixo (ou acima) do meio da conexão. Uma conexão
+ * sem linha na tela (entre cards escondidos no mesmo grupo recolhido) abre
+ * no alto da área visível.
+ */
 function posicionar() {
   if (!idAberto) return;
   const ponto = pontoDoRotulo(idAberto);
-  if (!ponto) return;
-  const tela = mundoParaTela(ponto.X, ponto.Y);
   const area = areaUtil();
+  const tela = ponto ? mundoParaTela(ponto.X, ponto.Y) : { x: area.x + area.largura / 2, y: area.y + area.altura * 0.25 };
   const largura = raiz.offsetWidth;
   const altura = raiz.offsetHeight;
   let x = tela.x - largura / 2;

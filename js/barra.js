@@ -5,11 +5,13 @@
 
 import { criarCard, enquadrarTudo, excluirCard } from './acoes.js';
 import { janelaAberta, toast } from './avisos.js';
+import { focarCampoDeBusca } from './busca.js';
 import { areaUtil, definirModoRoda, obterModoRoda, telaParaMundo } from './camera.js';
 import { editorDeConexaoAberto, fecharEditorConexao } from './editor-conexao.js';
 import {
   assinar, desfazer, podeDesfazer, podeEditar, podeRefazer, refazer, selecionar, ui,
 } from './estado.js';
+import { hierarquia } from './hierarquia.js';
 import { cancelarGestoAtual } from './interacao.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 import { definirIndicador, exportar, importar, salvarAgora } from './persistencia.js';
@@ -137,6 +139,11 @@ function aoTeclar(evento) {
     salvarAgora();
     return;
   }
+  if (ctrl && letra === 'f') {
+    evento.preventDefault(); // usa a busca do mapa, e não a do navegador
+    focarCampoDeBusca();
+    return;
+  }
   if (tecla === 'Escape') {
     aoApertarEsc();
     return;
@@ -160,7 +167,8 @@ function aoTeclar(evento) {
   if (evento.target instanceof Element && evento.target.closest('button, a, [role="button"]')) return;
   if (editorDeConexaoAberto()) return;
 
-  if ((tecla === 'Delete' || tecla === 'Backspace') && ui.selecionado && podeEditar()) {
+  if ((tecla === 'Delete' || tecla === 'Backspace') && ui.selecionado && podeEditar() &&
+      hierarquia().visiveis.has(ui.selecionado)) {
     evento.preventDefault();
     excluirCard(ui.selecionado);
   } else if (tecla === 'Enter' && ui.selecionado) {

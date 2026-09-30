@@ -3,16 +3,21 @@
 //   • Modo de edição: campos editáveis. Cada alteração entra no desfazer e é
 //     salva sozinha (não há botão "salvar").
 //   • Modo somente leitura: só o conteúdo, sem campos.
-// O painel também lista as conexões do card; um clique abre a conexão.
-// (O campo "card pai" chega na Fase 3 e o de animação, na Fase 4.)
+// O painel também mostra a família do card (card pai e filhos, com o botão
+// de recolher/expandir) e lista as conexões; um clique abre cada uma.
+// (O campo de animação chega na Fase 4.)
 // =============================================================================
 
-import { abrirLinkDocs, centralizarCard, descartarSeVazio, excluirCard, moverCardParaZona } from './acoes.js';
+import {
+  abrirLinkDocs, alternarRecolhido, centralizarCard, definirPai, descartarSeVazio, excluirCard,
+  expandirAte, moverCardParaZona,
+} from './acoes.js';
 import { areaUtil, definirMargemDireita, mundoParaTela } from './camera.js';
 import { abrirEditorConexao } from './editor-conexao.js';
 import {
   alterar, assinar, buscarCard, encerrarAgrupamento, geometria, obterDados, podeEditar, selecionar,
 } from './estado.js';
+import { descendentes, estaRecolhido, hierarquia } from './hierarquia.js';
 import { posicaoAbsoluta } from './modelo.js';
 import { agoraISO, el, formatarDataHora, icone, linkSeguro, semAcentos } from './util.js';
 
@@ -92,8 +97,9 @@ function construir() {
 /** Atualiza os campos quando os dados mudam por fora (ex.: desfazer). */
 function sincronizar() {
   const card = buscarCard(idAberto);
-  if (!card) {
-    idRecemCriado = null;
+  if (!card || !hierarquia().visiveis.has(card.id)) {
+    // Excluído, ou escondido dentro de um pai recolhido.
+    if (!card) idRecemCriado = null;
     fecharPainel();
     return;
   }
@@ -108,6 +114,8 @@ function sincronizar() {
     atualizarContador(campos.contador, card.descricao);
   }
   if (campos.zona.value !== card.zona) campos.zona.value = card.zona;
+  if (ativo !== campos.pai) preencherSeletorDePai(campos.pai, card.id);
+  preencherFilhos(campos.filhos, card.id);
   campos.tags.desenhar(card.tags);
   const link = card.linkDocs ?? '';
   if (ativo !== campos.link && campos.link.value.trim() !== link) {
@@ -155,6 +163,16 @@ function construirEdicao(card) {
   zona.value = card.zona;
   zona.addEventListener('change', () => moverCardParaZona(id, zona.value));
 
+  const pai = el('select', { id: 'painel-pai', class: 'entrada' });
+  preencherSeletorDePai(pai, id);
+  pai.addEventListener('change', () => {
+    // Se não deu para mudar (ex.: formaria um ciclo), volta ao valor atual.
+    if (!definirPai(id, pai.value || null)) pai.value = buscarCard(id)?.pai ?? '';
+  });
+
+  const filhos = el('div', { class: 'campo' });
+  preencherFilhos(filhos, id);
+
   const tags = construirTags(id, card.tags);
 
   const link = el('input', {
@@ -179,7 +197,7 @@ function construirEdicao(card) {
   preencherDatas(datas, card);
 
   campos = {
-    titulo, descricao, contador, zona, tags, link, dicaLink, abrirLink, conexoes, datas,
+    titulo, descricao, contador, zona, pai, filhos, tags, link, dicaLink, abrirLink, conexoes, datas,
     assinaturaZonas: assinaturaDasZonas(),
   };
 
@@ -192,6 +210,8 @@ function construirEdicao(card) {
       el('div', { class: 'campo' }, el('label', { class: 'campo-rotulo', for: 'painel-titulo' }, 'Título'), titulo),
       el('div', { class: 'campo' }, el('label', { class: 'campo-rotulo', for: 'painel-descricao' }, 'Descrição'), descricao, contador),
       el('div', { class: 'campo' }, el('label', { class: 'campo-rotulo', for: 'painel-zona' }, 'Zona'), zona),
+      el('div', { class: 'campo' }, el('label', { class: 'campo-rotulo', for: 'painel-pai' }, 'Card pai'), pai),
+      filhos,
       el('div', { class: 'campo' }, el('span', { class: 'campo-rotulo' }, 'Tags'), tags.caixa),
       el('div', { class: 'campo' },
         el('label', { class: 'campo-rotulo', for: 'painel-link' }, 'Link do Google Docs'),
@@ -244,6 +264,66 @@ function atualizarDicaDoLink(valor, dica, botaoAbrir) {
   const valido = Boolean(linkSeguro(texto));
   dica.textContent = texto && !valido ? 'O link precisa começar com https://' : '';
   botaoAbrir.disabled = !valido;
+}
+
+// --- Família (card pai e cards filhos) -----------------------------------------------
+
+/**
+ * Opções do campo "Card pai": nenhum, ou qualquer card que não seja ele mesmo
+ * nem um descendente dele (isso formaria um ciclo), agrupados por zona.
+ */
+function preencherSeletorDePai(seletor, id) {
+  const dados = obterDados();
+  const proibidos = new Set([id, ...descendentes(id)]);
+  const grupos = geometria().lista.map((zona) => {
+    const candidatos = dados.cards
+      .filter((c) => c.zona === zona.id && !proibidos.has(c.id))
+      .sort((a, b) => (a.titulo.trim() || 'sem título').localeCompare(b.titulo.trim() || 'sem título', 'pt-BR'));
+    return candidatos.length
+      ? el('optgroup', { label: zona.nome }, candidatos.map((c) => el('option', { value: c.id }, c.titulo.trim() || 'sem título')))
+      : null;
+  });
+  seletor.replaceChildren(el('option', { value: '' }, '(nenhum: card de nível mais alto)'), ...grupos.filter(Boolean));
+  seletor.value = buscarCard(id)?.pai ?? '';
+}
+
+/** Lista os cards filhos, com o botão de recolher/expandir. */
+function preencherFilhos(caixa, id) {
+  const filhos = hierarquia().filhos.get(id) ?? [];
+  caixa.hidden = filhos.length === 0;
+  if (filhos.length === 0) {
+    caixa.replaceChildren();
+    return;
+  }
+  const recolhido = estaRecolhido(buscarCard(id));
+  caixa.replaceChildren(
+    el('div', { class: 'linha-rotulo' },
+      el('span', { class: 'campo-rotulo' }, `Cards filhos (${filhos.length})`),
+      el('button', {
+        class: 'botao botao-contorno botao-pequeno', type: 'button',
+        title: recolhido ? 'Mostrar os cards filhos no mapa' : 'Esconder os cards filhos no mapa',
+        onclick: () => alternarRecolhido(id),
+      }, recolhido ? 'Expandir' : 'Recolher'),
+    ),
+    el('div', { class: 'lista-familia' }, filhos.map((filho) => botaoDeCard(filho))),
+  );
+}
+
+/** Botão com o título de um card; o clique abre o painel dele. */
+function botaoDeCard(id) {
+  const card = buscarCard(id);
+  return el('button', {
+    class: 'chip chip-botao', type: 'button', title: 'Abrir este card',
+    onclick: () => abrirCardDaFamilia(id),
+  }, card?.titulo.trim() || 'sem título');
+}
+
+/** Abre o painel de um parente (expandindo quem o esconde, se preciso). */
+function abrirCardDaFamilia(id) {
+  if (!buscarCard(id)) return;
+  if (!hierarquia().visiveis.has(id)) expandirAte(id);
+  abrirPainel(id);
+  centralizarCard(id);
 }
 
 /** Lista as conexões do card: sentido, card do outro lado e o porquê. */
@@ -382,10 +462,21 @@ function construirLeitura(card) {
         el('a', { class: 'botao botao-contorno', href: link, target: '_blank', rel: 'noopener noreferrer' },
           icone('documento'), 'Abrir no Google Docs', icone('externo')),
       ),
+      card.pai && buscarCard(card.pai) && el('div', { class: 'campo' },
+        el('span', { class: 'campo-rotulo' }, 'Card pai'),
+        el('div', { class: 'lista-familia' }, botaoDeCard(card.pai)),
+      ),
+      filhosDaLeitura(card.id),
       conexoesDaLeitura(card.id),
       el('div', { class: 'painel-meta' }, `Atualizado em ${formatarDataHora(card.atualizadoEm)}`),
     ),
   ];
+}
+
+function filhosDaLeitura(id) {
+  const caixa = el('div', { class: 'campo' });
+  preencherFilhos(caixa, id);
+  return caixa;
 }
 
 function conexoesDaLeitura(id) {
