@@ -149,8 +149,9 @@ arquivo.
   - a Terra é cinza, porque só o Sol tem cor.
 - **Tamanhos por nível:** 100% → 85% → 72% → 62% (nível 3 em diante).
 - **Ícones:** SVG cinza, sem emojis.
-- **Zoom e enquadramento:** zoom de 10% a 300%; "Enquadrar tudo" inclui Sol e
-  Terra.
+- **Zoom e enquadramento:** zoom de 5% a 300% (o mínimo baixou de 10% para 5%
+  na Fase 1, para "Enquadrar tudo" caber em telas pequenas); "Enquadrar tudo"
+  inclui Sol e Terra.
 - **Descrição:** contador discreto a partir de ~300 caracteres, sem bloquear.
 - **Roda do mouse e touchpad:**
   - roda do mouse = zoom;

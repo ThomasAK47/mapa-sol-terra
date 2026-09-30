@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mapa de Estudos Sol–Terra</title>
+  <meta name="description" content="Mapa das conexões entre os assuntos do sistema Sol–Terra.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23ffb347' fill-opacity='.25'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%23ffb347'/%3E%3C/svg%3E">
+
+  <script>
+    // Este trecho roda antes de tudo (é um script comum, não um módulo).
+    //
+    // 1) Sempre usar 127.0.0.1 em vez de "localhost": o navegador separa os
+    //    dados guardados localmente (como a reserva de alterações) por
+    //    endereço, e usar sempre o mesmo evita que algo "suma".
+    if (location.hostname === 'localhost') {
+      location.replace(location.href.replace('//localhost', '//127.0.0.1'));
+    }
+
+    // 2) Mensagens para quando o app não consegue nem começar.
+    window.__falhaAoIniciar = function (motivo) {
+      var textos = {
+        arquivo: 'Este arquivo foi aberto direto do disco, e o navegador bloqueia o mapa assim. ' +
+                 'Feche esta aba e dê dois cliques em iniciar.bat (Windows) ou iniciar.command (macOS): ' +
+                 'o mapa abre sozinho no endereço http://127.0.0.1:8000.',
+        modulo:  'Não consegui carregar os arquivos do app (pasta js/). Se estiver usando o iniciar.bat, ' +
+                 'feche a janela preta, abra de novo e recarregue esta página.',
+        demora:  'O mapa está demorando para carregar. Recarregue a página (F5). Se continuar assim, ' +
+                 'feche a janela preta do servidor e abra o iniciar.bat de novo.'
+      };
+      function mostrar() {
+        var caixa = document.getElementById('tela-inicial-texto');
+        if (!caixa) return;
+        caixa.textContent = textos[motivo] || String(motivo);
+        document.body.classList.add('falha-ao-iniciar');
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mostrar);
+      else mostrar();
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/principal.js" onerror="window.__falhaAoIniciar('modulo')"></script>
+</head>
+<body class="carregando">
+
+  <!-- Área do mapa. O que está em #mundo acompanha pan e zoom. -->
+  <main id="palco" aria-label="Mapa">
+    <canvas id="fundo" aria-hidden="true"></canvas>
+    <div id="mundo">
+      <div id="camada-cards"></div>
+    </div>
+    <div id="rotulos-zonas" aria-hidden="true"></div>
+  </main>
+
+  <!-- Barra de ferramentas. "so-edicao" some no modo somente leitura. -->
+  <header id="barra">
+    <div class="barra-grupo">
+      <span class="marca" title="Mapa de Estudos Sol–Terra">
+        <span class="marca-sol" aria-hidden="true"></span>
+        <span class="marca-nome">Mapa Sol–Terra</span>
+      </span>
+    </div>
+
+    <div class="barra-grupo">
+      <button id="bt-novo" class="botao so-edicao" type="button" data-icone="mais"
+              title="Criar um card no centro da tela (duplo clique no fundo também cria)">
+        <span class="rotulo">Novo card</span>
+      </button>
+      <button id="bt-enquadrar" class="botao" type="button" data-icone="enquadrar" title="Enquadrar tudo (F)">
+        <span class="rotulo">Enquadrar tudo</span>
+      </button>
+      <span class="separador so-edicao" aria-hidden="true"></span>
+      <button id="bt-desfazer" class="botao icone so-edicao" type="button" data-icone="desfazer"
+              title="Desfazer (Ctrl+Z)" aria-label="Desfazer"></button>
+      <button id="bt-refazer" class="botao icone so-edicao" type="button" data-icone="refazer"
+              title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer"></button>
+    </div>
+
+    <div class="barra-grupo barra-direita">
+      <span id="status-salvamento" class="status so-edicao" data-estado="salvo" role="status" aria-live="polite">
+        <span class="status-ponto" aria-hidden="true"></span><span class="status-texto">salvo</span>
+      </span>
+      <span id="selo-leitura" class="selo so-leitura"
+            title="Esta é uma versão só para visualizar. As alterações são feitas no computador de quem mantém o mapa.">
+        somente leitura
+      </span>
+      <button id="bt-exportar" class="botao" type="button" data-icone="exportar"
+              title="Baixar uma cópia do mapa (.json)">
+        <span class="rotulo">Exportar JSON</span>
+      </button>
+      <button id="bt-importar" class="botao so-edicao" type="button" data-icone="importar"
+              title="Substituir o mapa pelo conteúdo de um arquivo .json">
+        <span class="rotulo">Importar JSON</span>
+      </button>
+      <button id="bt-opcoes" class="botao icone" type="button" data-icone="opcoes"
+              title="Opções e atalhos" aria-label="Opções e atalhos" aria-expanded="false" aria-controls="menu-opcoes"></button>
+    </div>
+  </header>
+
+  <!-- Menu de opções (abre pelo botão à direita da barra). -->
+  <div id="menu-opcoes" class="menu" hidden>
+    <fieldset class="menu-secao">
+      <legend>Roda do mouse e touchpad</legend>
+      <label class="opcao">
+        <input type="radio" name="roda" value="auto">
+        <span>Automático<small>roda do mouse = zoom · dois dedos = mover · pinça = zoom</small></span>
+      </label>
+      <label class="opcao">
+        <input type="radio" name="roda" value="zoom">
+        <span>Sempre zoom<small>roda e dois dedos dão zoom</small></span>
+      </label>
+      <label class="opcao">
+        <input type="radio" name="roda" value="mover">
+        <span>Sempre mover<small>zoom só com pinça ou Ctrl + roda</small></span>
+      </label>
+    </fieldset>
+    <div class="menu-secao">
+      <div class="menu-titulo">Atalhos</div>
+      <dl class="atalhos">
+        <div class="so-edicao"><dt>Duplo clique no fundo</dt><dd>novo card</dd></div>
+        <div><dt>Duplo clique no card</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ver detalhes</dd></div>
+        <div><dt>Arrastar o fundo</dt><dd>mover o mapa</dd></div>
+        <div class="so-edicao"><dt>Arrastar um card</dt><dd>mover o card</dd></div>
+        <div class="so-edicao"><dt>Ctrl+Z · Ctrl+Shift+Z</dt><dd>desfazer · refazer</dd></div>
+        <div class="so-edicao"><dt>Delete</dt><dd>excluir o card selecionado</dd></div>
+        <div class="so-edicao"><dt>Enter</dt><dd>editar o card selecionado</dd></div>
+        <div><dt>F</dt><dd>enquadrar tudo</dd></div>
+        <div class="so-edicao"><dt>Ctrl+S</dt><dd>salvar agora</dd></div>
+        <div><dt>Esc</dt><dd>fechar · desmarcar</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Painel lateral com os detalhes do card (montado por js/painel.js). -->
+  <aside id="painel" aria-label="Detalhes do card" aria-hidden="true"></aside>
+
+  <!-- Avisos: faixas persistentes no topo e mensagens rápidas embaixo. -->
+  <div id="faixas"></div>
+  <div id="toasts" aria-live="polite"></div>
+
+  <!-- Janela de confirmação/escolha (montada por js/avisos.js). -->
+  <dialog id="dialogo"></dialog>
+
+  <input type="file" id="entrada-importar" accept=".json,application/json" hidden>
+
+  <!-- Tela exibida enquanto o app carrega (ou se ele não conseguir começar). -->
+  <div id="tela-inicial">
+    <div class="tela-inicial-caixa">
+      <span class="marca-sol grande" aria-hidden="true"></span>
+      <p id="tela-inicial-texto">Carregando o mapa…</p>
+    </div>
+  </div>
+
+  <noscript>
+    <p class="sem-script">Este mapa precisa de JavaScript ativado no navegador.</p>
+  </noscript>
+
+  <script>
+    // Aberto direto do disco (file://)? Mostra instruções em vez de uma tela vazia.
+    if (location.protocol === 'file:') {
+      window.__falhaAoIniciar('arquivo');
+    } else {
+      // Se nada acontecer em 15 segundos, avisa em vez de ficar carregando.
+      setTimeout(function () {
+        if (!window.__mapaIniciado) window.__falhaAoIniciar('demora');
+      }, 15000);
+    }
+  </script>
+</body>
+</html>

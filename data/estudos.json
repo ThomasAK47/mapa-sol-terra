@@ -1,0 +1,125 @@
+{
+  "versao": 1,
+  "zonas": [
+    {
+      "id": "sol",
+      "nome": "Sol",
+      "detalhe": "interior e superfície",
+      "ordem": 1,
+      "largura": 1200
+    },
+    {
+      "id": "atmosfera-solar",
+      "nome": "Atmosfera solar e eventos",
+      "detalhe": "coroa, flares, CMEs, buracos coronais",
+      "ordem": 2,
+      "largura": 1200
+    },
+    {
+      "id": "meio-interplanetario",
+      "nome": "Meio interplanetário",
+      "detalhe": "vento solar, campo magnético interplanetário",
+      "ordem": 3,
+      "largura": 1200
+    },
+    {
+      "id": "magnetosfera",
+      "nome": "Magnetosfera",
+      "detalhe": "",
+      "ordem": 4,
+      "largura": 1200
+    },
+    {
+      "id": "ionosfera-termosfera",
+      "nome": "Ionosfera e termosfera",
+      "detalhe": "",
+      "ordem": 5,
+      "largura": 1200
+    },
+    {
+      "id": "superficie-terrestre",
+      "nome": "Superfície terrestre e efeitos",
+      "detalhe": "",
+      "ordem": 6,
+      "largura": 1200
+    }
+  ],
+  "cards": [
+    {
+      "id": "c-exemplo1",
+      "titulo": "[exemplo] Assunto A",
+      "descricao": "",
+      "zona": "sol",
+      "x": 800,
+      "y": -140,
+      "pai": null,
+      "recolhido": false,
+      "tags": [],
+      "animacao": null,
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+    },
+    {
+      "id": "c-exemplo2",
+      "titulo": "[exemplo] Assunto B",
+      "descricao": "",
+      "zona": "atmosfera-solar",
+      "x": 600,
+      "y": 120,
+      "pai": null,
+      "recolhido": false,
+      "tags": [],
+      "animacao": null,
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+    },
+    {
+      "id": "c-exemplo3",
+      "titulo": "[exemplo] Assunto C",
+      "descricao": "",
+      "zona": "meio-interplanetario",
+      "x": 600,
+      "y": -60,
+      "pai": null,
+      "recolhido": false,
+      "tags": [],
+      "animacao": null,
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+    },
+    {
+      "id": "c-exemplo4",
+      "titulo": "[exemplo] Assunto D",
+      "descricao": "",
+      "zona": "magnetosfera",
+      "x": 600,
+      "y": 160,
+      "pai": null,
+      "recolhido": false,
+      "tags": [],
+      "animacao": null,
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+    },
+    {
+      "id": "c-exemplo5",
+      "titulo": "[exemplo] Assunto E",
+      "descricao": "",
+      "zona": "ionosfera-termosfera",
+      "x": 600,
+      "y": -120,
+      "pai": null,
+      "recolhido": false,
+      "tags": [],
+      "animacao": null,
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+    }
+  ],
+  "conexoes": []
+}
