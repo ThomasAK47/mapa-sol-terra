@@ -2,16 +2,21 @@
 // interacao.js — traduz mouse e toque em ações no mapa:
 //   • arrastar o fundo (ou com o botão do meio) → mover o mapa;
 //   • arrastar um card → mover o card (no modo somente leitura, move o mapa);
-//   • clicar num card → selecionar; clicar no fundo → desmarcar;
+//   • arrastar a alça ○ na borda de um card até outro card → nova conexão;
+//   • clicar num card → selecionar (modo foco); clicar no fundo → desmarcar;
+//   • clicar no texto de uma conexão → abrir o editor da conexão;
 //   • duplo clique no card → abrir o painel; no fundo → criar um card ali;
 //   • dois dedos numa tela sensível ao toque → pinça (zoom).
-// A roda do mouse e o touchpad ficam em js/camera.js.
+// Ao arrastar um card ou uma conexão perto da borda da tela, o mapa anda
+// sozinho naquela direção. A roda do mouse e o touchpad ficam em camera.js.
 // =============================================================================
 
-import { abrirLinkDocs, criarCard } from './acoes.js';
+import { abrirLinkDocs, criarCard, criarConexao } from './acoes.js';
 import { toast } from './avisos.js';
-import { aoMudarCamera, moverPor, telaParaMundo, zoomNoPonto } from './camera.js';
-import { marcarArrastando } from './cards.js';
+import { aoMudarCamera, areaUtil, moverPor, telaParaMundo, zoomNoPonto } from './camera.js';
+import { marcarAlvoDeConexao, marcarArrastando } from './cards.js';
+import { apagarRascunho, desenharRascunho } from './conexoes.js';
+import { abrirEditorConexao } from './editor-conexao.js';
 import {
   alterarDuranteGesto, buscarCard, cancelarGesto, concluirGesto, geometria, iniciarGesto,
   obterDados, podeEditar, selecionar,
@@ -19,12 +24,15 @@ import {
 import { definirPosicaoAbsoluta, posicaoAbsoluta } from './modelo.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 
-const LIMIAR_ARRASTO = 4;      // pixels de movimento até um clique virar arrasto
+const LIMIAR_ARRASTO = 4;        // pixels de movimento até um clique virar arrasto
+const MARGEM_AUTO_PAN = 40;      // faixa junto à borda da tela em que o mapa anda sozinho
+const VELOCIDADE_AUTO_PAN = 16;  // pixels por quadro, bem na borda
 
-const ponteiros = new Map();   // ponteiros pressionados: id → { x, y }
+const ponteiros = new Map();     // ponteiros pressionados: id → { x, y }
 let palco = null;
-let acao = null;               // o que o gesto atual está fazendo
-let ultimoPonteiro = null;     // posição mais recente (para acompanhar a câmera)
+let acao = null;                 // o que o gesto atual está fazendo
+let ultimoPonteiro = null;       // posição mais recente do cursor durante um arrasto
+const autoPan = { vx: 0, vy: 0, quadro: null };
 
 export function iniciarInteracao(elementoPalco) {
   palco = elementoPalco;
@@ -33,27 +41,35 @@ export function iniciarInteracao(elementoPalco) {
   palco.addEventListener('pointerup', aoSoltar);
   palco.addEventListener('pointercancel', aoCancelarPonteiro);
   palco.addEventListener('dblclick', aoDuploClique);
-  palco.addEventListener('click', aoClicarEmAcaoDoCard);
-  // Se a câmera mudar durante um arrasto (ex.: roda do mouse), o card
-  // continua embaixo do cursor.
+  palco.addEventListener('click', aoClicar);
+  // Se a câmera mudar durante um arrasto (roda do mouse, mapa andando
+  // sozinho), o card ou a linha provisória continuam embaixo do cursor.
   aoMudarCamera(() => {
-    if (acao?.tipo === 'arrastando-card' && ultimoPonteiro) atualizarArrasto(ultimoPonteiro);
+    if (!ultimoPonteiro) return;
+    if (acao?.tipo === 'arrastando-card') atualizarArrasto(ultimoPonteiro);
+    else if (acao?.tipo === 'criando-conexao') atualizarCriacaoDeConexao(ultimoPonteiro);
   });
 }
 
-/** true enquanto um card está sendo arrastado. */
-export function arrastandoCard() {
-  return acao?.tipo === 'arrastando-card';
-}
-
-/** Cancela o arrasto em andamento e devolve o card ao lugar (tecla Esc). */
-export function cancelarArrasto() {
-  if (acao?.tipo !== 'arrastando-card') return false;
-  marcarArrastando(acao.id, false);
-  palco.classList.remove('arrastando');
-  acao = null;
-  cancelarGesto();
-  return true;
+/**
+ * Cancela o arrasto de card (devolvendo-o ao lugar) ou a criação de conexão
+ * em andamento (tecla Esc). Devolve true se havia algo para cancelar.
+ */
+export function cancelarGestoAtual() {
+  if (acao?.tipo === 'arrastando-card') {
+    marcarArrastando(acao.id, false);
+    acao = null;
+    encerrarArrasto();
+    cancelarGesto();
+    return true;
+  }
+  if (acao?.tipo === 'criando-conexao') {
+    const terminado = acao;
+    acao = null;
+    finalizarCriacaoDeConexao(terminado, false);
+    return true;
+  }
+  return false;
 }
 
 function distancia(a, b) {
@@ -64,11 +80,17 @@ function pontoMedio(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
+function encerrarArrasto() {
+  ultimoPonteiro = null;
+  pararAutoPan();
+  palco.classList.remove('panoramica', 'arrastando', 'conectando');
+}
+
 // --- Pressionar / mover / soltar ---------------------------------------------------
 
 function aoPressionar(evento) {
-  if (evento.button === 2) return;                     // botão direito: menu do navegador
-  if (evento.target.closest('.card-acao')) return;     // ícones clicáveis dentro do card
+  if (evento.button === 2) return;                                   // botão direito: menu do navegador
+  if (evento.target.closest('.card-acao, .rotulo-conexao')) return;  // tratados no clique
   ponteiros.set(evento.pointerId, { x: evento.clientX, y: evento.clientY });
 
   if (ponteiros.size === 2) {
@@ -78,6 +100,11 @@ function aoPressionar(evento) {
   if (ponteiros.size > 2) return;
 
   const ponto = { x: evento.clientX, y: evento.clientY };
+  const alca = evento.button === 0 && podeEditar() ? evento.target.closest('.alca') : null;
+  if (alca) {
+    iniciarCriacaoDeConexao(evento.pointerId, alca.closest('.card').dataset.id, ponto);
+    return;
+  }
   const elementoCard = evento.button === 0 ? evento.target.closest('.card') : null; // botão do meio: sempre move o mapa
   if (elementoCard) {
     acao = { tipo: 'card-pressionado', id: elementoCard.dataset.id, inicio: ponto, ponteiro: evento.pointerId };
@@ -119,6 +146,8 @@ function aoMover(evento) {
     }
   } else if (acao.tipo === 'arrastando-card') {
     atualizarArrasto(ponto);
+  } else if (acao.tipo === 'criando-conexao') {
+    atualizarCriacaoDeConexao(ponto);
   }
 }
 
@@ -133,25 +162,30 @@ function aoSoltar(evento) {
   if (!acao || acao.ponteiro !== evento.pointerId) return;
   const terminado = acao;
   acao = null;
-  palco.classList.remove('panoramica', 'arrastando');
+  palco.classList.remove('panoramica');
 
   if (terminado.tipo === 'card-pressionado') {
-    selecionar(terminado.id);                    // clique simples num card
+    selecionar(terminado.id);                    // clique simples num card: modo foco
     const aberto = painelAberto();
-    if (aberto && aberto !== terminado.id) abrirPainel(terminado.id); // painel acompanha a seleção
+    if (aberto && aberto !== terminado.id) abrirPainel(terminado.id); // o painel acompanha a seleção
   } else if (terminado.tipo === 'arrastando-card') {
     finalizarArrasto(terminado);
+  } else if (terminado.tipo === 'criando-conexao') {
+    finalizarCriacaoDeConexao(terminado, true);
   } else if (terminado.tipo === 'panoramica' && !terminado.moveu) {
-    selecionar(null);                            // clique simples no fundo
+    selecionar(null);                            // clique simples no fundo: sai do modo foco
     fecharPainel();
   }
 }
 
 function aoCancelarPonteiro(evento) {
   ponteiros.delete(evento.pointerId);
-  if (acao?.tipo === 'arrastando-card' && acao.ponteiro === evento.pointerId) finalizarArrasto(acao);
+  if (acao?.ponteiro === evento.pointerId) {
+    if (acao.tipo === 'arrastando-card') finalizarArrasto(acao);
+    else if (acao.tipo === 'criando-conexao') finalizarCriacaoDeConexao(acao, false);
+  }
   if (acao?.tipo !== 'pinca' || ponteiros.size === 0) acao = null;
-  palco.classList.remove('panoramica', 'arrastando');
+  encerrarArrasto();
 }
 
 // --- Arrastar cards ------------------------------------------------------------------
@@ -192,12 +226,12 @@ function atualizarArrasto(ponto) {
       if (card && origem) definirPosicaoAbsoluta(card, origem.X + dX, origem.Y + dY, geo);
     }
   });
+  avaliarAutoPan(ponto);
 }
 
 function finalizarArrasto(terminado) {
-  ultimoPonteiro = null;
   marcarArrastando(terminado.id, false);
-  palco.classList.remove('arrastando');
+  encerrarArrasto();
   // Ao soltar, as posições são arredondadas (números inteiros no arquivo).
   concluirGesto((dados) => {
     for (const id of terminado.ids) {
@@ -209,11 +243,69 @@ function finalizarArrasto(terminado) {
   });
 }
 
+// --- Criar conexões (arrastando uma alça) ---------------------------------------------
+
+function iniciarCriacaoDeConexao(ponteiro, idDe, ponto) {
+  acao = { tipo: 'criando-conexao', de: idDe, alvo: null, ponteiro };
+  palco.setPointerCapture(ponteiro);
+  palco.classList.add('conectando');
+  atualizarCriacaoDeConexao(ponto);
+}
+
+function atualizarCriacaoDeConexao(ponto) {
+  ultimoPonteiro = ponto;
+  // O card embaixo do cursor (se não for o de origem) é o alvo.
+  const elemento = document.elementFromPoint(ponto.x, ponto.y)?.closest('.card');
+  const alvo = elemento && elemento.dataset.id !== acao.de ? elemento.dataset.id : null;
+  if (alvo !== acao.alvo) {
+    if (acao.alvo) marcarAlvoDeConexao(acao.alvo, false);
+    if (alvo) marcarAlvoDeConexao(alvo, true);
+    acao.alvo = alvo;
+  }
+  desenharRascunho(acao.de, telaParaMundo(ponto.x, ponto.y), alvo);
+  avaliarAutoPan(ponto);
+}
+
+function finalizarCriacaoDeConexao(terminado, criar) {
+  apagarRascunho();
+  if (terminado.alvo) marcarAlvoDeConexao(terminado.alvo, false);
+  encerrarArrasto();
+  if (!criar || !terminado.alvo) return;
+  const id = criarConexao(terminado.de, terminado.alvo);
+  if (id) abrirEditorConexao(id, { nova: true });
+}
+
+// --- O mapa anda sozinho perto da borda --------------------------------------------
+
+function avaliarAutoPan(ponto) {
+  const area = areaUtil();
+  const forca = (distanciaDaBorda) => Math.min(1, Math.max(0, 1 - distanciaDaBorda / MARGEM_AUTO_PAN));
+  autoPan.vx = VELOCIDADE_AUTO_PAN * (forca(ponto.x - area.x) - forca(area.x + area.largura - ponto.x));
+  autoPan.vy = VELOCIDADE_AUTO_PAN * (forca(ponto.y - area.y) - forca(area.y + area.altura - ponto.y));
+  if ((autoPan.vx || autoPan.vy) && autoPan.quadro === null) autoPan.quadro = requestAnimationFrame(passoDoAutoPan);
+}
+
+function passoDoAutoPan() {
+  autoPan.quadro = null;
+  const arrastando = acao?.tipo === 'arrastando-card' || acao?.tipo === 'criando-conexao';
+  if (!arrastando || (!autoPan.vx && !autoPan.vy)) return;
+  moverPor(autoPan.vx, autoPan.vy); // a câmera avisa, e o arrasto acompanha
+  autoPan.quadro = requestAnimationFrame(passoDoAutoPan);
+}
+
+function pararAutoPan() {
+  autoPan.vx = 0;
+  autoPan.vy = 0;
+  if (autoPan.quadro !== null) cancelAnimationFrame(autoPan.quadro);
+  autoPan.quadro = null;
+}
+
 // --- Pinça (tela sensível ao toque) ------------------------------------------------
 
 function iniciarPinca() {
   if (acao?.tipo === 'arrastando-card') finalizarArrasto(acao);
-  palco.classList.remove('panoramica', 'arrastando');
+  else if (acao?.tipo === 'criando-conexao') finalizarCriacaoDeConexao(acao, false);
+  encerrarArrasto();
   const [a, b] = [...ponteiros.values()];
   acao = { tipo: 'pinca', distancia: distancia(a, b), centro: pontoMedio(a, b) };
 }
@@ -229,11 +321,11 @@ function atualizarPinca() {
   acao.centro = centro;
 }
 
-// --- Duplo clique e ícones dos cards -----------------------------------------------
+// --- Cliques: duplo clique, ícones dos cards e textos das conexões --------------------
 
 function aoDuploClique(evento) {
   const alvo = document.elementFromPoint(evento.clientX, evento.clientY);
-  if (!alvo || !palco.contains(alvo) || alvo.closest('.card-acao')) return;
+  if (!alvo || !palco.contains(alvo) || alvo.closest('.card-acao, .rotulo-conexao, .alca')) return;
   const elementoCard = alvo.closest('.card');
   if (elementoCard) {
     abrirPainel(elementoCard.dataset.id);
@@ -245,7 +337,13 @@ function aoDuploClique(evento) {
   if (id) abrirPainel(id, { novo: true });
 }
 
-function aoClicarEmAcaoDoCard(evento) {
+function aoClicar(evento) {
+  const rotulo = evento.target.closest('.rotulo-conexao');
+  if (rotulo) {
+    evento.stopPropagation();
+    abrirEditorConexao(rotulo.dataset.id);
+    return;
+  }
   const botao = evento.target.closest('.card-acao');
   if (!botao) return;
   evento.stopPropagation();

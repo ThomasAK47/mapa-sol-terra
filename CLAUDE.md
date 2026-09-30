@@ -26,7 +26,8 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 - [x] Fase 0: plano (`docs/PLANO.md`)
 - [x] Fase 1: canvas, zonas, Sol/Terra estáticos, pan/zoom, cards, persistência
   completa, desfazer/refazer, modo somente leitura, `iniciar.*`, modo `?teste`
-- [ ] Fase 2: conexões (arrasto por alça, texto, direção, várias por par) e modo foco
+- [x] Fase 2: conexões (arrasto por alça, texto, direção, várias por par, editor,
+  lista no painel), modo foco, mapa andando sozinho perto da borda ao arrastar
 - [ ] Fase 3: hierarquia (pai/filho, tamanhos, recolher/expandir) e busca
 - [ ] Fase 4: animações (manifesto, iframe sandbox, `_modelo.html`, demonstração, `CONTRATO.md`)
 - [ ] Fase 5: efeitos visuais, botão de desempenho, README e CLAUDE.md finais, GitHub Pages
@@ -39,8 +40,9 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   `file://`).
 - **Camadas da tela, de trás para frente:**
   1. `<canvas id="fundo">`: Sol, Terra e limites das zonas;
-  2. `#mundo`: cards em HTML, e conexões em SVG a partir da Fase 2. Recebe um
-     único `transform` de pan/zoom;
+  2. `#mundo`: recebe um único `transform` de pan/zoom. Contém, nesta ordem, o
+     `<svg id="camada-conexoes">` (curvas e setas), os textos das conexões
+     (HTML) e os cards (HTML);
   3. `#rotulos-zonas`: nomes presos ao topo;
   4. interface: barra, painel, faixas, toasts, `<dialog>`.
 
@@ -52,10 +54,13 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
 | `js/camera.js` | Pan/zoom, roda/touchpad/pinça, área útil, posição guardada |
 | `js/fundo.js` | Canvas: Sol, Terra com linhas de campo, limites e nomes das zonas |
-| `js/cards.js` | Desenho dos cards (reconciliação por id), tamanhos medidos, nível de detalhe |
-| `js/interacao.js` | Ponteiro: pan, arrastar card, clique, duplo clique, pinça em tela de toque |
-| `js/painel.js` | Painel lateral (edição e leitura) |
-| `js/acoes.js` | Operações: criar, excluir, mudar zona, enquadrar, abrir link |
+| `js/cards.js` | Desenho dos cards (reconciliação por id), tamanhos medidos, faixa de zoom (`data-detalhe`: baixo/medio/alto/perto), alças, classes do modo foco. Chama `aoRenderizarCards` no fim |
+| `js/conexoes.js` | Curvas SVG (Bézier quadrática, leque por par), setas, textos no meio, linha provisória, espessura constante na tela |
+| `js/editor-conexao.js` | Janelinha presa ao meio da conexão: texto, inverter, com/sem seta, excluir (ou só leitura) |
+| `js/foco.js` | `focoAtual()`: card selecionado + vizinhos, ou a conexão aberta no editor |
+| `js/interacao.js` | Ponteiro: pan, arrastar card, arrastar alça (nova conexão), clique, duplo clique, pinça, mapa andando sozinho perto da borda |
+| `js/painel.js` | Painel lateral (edição e leitura), com a lista de conexões do card |
+| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
 | `js/barra.js` | Barra de ferramentas, indicador de salvamento, menu de opções, atalhos |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
@@ -72,6 +77,18 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 
 Arrastos usam `iniciarGesto` / `alterarDuranteGesto` / `concluirGesto`: viram
 uma só ação no desfazer e só salvam ao soltar.
+
+**Conexão nova:** a criação usa `marca: 'criar-conexao:<id>'` e
+`agrupar: 'conexao-nova:<id>'` com `agruparSemPrazo`. Tudo o que é feito com ela
+enquanto o editor está aberto (texto, seta, inverter) entra na mesma ação do
+desfazer. Esc no editor chama `descartarUltimaSe(marca)`, como se ela nunca
+tivesse existido. Card criado e deixado vazio usa o mesmo mecanismo
+(`criar:<id>`).
+
+**Ordem de desenho:** `estado` notifica → `cards.renderizarAgora()` (no próximo
+quadro) → no fim, `aoRenderizarCards` → `conexoes` (que dependem da posição e
+do tamanho dos cards). O modo foco (`ui.selecionado` / `ui.conexaoAberta`) é
+aplicado com as classes `.modo-foco` no `#palco` e `.em-foco` nos elementos.
 
 ## Modelo de dados (versão 1)
 
@@ -163,11 +180,28 @@ uma só ação no desfazer e só salvam ao soltar.
 
 ## Armadilhas conhecidas
 
-- **Painel oculto do navegador embutido:** o `requestAnimationFrame` pausa e o
-  evento `close` do `<dialog>` não dispara.
-  - Por isso `escolher()` resolve a resposta no clique/Esc. Não volte a depender
-    de `close`.
-  - Para medir quadros por segundo, o painel precisa estar visível.
+- **Desempenho: não ponha variáveis CSS que mudam com o zoom em `#mundo`.**
+  Variáveis CSS são herdadas, então mudar uma em `#mundo` recalcula o estilo do
+  mapa inteiro (cerca de 20 ms com 150 cards e 300 conexões). A espessura das
+  linhas é o atributo `stroke-width` do `<svg>`, que as linhas herdam; as setas
+  usam `markerUnits="strokeWidth"`. Os textos em destaque recebem `scale` inline
+  (só eles). As alças têm tamanhos fixos por faixa de zoom (`data-detalhe`).
+- **Alças:** ficam com `opacity: 0`, e não `visibility: hidden`. Um elemento
+  oculto não recebe o clique, e um gesto rápido acabaria arrastando o card em
+  vez de criar a conexão.
+- **Painel oculto do navegador embutido:**
+  - o `requestAnimationFrame` pausa e o evento `close` do `<dialog>` não dispara.
+    Por isso `escolher()` resolve a resposta no clique/Esc. Não volte a depender
+    de `close`;
+  - capturas e medições de quadros por segundo exigem o painel visível;
+  - a câmera (estado) pode ficar à frente do `transform` aplicado na tela.
+    Para testar a lógica sem quadros, chame `renderizarAgora()` de
+    `js/cards.js` direto.
+- **Commits no PowerShell 5.1:** uma mensagem com aspas duplas quebra o
+  argumento. Grave a mensagem num arquivo e use `git commit -F arquivo`.
+- **`data/estudos.json`:** são os dados da pessoa usuária. Nunca entram nos
+  commits de fase (faça `git add` só de código e documentação). O servidor
+  aceita arquivos com BOM (Bloco de Notas).
 - **Conexão recusada no Windows:** leva cerca de 2 s, então o "erro ao salvar"
   aparece alguns segundos depois de o servidor cair.
 - **`.bat` no sandbox do Claude:** `NoDefaultCurrentDirectoryInExePath=1`, então

@@ -9,18 +9,22 @@
 
 import { aoMudarCamera } from './camera.js';
 import { assinar, geometria, obterDados, ui } from './estado.js';
+import { focoAtual } from './foco.js';
 import { posicaoAbsoluta } from './modelo.js';
 import { el, icone } from './util.js';
 
 const LIMITE_DESCRICAO = 240; // o card mostra só o começo da descrição
 const TAMANHO_PADRAO = { largura: 220, altura: 76 };
+const LADOS_DAS_ALCAS = ['topo', 'direita', 'base', 'esquerda'];
 
-const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, assinatura, X, Y }
+const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, assinatura, X, Y, … }
 const tamanhos = new Map();  // id → { largura, altura } em unidades do mundo
+const aposRenderizar = [];   // funções chamadas depois de cada renderização
 let camada = null;
 let palco = null;
 let renderPendente = false;
 let nivelDeDetalhe = null;
+let emModoFoco = false;
 
 export function iniciarCards(elementoCamada, elementoPalco) {
   camada = elementoCamada;
@@ -43,13 +47,27 @@ export function agendarRender() {
   });
 }
 
+/**
+ * Registra uma função chamada logo depois de cada renderização dos cards
+ * (as conexões usam isto: elas dependem da posição e do tamanho dos cards).
+ */
+export function aoRenderizarCards(funcao) {
+  aposRenderizar.push(funcao);
+}
+
 /** Atualiza a tela para refletir os dados (pode ser chamado a qualquer hora). */
 export function renderizarAgora() {
   const dados = obterDados();
   if (!dados || !camada) return;
   const geo = geometria();
+  const foco = focoAtual();
   const presentes = new Set();
   const paraMedir = [];
+
+  if (Boolean(foco) !== emModoFoco) {
+    emModoFoco = Boolean(foco);
+    palco.classList.toggle('modo-foco', emModoFoco);
+  }
 
   for (const card of dados.cards) {
     presentes.add(card.id);
@@ -74,6 +92,11 @@ export function renderizarAgora() {
       item.selecionado = selecionado;
       item.raiz.classList.toggle('selecionado', selecionado);
     }
+    const emFoco = Boolean(foco?.cards.has(card.id));
+    if (item.emFoco !== emFoco) {
+      item.emFoco = emFoco;
+      item.raiz.classList.toggle('em-foco', emFoco);
+    }
   }
 
   for (const [id, item] of itens) {
@@ -90,16 +113,23 @@ export function renderizarAgora() {
   for (const item of paraMedir) {
     tamanhos.set(item.id, { largura: item.raiz.offsetWidth, altura: item.raiz.offsetHeight });
   }
+
+  for (const funcao of aposRenderizar) funcao();
 }
 
 function criarItem(id) {
   const titulo = el('div', { class: 'card-titulo' });
   const descricao = el('div', { class: 'card-descricao' });
   const icones = el('div', { class: 'card-icones' });
+  // Alças nas bordas: arrastar uma delas até outro card cria uma conexão.
+  const alcas = LADOS_DAS_ALCAS.map((lado) => el('span', {
+    class: `alca alca-${lado}`,
+    title: 'Arraste até outro card para criar uma conexão',
+  }));
   const raiz = el('div', { class: 'card', 'data-id': id },
-    el('div', { class: 'card-corpo' }, titulo, descricao, icones),
+    el('div', { class: 'card-corpo' }, titulo, descricao, icones, alcas),
   );
-  return { id, raiz, titulo, descricao, icones, assinatura: null, X: null, Y: null, selecionado: false };
+  return { id, raiz, titulo, descricao, icones, assinatura: null, X: null, Y: null, selecionado: false, emFoco: false };
 }
 
 /** Atualiza o texto do card. Devolve true se algo mudou (precisa medir). */
@@ -128,9 +158,13 @@ function botaoDeAcao(acao, nomeIcone, dica) {
   return el('button', { class: 'card-acao', type: 'button', 'data-acao': acao, title: dica, 'aria-label': dica }, icone(nomeIcone));
 }
 
-/** Esconde a descrição quando o zoom está longe (o texto ficaria ilegível). */
+/**
+ * Faixa de zoom, usada pelo CSS: esconde a descrição quando o zoom está
+ * longe (o texto ficaria ilegível) e ajusta o tamanho das alças.
+ */
 function atualizarNivelDeDetalhe(camera) {
-  const nivel = camera.escala < 0.25 ? 'baixo' : camera.escala < 0.5 ? 'medio' : 'alto';
+  const e = camera.escala;
+  const nivel = e < 0.25 ? 'baixo' : e < 0.5 ? 'medio' : e < 1.5 ? 'alto' : 'perto';
   if (nivel !== nivelDeDetalhe) {
     nivelDeDetalhe = nivel;
     palco.dataset.detalhe = nivel;
@@ -147,6 +181,11 @@ export function tamanhoDoCard(id) {
 /** Marca visualmente o card que está sendo arrastado. */
 export function marcarArrastando(id, sim) {
   itens.get(id)?.raiz.classList.toggle('arrastando', sim);
+}
+
+/** Marca visualmente o card que vai receber a conexão sendo criada. */
+export function marcarAlvoDeConexao(id, sim) {
+  itens.get(id)?.raiz.classList.toggle('alvo-conexao', sim);
 }
 
 /** Retângulo que contém todos os cards (ou null se não há cards). */

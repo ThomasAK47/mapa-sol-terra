@@ -14,6 +14,8 @@ import { iniciarAvisos, mostrarFaixa, toast } from './avisos.js';
 import { iniciarBarra } from './barra.js';
 import * as camera from './camera.js';
 import { iniciarCards, renderizarAgora } from './cards.js';
+import { iniciarConexoes } from './conexoes.js';
+import * as editorConexao from './editor-conexao.js';
 import * as estado from './estado.js';
 import { iniciarFundo } from './fundo.js';
 import { iniciarInteracao } from './interacao.js';
@@ -35,14 +37,20 @@ async function iniciarApp() {
   camera.iniciarCamera(palco, document.getElementById('mundo'), { guardarPosicao: quantidadeTeste === null });
   iniciarFundo(document.getElementById('fundo'), document.getElementById('rotulos-zonas'));
   iniciarCards(document.getElementById('camada-cards'), palco);
+  iniciarConexoes({
+    elementoLinhas: document.getElementById('linhas-conexoes'),
+    elementoRascunho: document.getElementById('rascunho-conexao'),
+    elementoRotulos: document.getElementById('camada-rotulos-conexoes'),
+  });
   iniciarInteracao(palco);
   iniciarPainel(document.getElementById('painel'));
+  editorConexao.iniciarEditorConexao(document.getElementById('editor-conexao'));
   iniciarBarra();
   persistencia.iniciarPersistencia();
   estado.definirAoAlterar(persistencia.marcarAlterado);
 
   // Ferramentas para investigar problemas pelo console do navegador (F12).
-  window.mapaDepuracao = { estado, camera, persistencia, acoes, medirPanZoom };
+  window.mapaDepuracao = { estado, camera, persistencia, acoes, editorConexao, medirPanZoom };
 
   // 2 e 3. Modo e dados
   let dados;

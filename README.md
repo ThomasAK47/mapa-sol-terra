@@ -58,6 +58,29 @@ Um card criado e deixado vazio é descartado sozinho ao fechar o painel.
 Se o zoom e o movimento do touchpad se confundirem no seu equipamento, ajuste em
 **Opções**, o botão no canto superior direito.
 
+### Conexões
+
+O valor do mapa está nas conexões, e cada uma tem um texto dizendo **por que**
+os dois assuntos se relacionam.
+
+| Ação | Como |
+|---|---|
+| Criar uma conexão | Passe o mouse sobre um card, arraste uma das bolinhas ○ da borda até outro card, escreva o porquê e aperte Enter |
+| Cancelar a criação | Esc, enquanto escreve o texto da conexão nova |
+| Ler ou editar | Clique no texto da conexão, ou na lista "Conexões" do painel do card |
+| Inverter a direção, tirar a seta | Botões no editor da conexão |
+| Excluir | Ícone de lixeira no editor (pede confirmação) |
+| Modo foco | Clique num card: ele e suas conexões ficam em destaque. Esc ou clique no fundo para sair |
+
+- Um **"?"** sobre a linha indica uma conexão ainda sem explicação.
+- Pode haver várias conexões entre os mesmos dois cards; elas aparecem como
+  curvas separadas.
+- Com o zoom afastado, os textos das conexões somem para não poluir o mapa;
+  no modo foco, os textos em destaque continuam visíveis.
+- Ao arrastar um card ou uma conexão perto da borda da tela, o mapa anda sozinho
+  naquela direção.
+- Enter confirma o texto; Shift+Enter quebra a linha.
+
 ## Guardar uma cópia no GitHub
 
 O repositório é <https://github.com/ThomasAK47/mapa-sol-terra>. Para enviar
@@ -96,6 +119,7 @@ Envia as fotos para o GitHub. Na **primeira vez**, use `git push -u origin main`
 
 ## Teste de desempenho
 
-Abra <http://127.0.0.1:8000/?teste=150> para ver o mapa com 150 cards
-fictícios. Nada é salvo nesse modo, e um medidor de quadros por segundo aparece
-no canto da tela. Para voltar ao seu mapa, tire o `?teste=150` do endereço.
+Abra <http://127.0.0.1:8000/?teste=150> para ver o mapa com 150 cards e 300
+conexões fictícios. Nada é salvo nesse modo, e um medidor de quadros por segundo
+aparece no canto da tela. Para voltar ao seu mapa, tire o `?teste=150` do
+endereço.

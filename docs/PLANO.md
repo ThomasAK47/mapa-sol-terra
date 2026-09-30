@@ -164,6 +164,11 @@ arquivo.
   - Esc cancela a criação;
   - uma conexão sem texto ganha um "?" discreto;
   - as linhas não flutuam: as setas param a alguns pixels da borda.
+- **Acréscimos da Fase 2:**
+  - o painel do card lista as conexões dele (sentido, card do outro lado e
+    texto); um clique abre a conexão;
+  - ao arrastar perto da borda da tela, o mapa anda sozinho;
+  - as alças ficam sempre clicáveis, mesmo antes de aparecer.
 - **Estilos de linha:** pai → filho reta, fina e sem seta; conexão comum em
   curva; conexão redirecionada de filho oculto em curva tracejada.
 - **Hierarquia:**

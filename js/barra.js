@@ -6,10 +6,11 @@
 import { criarCard, enquadrarTudo, excluirCard } from './acoes.js';
 import { janelaAberta, toast } from './avisos.js';
 import { areaUtil, definirModoRoda, obterModoRoda, telaParaMundo } from './camera.js';
+import { editorDeConexaoAberto, fecharEditorConexao } from './editor-conexao.js';
 import {
-  assinar, desfazer, emGesto, podeDesfazer, podeEditar, podeRefazer, refazer, selecionar, ui,
+  assinar, desfazer, podeDesfazer, podeEditar, podeRefazer, refazer, selecionar, ui,
 } from './estado.js';
-import { cancelarArrasto } from './interacao.js';
+import { cancelarGestoAtual } from './interacao.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 import { definirIndicador, exportar, importar, salvarAgora } from './persistencia.js';
 import { digitandoEmCampo, icone } from './util.js';
@@ -155,8 +156,9 @@ function aoTeclar(evento) {
   if (ctrl || evento.altKey) return;
 
   // Teclas simples não valem quando o foco está num botão ou link (o Enter
-  // ali já "clica" no botão).
+  // ali já "clica" no botão), nem com o editor de conexão aberto.
   if (evento.target instanceof Element && evento.target.closest('button, a, [role="button"]')) return;
+  if (editorDeConexaoAberto()) return;
 
   if ((tecla === 'Delete' || tecla === 'Backspace') && ui.selecionado && podeEditar()) {
     evento.preventDefault();
@@ -171,7 +173,11 @@ function aoTeclar(evento) {
 }
 
 function aoApertarEsc() {
-  if (emGesto() && cancelarArrasto()) return;
+  if (cancelarGestoAtual()) return;
+  if (editorDeConexaoAberto()) {
+    fecharEditorConexao({ cancelar: true });
+    return;
+  }
   if (!menuOpcoes.hidden) {
     alternarMenu(false);
     return;

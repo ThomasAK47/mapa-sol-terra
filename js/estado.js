@@ -32,6 +32,7 @@ let zonasDoCache = null;
 export const ui = {
   modo: 'edicao',       // 'edicao' | 'leitura' | 'teste'
   selecionado: null,    // id do card selecionado (ou null)
+  conexaoAberta: null,  // id da conexão aberta no editor (ou null)
 };
 
 /** Os dados atuais. Leia sempre por aqui (o objeto muda após desfazer). */
@@ -105,13 +106,16 @@ function empilhar(pilha, item) {
  *   mutacao — função que recebe os dados e os modifica.
  *   agrupar — alterações seguidas com o mesmo valor aqui (ex.: digitar no
  *             mesmo campo) viram uma única ação no desfazer.
+ *   agruparSemPrazo — junta mesmo depois de uma pausa longa (usado enquanto
+ *             uma conexão recém-criada está sendo escrita).
  *   marca   — identificação opcional da ação (ver descartarUltimaSe).
  */
-export function alterar(rotulo, mutacao, { agrupar = null, marca = null } = {}) {
+export function alterar(rotulo, mutacao, { agrupar = null, agruparSemPrazo = false, marca = null } = {}) {
   if (!podeEditar() || !dados) return false;
   if (gesto) concluirGesto();
   const agora = performance.now();
-  const juntar = agrupar !== null && agrupar === ultimoGrupo && agora - ultimoInstante < JANELA_AGRUPAMENTO_MS;
+  const juntar = agrupar !== null && agrupar === ultimoGrupo &&
+                 (agruparSemPrazo || agora - ultimoInstante < JANELA_AGRUPAMENTO_MS);
   const copia = juntar ? null : structuredClone(dados);
   try {
     mutacao(dados);
@@ -252,6 +256,19 @@ export function selecionar(id) {
   notificar({ tipo: 'selecao' });
 }
 
+/** Marca qual conexão está aberta no editor (entra no modo foco). */
+export function definirConexaoAberta(id) {
+  if (ui.conexaoAberta === id) return;
+  ui.conexaoAberta = id;
+  notificar({ tipo: 'selecao' });
+}
+
+/** Procura uma conexão pelo id. */
+export function buscarConexao(id, fonte = dados) {
+  return fonte?.conexoes.find((conexao) => conexao.id === id) ?? null;
+}
+
 function corrigirSelecao() {
   if (ui.selecionado && !buscarCard(ui.selecionado)) ui.selecionado = null;
+  if (ui.conexaoAberta && !buscarConexao(ui.conexaoAberta)) ui.conexaoAberta = null;
 }

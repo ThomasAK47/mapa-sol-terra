@@ -103,6 +103,89 @@ body:not(.somente-leitura) .so-leitura { display: none !important; }
 #camada-cards { position: absolute; left: 0; top: 0; }
 
 /* ---------------------------------------------------------------------------
+   Conexões
+   ------------------------------------------------------------------------ */
+
+#camada-conexoes {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+#camada-rotulos-conexoes { position: absolute; left: 0; top: 0; }
+
+/* A espessura (stroke-width) vem do atributo do <svg>, que js/conexoes.js
+   ajusta ao zoom: um único atributo, herdado por todas as linhas. */
+.linha-conexao {
+  fill: none;
+  stroke: #8c8c8c;
+  stroke-linecap: round;
+  transition: opacity 0.15s ease;
+}
+.linha-conexao.direcional { marker-end: url(#seta); }
+.linha-conexao.em-foco { stroke: #fff; }
+.linha-conexao.em-foco.direcional { marker-end: url(#seta-destaque); }
+.seta { fill: #8c8c8c; }
+.seta-destaque { fill: #fff; }
+
+#rascunho-conexao {
+  display: none;
+  fill: none;
+  stroke: #fff;
+  marker-end: url(#seta-destaque);
+}
+#rascunho-conexao.visivel { display: inline; }
+
+.rotulo-conexao {
+  position: absolute;
+  max-width: 190px;
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid #2e2e2e;
+  border-radius: 999px;
+  background: #050505;
+  color: #a8a8a8;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.rotulo-conexao:hover { color: #fff; border-color: #6d6d6d; }
+.rotulo-conexao.vazio {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-style: dashed;
+  color: #8a8a8a;
+  font-weight: 700;
+}
+/* Em destaque: por cima dos cards. Com o zoom afastado, js/conexoes.js
+   aumenta estes textos para continuarem legíveis. */
+.rotulo-conexao.em-foco {
+  z-index: 4;
+  color: #fff;
+  border-color: #a0a0a0;
+}
+
+/* Zoom afastado: os textos somem (exceto os em destaque). */
+#palco[data-detalhe="medio"] .rotulo-conexao:not(.em-foco),
+#palco[data-detalhe="baixo"] .rotulo-conexao:not(.em-foco) { visibility: hidden; }
+
+/* Modo foco: o que não está em destaque fica esmaecido (menos durante um
+   arrasto, quando é preciso ver tudo). */
+#palco.modo-foco:not(.arrastando):not(.conectando) .card:not(.em-foco) { opacity: 0.2; }
+#palco.modo-foco:not(.arrastando):not(.conectando) .linha-conexao:not(.em-foco),
+#palco.modo-foco:not(.arrastando):not(.conectando) .rotulo-conexao:not(.em-foco) { opacity: 0.12; }
+#palco.conectando { cursor: crosshair; }
+
+/* ---------------------------------------------------------------------------
    Cards
    ------------------------------------------------------------------------ */
 
@@ -111,10 +194,12 @@ body:not(.somente-leitura) .so-leitura { display: none !important; }
   width: var(--largura-card);
   transform: translate(-50%, -50%);   /* left/top marcam o centro do card */
   cursor: grab;
+  transition: opacity 0.15s ease;
 }
 body.somente-leitura .card { cursor: pointer; }
 
 .card-corpo {
+  position: relative;
   background: var(--card-fundo);
   color: var(--card-texto);
   border-radius: var(--raio);
@@ -131,6 +216,41 @@ body.somente-leitura .card { cursor: pointer; }
 .card.selecionado .card-corpo { outline-color: rgba(255, 255, 255, 0.92); }
 .card.arrastando { z-index: 3; cursor: grabbing; }
 .card.arrastando .card-corpo { box-shadow: 0 18px 44px rgba(0, 0, 0, 0.75); }
+.card.alvo-conexao .card-corpo {
+  outline-color: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Alças: bolinhas nas bordas. Arrastar uma delas até outro card cria uma
+   conexão. Aparecem com o mouse sobre o card (ou no card selecionado). */
+.alca {
+  position: absolute;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 1.5px #fff;
+  transform: translate(-50%, -50%);
+  opacity: 0;              /* invisível, mas sempre clicável (um gesto rápido não falha) */
+  transition: opacity 0.12s ease;
+  cursor: crosshair;
+}
+/* Tamanho por faixa de zoom (js/cards.js), para não ficarem minúsculas nem
+   enormes na tela. */
+#palco[data-detalhe="perto"] .alca { width: 8px; height: 8px; box-shadow: 0 0 0 1px #fff; }
+#palco[data-detalhe="medio"] .alca { width: 24px; height: 24px; box-shadow: 0 0 0 3px #fff; }
+.alca-topo { left: 50%; top: 0; }
+.alca-direita { left: 100%; top: 50%; }
+.alca-base { left: 50%; top: 100%; }
+.alca-esquerda { left: 0; top: 50%; }
+.card:hover .alca,
+.card.selecionado .alca { opacity: 1; }
+.alca:hover { filter: invert(1); }
+body.somente-leitura .alca,
+#palco[data-detalhe="baixo"] .alca,
+#palco.arrastando .alca,
+#palco.panoramica .alca { display: none; }
 
 .card-titulo {
   font-size: 15px;
@@ -528,6 +648,41 @@ select.entrada { cursor: pointer; }
 .chips-leitura { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips-leitura .chip { padding-right: 10px; }
 
+.lista-conexoes { display: flex; flex-direction: column; gap: 6px; }
+.item-conexao {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  column-gap: 8px;
+  row-gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie-2);
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+.item-conexao:hover { border-color: #5a5a5a; }
+.item-conexao .sentido { grid-row: span 2; font-size: 13px; line-height: 1.35; color: var(--texto-3); }
+.item-conexao .outro {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-conexao .texto {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--texto-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.item-conexao .texto.vazio { color: var(--texto-3); font-style: italic; }
+
 .painel-meta {
   padding-top: 12px;
   border-top: 1px solid var(--borda);
@@ -540,6 +695,60 @@ select.entrada { cursor: pointer; }
 .leitura-descricao { margin: 0; line-height: 1.55; color: #d4d4d4; white-space: pre-wrap; overflow-wrap: anywhere; }
 .leitura-vazia { margin: 0; color: var(--texto-3); font-style: italic; }
 .leitura-zona { font-size: 12.5px; color: var(--texto-2); }
+
+/* ---------------------------------------------------------------------------
+   Editor de conexão (janelinha presa ao meio da curva)
+   ------------------------------------------------------------------------ */
+
+.editor-conexao {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 22;
+  width: 330px;
+  max-width: calc(100vw - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--superficie);
+  border: 1px solid var(--borda-forte);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
+}
+.editor-conexao-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+.editor-conexao-cabecalho strong {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--texto);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.editor-conexao-cabecalho .sentido { flex: none; color: var(--texto-3); }
+.editor-conexao textarea.entrada { min-height: 76px; }
+.editor-conexao-texto { margin: 0; font-size: 13.5px; line-height: 1.5; color: #dcdcdc; white-space: pre-wrap; overflow-wrap: anywhere; }
+.editor-conexao-acoes { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.editor-conexao-acoes .espaco { flex: 1; }
+.interruptor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+  cursor: pointer;
+  user-select: none;
+}
+.interruptor input { margin: 0; accent-color: #e9e9e9; }
 
 /* ---------------------------------------------------------------------------
    Avisos: faixas (topo) e mensagens rápidas (embaixo)

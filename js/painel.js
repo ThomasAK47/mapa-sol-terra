@@ -3,11 +3,13 @@
 //   • Modo de edição: campos editáveis. Cada alteração entra no desfazer e é
 //     salva sozinha (não há botão "salvar").
 //   • Modo somente leitura: só o conteúdo, sem campos.
+// O painel também lista as conexões do card; um clique abre a conexão.
 // (O campo "card pai" chega na Fase 3 e o de animação, na Fase 4.)
 // =============================================================================
 
 import { abrirLinkDocs, centralizarCard, descartarSeVazio, excluirCard, moverCardParaZona } from './acoes.js';
 import { areaUtil, definirMargemDireita, mundoParaTela } from './camera.js';
+import { abrirEditorConexao } from './editor-conexao.js';
 import {
   alterar, assinar, buscarCard, encerrarAgrupamento, geometria, obterDados, podeEditar, selecionar,
 } from './estado.js';
@@ -112,6 +114,7 @@ function sincronizar() {
     campos.link.value = link;
     atualizarDicaDoLink(link, campos.dicaLink, campos.abrirLink);
   }
+  preencherConexoes(campos.conexoes, card.id);
   preencherDatas(campos.datas, card);
 }
 
@@ -169,10 +172,16 @@ function construirEdicao(card) {
     atualizarDicaDoLink(link.value, dicaLink, abrirLink);
   });
 
+  const conexoes = el('div', { class: 'campo' });
+  preencherConexoes(conexoes, id);
+
   const datas = el('div', { class: 'painel-meta' });
   preencherDatas(datas, card);
 
-  campos = { titulo, descricao, contador, zona, tags, link, dicaLink, abrirLink, datas, assinaturaZonas: assinaturaDasZonas() };
+  campos = {
+    titulo, descricao, contador, zona, tags, link, dicaLink, abrirLink, conexoes, datas,
+    assinaturaZonas: assinaturaDasZonas(),
+  };
 
   return [
     el('div', { class: 'painel-cabecalho' },
@@ -189,6 +198,7 @@ function construirEdicao(card) {
         el('div', { class: 'linha' }, link, abrirLink),
         dicaLink,
       ),
+      conexoes,
       datas,
     ),
     el('div', { class: 'painel-rodape' },
@@ -234,6 +244,32 @@ function atualizarDicaDoLink(valor, dica, botaoAbrir) {
   const valido = Boolean(linkSeguro(texto));
   dica.textContent = texto && !valido ? 'O link precisa começar com https://' : '';
   botaoAbrir.disabled = !valido;
+}
+
+/** Lista as conexões do card: sentido, card do outro lado e o porquê. */
+function preencherConexoes(caixa, id) {
+  const doCard = obterDados().conexoes.filter((k) => k.de === id || k.para === id);
+  const itens = doCard.map((conexao) => {
+    const saindo = conexao.de === id;
+    const outro = buscarCard(saindo ? conexao.para : conexao.de);
+    const sentido = !conexao.direcional ? '—' : saindo ? '→' : '←';
+    const texto = conexao.texto.trim();
+    return el('button', {
+      class: 'item-conexao', type: 'button', title: 'Abrir esta conexão',
+      onclick: () => abrirEditorConexao(conexao.id),
+    },
+    el('span', { class: 'sentido', 'aria-hidden': 'true' }, sentido),
+    el('span', { class: 'outro' }, outro?.titulo.trim() || 'sem título'),
+    el('span', { class: `texto${texto ? '' : ' vazio'}` }, texto || 'sem explicação'),
+    );
+  });
+  const vazio = podeEditar()
+    ? 'Nenhuma conexão ainda. Passe o mouse sobre o card e arraste uma das bolinhas da borda até outro card.'
+    : 'Nenhuma conexão.';
+  caixa.replaceChildren(
+    el('span', { class: 'campo-rotulo' }, doCard.length ? `Conexões (${doCard.length})` : 'Conexões'),
+    itens.length ? el('div', { class: 'lista-conexoes' }, itens) : el('p', { class: 'dica' }, vazio),
+  );
 }
 
 function preencherDatas(caixa, card) {
@@ -346,9 +382,16 @@ function construirLeitura(card) {
         el('a', { class: 'botao botao-contorno', href: link, target: '_blank', rel: 'noopener noreferrer' },
           icone('documento'), 'Abrir no Google Docs', icone('externo')),
       ),
+      conexoesDaLeitura(card.id),
       el('div', { class: 'painel-meta' }, `Atualizado em ${formatarDataHora(card.atualizadoEm)}`),
     ),
   ];
+}
+
+function conexoesDaLeitura(id) {
+  const caixa = el('div', { class: 'campo' });
+  preencherConexoes(caixa, id);
+  return caixa;
 }
 
 // --- Auxiliares -------------------------------------------------------------------

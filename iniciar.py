@@ -162,7 +162,8 @@ def validar_estrutura(dados):
 def contar_cards(conteudo):
     """Quantos cards há num conteúdo JSON (0 se não der para ler)."""
     try:
-        dados = json.loads(conteudo.decode("utf-8"))
+        # "utf-8-sig" aceita também arquivos salvos com BOM (ex.: Bloco de Notas).
+        dados = json.loads(conteudo.decode("utf-8-sig"))
         return len(dados.get("cards", [])) if isinstance(dados, dict) else 0
     except (ValueError, UnicodeDecodeError, AttributeError):
         return 0

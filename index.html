@@ -51,6 +51,23 @@
   <main id="palco" aria-label="Mapa">
     <canvas id="fundo" aria-hidden="true"></canvas>
     <div id="mundo">
+      <!-- Conexões: curvas e setas (desenhadas por js/conexoes.js). -->
+      <svg id="camada-conexoes" aria-hidden="true">
+        <defs>
+          <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                  markerUnits="strokeWidth" orient="auto">
+            <path class="seta" d="M0 0L10 5L0 10z"/>
+          </marker>
+          <marker id="seta-destaque" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                  markerUnits="strokeWidth" orient="auto">
+            <path class="seta-destaque" d="M0 0L10 5L0 10z"/>
+          </marker>
+        </defs>
+        <g id="linhas-conexoes"></g>
+        <path id="rascunho-conexao" d="M0 0"/>
+      </svg>
+      <!-- Textos das conexões (atrás dos cards, exceto os em destaque). -->
+      <div id="camada-rotulos-conexoes"></div>
       <div id="camada-cards"></div>
     </div>
     <div id="rotulos-zonas" aria-hidden="true"></div>
@@ -123,8 +140,11 @@
       <dl class="atalhos">
         <div class="so-edicao"><dt>Duplo clique no fundo</dt><dd>novo card</dd></div>
         <div><dt>Duplo clique no card</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ver detalhes</dd></div>
+        <div><dt>Clique no card</dt><dd>modo foco</dd></div>
         <div><dt>Arrastar o fundo</dt><dd>mover o mapa</dd></div>
         <div class="so-edicao"><dt>Arrastar um card</dt><dd>mover o card</dd></div>
+        <div class="so-edicao"><dt>Arrastar a bolinha ○ da borda</dt><dd>nova conexão</dd></div>
+        <div><dt>Clique no texto da conexão</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ler</dd></div>
         <div class="so-edicao"><dt>Ctrl+Z · Ctrl+Shift+Z</dt><dd>desfazer · refazer</dd></div>
         <div class="so-edicao"><dt>Delete</dt><dd>excluir o card selecionado</dd></div>
         <div class="so-edicao"><dt>Enter</dt><dd>editar o card selecionado</dd></div>
@@ -137,6 +157,9 @@
 
   <!-- Painel lateral com os detalhes do card (montado por js/painel.js). -->
   <aside id="painel" aria-label="Detalhes do card" aria-hidden="true"></aside>
+
+  <!-- Janelinha para ler/editar uma conexão (montada por js/editor-conexao.js). -->
+  <div id="editor-conexao" class="editor-conexao" role="dialog" aria-label="Conexão" hidden></div>
 
   <!-- Avisos: faixas persistentes no topo e mensagens rápidas embaixo. -->
   <div id="faixas"></div>

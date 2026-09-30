@@ -8,7 +8,7 @@ import { confirmar, toast } from './avisos.js';
 import { enquadrar, irPara, obterCamera } from './camera.js';
 import { limitesDosCards } from './cards.js';
 import {
-  alterar, buscarCard, descartarUltimaSe, geometria, obterDados, selecionar, ui,
+  alterar, buscarCard, buscarConexao, descartarUltimaSe, geometria, obterDados, selecionar, ui,
 } from './estado.js';
 import { SOL, TERRA } from './fundo.js';
 import { definirPosicaoAbsoluta, novoCard, posicaoAbsoluta } from './modelo.js';
@@ -126,4 +126,76 @@ export function abrirLinkDocs(id) {
   const url = linkSeguro(card?.linkDocs);
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
   else toast('O link do Docs deste card não é válido (ele precisa começar com https://).');
+}
+
+// --- Conexões ---------------------------------------------------------------------
+//
+// Enquanto uma conexão recém-criada está aberta no editor ("nova"), tudo o
+// que se faz com ela (digitar, inverter, tirar a seta) entra na mesma ação do
+// desfazer que a criou. Assim, um Ctrl+Z depois desfaz a conexão inteira, e o
+// Esc no editor a descarta como se nunca tivesse existido.
+
+function agrupamento(id, nova, tipo = null) {
+  if (nova) return { agrupar: `conexao-nova:${id}`, agruparSemPrazo: true };
+  return { agrupar: tipo ? `${tipo}:${id}` : null };
+}
+
+function alterarConexao(id, rotulo, mudanca, opcoes) {
+  alterar(rotulo, (d) => {
+    const conexao = d.conexoes.find((k) => k.id === id);
+    if (!conexao) return;
+    mudanca(conexao);
+    conexao.atualizadoEm = agoraISO();
+  }, opcoes);
+}
+
+/** Cria uma conexão (direcional, sem texto) de um card para outro. Devolve o id. */
+export function criarConexao(de, para) {
+  if (de === para || !buscarCard(de) || !buscarCard(para)) return null;
+  const id = gerarId('x', new Set(obterDados().conexoes.map((k) => k.id)));
+  const agora = agoraISO();
+  const ok = alterar('Criar conexão', (d) => {
+    d.conexoes.push({ id, de, para, texto: '', direcional: true, criadoEm: agora, atualizadoEm: agora });
+  }, { marca: `criar-conexao:${id}`, ...agrupamento(id, true) });
+  return ok ? id : null;
+}
+
+export function editarTextoDaConexao(id, texto, { nova = false } = {}) {
+  if (buscarConexao(id)?.texto === texto) return;
+  alterarConexao(id, 'Editar texto da conexão', (k) => { k.texto = texto; }, agrupamento(id, nova, 'texto-conexao'));
+}
+
+/** Troca o sentido da seta (de ↔ para). */
+export function inverterConexao(id, { nova = false } = {}) {
+  alterarConexao(id, 'Inverter conexão', (k) => { [k.de, k.para] = [k.para, k.de]; }, agrupamento(id, nova));
+}
+
+/** Liga ou desliga a seta (conexão com ou sem direção). */
+export function definirDirecional(id, direcional, { nova = false } = {}) {
+  if (buscarConexao(id)?.direcional === direcional) return;
+  alterarConexao(id, direcional ? 'Pôr seta na conexão' : 'Tirar seta da conexão',
+    (k) => { k.direcional = direcional; }, agrupamento(id, nova));
+}
+
+/** Descarta uma conexão recém-criada (Esc no editor). */
+export function descartarConexaoNova(id) {
+  if (descartarUltimaSe(`criar-conexao:${id}`)) return;
+  // Se outra ação aconteceu no meio, remove do jeito comum (pode ser desfeito).
+  if (buscarConexao(id)) alterar('Cancelar conexão', (d) => { d.conexoes = d.conexoes.filter((k) => k.id !== id); });
+}
+
+/** Pede confirmação e exclui a conexão. */
+export async function excluirConexao(id) {
+  const conexao = buscarConexao(id);
+  if (!conexao) return false;
+  const titulo = (idCard) => buscarCard(idCard)?.titulo.trim() || 'sem título';
+  const texto = conexao.texto.trim();
+  const linhas = [`${titulo(conexao.de)} ${conexao.direcional ? '→' : '—'} ${titulo(conexao.para)}`];
+  if (texto) linhas.push(`“${texto.length > 140 ? `${texto.slice(0, 140)}…` : texto}”`);
+  linhas.push('Dá para desfazer com Ctrl+Z.');
+  const ok = await confirmar({ titulo: 'Excluir esta conexão?', mensagem: linhas.join('\n'), botaoOk: 'Excluir', perigo: true });
+  if (!ok) return false;
+  alterar('Excluir conexão', (d) => { d.conexoes = d.conexoes.filter((k) => k.id !== id); });
+  toast('Conexão excluída. Ctrl+Z desfaz.');
+  return true;
 }
