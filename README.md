@@ -162,9 +162,11 @@ o primeiro.
 
 ### Efeitos visuais
 
-O fundo tem estrelas, o brilho do Sol "respira" devagar, riscos claros de vento
-solar saem do Sol para a direita, e os cards flutuam alguns pixels. É só
-decoração: a posição salva dos cards não muda, e nada disso vai para o arquivo.
+O fundo tem estrelas, o brilho do Sol "respira" devagar, e os cards flutuam
+alguns pixels. Riscos claros de vento solar saem do Sol em todas as direções;
+perto da Terra, eles contornam o primeiro anel do campo, sem entrar nele. É só
+decoração, um desenho estilizado: a posição salva dos cards não muda, e nada
+disso vai para o arquivo.
 
 - **Botão de efeitos** (o ícone de vento, ao lado de **Opções**): liga e desliga
   os efeitos animados. As estrelas, que não se mexem, continuam.

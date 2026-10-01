@@ -16,6 +16,7 @@ import { iniciarBarra } from './barra.js';
 import * as busca from './busca.js';
 import * as camera from './camera.js';
 import { iniciarCards, renderizarAgora } from './cards.js';
+import * as ceu from './ceu.js';
 import { iniciarConexoes } from './conexoes.js';
 import * as editorConexao from './editor-conexao.js';
 import * as efeitos from './efeitos.js';
@@ -65,7 +66,7 @@ async function iniciarApp() {
   // Ferramentas para investigar problemas pelo console do navegador (F12).
   window.mapaDepuracao = {
     estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, efeitos,
-    zonas, medirPanZoom,
+    zonas, ceu, medirPanZoom,
   };
 
   // 2 e 3. Modo e dados

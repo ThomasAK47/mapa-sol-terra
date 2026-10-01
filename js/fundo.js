@@ -41,6 +41,7 @@ let assinaturaZonas = '';
 let assinaturaLarguras = '';    // para redesenhar quando uma zona muda de largura
 let linhasDeCampo = null;       // pontos relativos ao centro da Terra
 let limitesLinhasDeCampo = null;
+let primeiroAnel = null;        // forma do anel mais externo do campo, do lado do Sol ({ xm, A, B })
 
 export function iniciarFundo(elementoCanvas, elementoRotulos) {
   canvas = elementoCanvas;
@@ -48,6 +49,7 @@ export function iniciarFundo(elementoCanvas, elementoRotulos) {
   camadaRotulos = elementoRotulos;
   linhasDeCampo = calcularLinhasDeCampo(TERRA.raio);
   limitesLinhasDeCampo = calcularLimites(linhasDeCampo);
+  primeiroAnel = calcularPrimeiroAnel(linhasDeCampo);
 
   new ResizeObserver(redimensionar).observe(canvas);
   aoMudarCamera(desenharFundo);                 // já estamos dentro do quadro
@@ -107,7 +109,12 @@ export function desenharFundo() {
   desenharEstrelas(contexto, largura, altura, pixelRatio);
   desenharCoroa(cam, geo.inicio, tempo);
   if (efeitosLigados()) {
-    desenharVento(contexto, largura, altura, pixelRatio, tempo, geo.inicio * cam.escala + cam.tx);
+    // O vento sai do Sol em todas as direções e contorna o primeiro anel do
+    // campo da Terra (o "escudo"), sem entrar nele.
+    desenharVento(contexto, cam, largura, altura, {
+      sol: { X: geo.inicio, Y: 0, raio: SOL.raio },
+      escudo: { X: geo.fim, Y: 0, ...primeiroAnel },
+    });
   }
   desenharSol(cam, geo.inicio);
   desenharTerra(cam, geo.fim);
@@ -287,6 +294,36 @@ function calcularLinhasDeCampo(R) {
     }
   }
   return linhas;
+}
+
+/**
+ * A forma do primeiro anel do campo (a linha mais externa) do lado do Sol,
+ * para o vento solar contorná-lo (js/ceu.js). Do ponto mais próximo do Sol
+ * (o "nariz") até o ponto mais alto, o anel é quase meia elipse:
+ *   xm — posição x do ponto mais alto (centro da elipse), relativa à Terra;
+ *   A  — distância horizontal do nariz até xm;
+ *   B  — altura máxima do anel.
+ */
+function calcularPrimeiroAnel(linhas) {
+  let anel = linhas[0];
+  let nariz = Infinity;
+  for (const linha of linhas) {
+    for (let i = 0; i < linha.length; i += 2) {
+      if (linha[i] < nariz) {
+        nariz = linha[i];
+        anel = linha;
+      }
+    }
+  }
+  let B = 0;
+  let xm = 0;
+  for (let i = 0; i < anel.length; i += 2) {
+    if (Math.abs(anel[i + 1]) > B) {
+      B = Math.abs(anel[i + 1]);
+      xm = anel[i];
+    }
+  }
+  return { xm, A: xm - nariz, B };
 }
 
 function calcularLimites(linhas) {

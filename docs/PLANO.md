@@ -213,7 +213,7 @@ arquivo.
   - **Estrelas:** não piscam e ficam sempre visíveis. Ao arrastar o mapa, elas
     se deslocam 4% do movimento, para dar profundidade.
   - **Vento solar:** riscos claros e discretos, da esquerda para a direita, só à
-    direita do Sol.
+    direita do Sol. (Depois passou a ser radial; veja as melhorias, abaixo.)
   - **Coroa do Sol:** um halo e manchas de brilho que crescem e encolhem
     devagar.
   - **Flutuação:** cada card sobe e desce até 2,5 px, com ritmo próprio. Ela
@@ -250,6 +250,10 @@ arquivo.
       vizinha e nada sai do lugar (não estava no pedido; foi incluído para uma
       zona criada por engano não ficar sem saída);
     - uma zona não encolhe além dos cards dela.
+  - **Vento solar radial:** as partículas saem do Sol em todas as direções e,
+    perto da Terra, contornam o primeiro anel do campo sem entrar nele. É um
+    desenho estilizado, pedido pela pessoa usuária, com a condição de não pesar
+    na página: medido, o custo por quadro não mudou.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

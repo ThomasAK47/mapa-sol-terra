@@ -39,8 +39,16 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   flutuação dos cards), botão de efeitos, pinça 50% mais sensível, README e
   CLAUDE.md finais, passo a passo do GitHub Pages
 
-**Todas as fases do plano foram entregues.** O que vem depois é decidido pela
-pessoa usuária:
+**Todas as fases do plano foram entregues.** Depois delas vieram melhorias
+pedidas pela pessoa usuária, um commit para cada:
+
+- uma única alça de conexão, embaixo do card;
+- tamanho dos cards: alça no canto do card (vale para os descendentes) e barra
+  "Tamanho de todos os cards" em Opções;
+- zonas editáveis: nome, descrição, largura, zona nova e exclusão;
+- vento solar radial, contornando o primeiro anel do campo da Terra.
+
+O que vem depois também é decidido por ela:
 
 - **Ajustes de layout:** ela pediu para deixá-los para depois das fases. Espere
   o pedido dela; não proponha mudanças visuais grandes por conta própria.
@@ -77,7 +85,7 @@ pessoa usuária:
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
 | `js/camera.js` | Pan/zoom, roda/touchpad/pinça (sensibilidades em constantes no topo; `GANHO_DA_PINCA = 1.5`, a pedido), área útil, posição guardada |
 | `js/fundo.js` | Canvas: estrelas, coroa do Sol (`desenharCoroa`), vento solar, Sol, Terra com linhas de campo, limites das zonas. Cria e posiciona os nomes das zonas e as marcas de largura (`.rotulo-zona`, `.alca-zona`, com `data-zona`). Redesenha a cada mudança da câmera, quando uma zona muda e, com os efeitos ligados, a cada passo do relógio dos efeitos |
-| `js/ceu.js` | Estrelas (estáticas, com paralaxe de 4% só no arrasto) e partículas de vento solar (espaço da tela, dando a volta; só à direita do Sol). Só decoração |
+| `js/ceu.js` | Estrelas (estáticas, com paralaxe de 4% só no arrasto) e partículas de vento solar (espaço do mapa; saem do Sol em todas as direções e contornam o primeiro anel do campo da Terra). Só decoração |
 | `js/efeitos.js` | Liga/desliga os efeitos (`definirEfeitos`, guardado no localStorage; padrão desligado se o sistema pede menos movimento), classe `efeitos-ligados` no `<body>`, relógio a 30 passos/s (`tempoDosEfeitos`, `aoPassoDosEfeitos`), parado com a janela de animação aberta |
 | `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, aplica o tamanho final no `transform` de cada card, botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica o tamanho final), faixa de zoom (`data-detalhe`), alça de conexão (uma, embaixo) e alça de tamanho (canto inferior direito), ritmo da flutuação de cada card (`--flut-duracao`, `--flut-atraso`, classe `flut-a/b/c`, a partir do id). Chama `aoRenderizarCards` no fim |
 | `js/conexoes.js` | Linhas pai → filho; conexões como curvas SVG (Bézier quadrática, leque por par de cards **visíveis**), setas, textos no meio; conexões de cards escondidos redirecionadas ao representante (tracejadas; várias viram "N conexões", com `data-expandir`); linha provisória; espessura constante na tela |
@@ -226,9 +234,20 @@ nos dados.
   0,1 ms de JavaScript.
 - **Estrelas:** sempre visíveis, sem piscar. Deslocam-se 4% do que o mapa é
   arrastado; o zoom não as move (`acompanharCamera` só soma arrastos).
-- **Vento solar:** riscos no espaço da tela, que dão a volta nas bordas. Só
-  aparecem à direita do centro do Sol e surgem aos poucos. O Sol e a Terra,
-  desenhados depois, cobrem o que passa atrás deles.
+- **Vento solar** (pedido da pessoa usuária: radial e desviando no primeiro
+  anel do campo):
+  - até 300 partículas no espaço do mapa. Cada uma se afasta do centro do Sol
+    em linha reta, some depois de alguns segundos, e outra nasce num ponto da
+    tela ou na borda do Sol. Assim a quantidade na tela é parecida em qualquer
+    zoom, e a velocidade é constante na tela;
+  - o "escudo" é o primeiro anel do campo da Terra: meia elipse do lado do Sol
+    mais duas retas horizontais. Os parâmetros saem do próprio desenho das
+    linhas de campo (`calcularPrimeiroAnel`, em `js/fundo.js`), com desvio de
+    0,5%. Mudou o desenho das linhas, o escudo acompanha;
+  - junto ao escudo, a partícula perde a parte do movimento que entraria nele e
+    escorrega por fora. Se mesmo assim entrar, é devolvida à borda;
+  - o custo por redesenho do fundo continua abaixo de 0,1 ms;
+  - `ceu.particulasDoVento()` devolve as partículas vivas, para testes.
 - **Coroa:** um halo que "respira" e cinco manchas de brilho esfumado
   (`LOBOS_DA_COROA`). Um contorno preenchido não serve: fica com borda dura.
 - **Flutuação dos cards:** animação CSS de `translate` (`flutuar-a/b/c`), com o
