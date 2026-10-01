@@ -10,6 +10,11 @@
       "arquivo": "magnetopausa.html",
       "titulo": "Magnetopausa: equilíbrio de pressões",
       "descricao": "Onde a pressão do vento solar se iguala à pressão magnética do campo da Terra. De longe, a magnetopausa inteira; de perto, a conta em cinco passos."
+    },
+    {
+      "arquivo": "geomagnetico-1-campo-num-ponto.html",
+      "titulo": "Campo geomagnético 1: o campo num ponto",
+      "descricao": "A Terra como um ímã em barra: como a intensidade do campo muda com a distância e com a latitude magnética, as duas partes da seta do campo e a agulha da bússola."
     }
   ]
 }

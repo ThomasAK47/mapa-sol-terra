@@ -47,8 +47,8 @@ pedidas pela pessoa usuária, um commit para cada:
   "Tamanho de todos os cards" em Opções;
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
 - vento solar radial, contornando o primeiro anel do campo da Terra;
-- primeira animação de verdade: `animacoes/magnetopausa.html` (veja "Contrato
-  das animações").
+- animações de verdade: `animacoes/magnetopausa.html` e a série do campo
+  geomagnético, em três partes (veja "Contrato das animações").
 
 O que vem depois também é decidido por ela:
 
@@ -410,6 +410,30 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - Para testar pelo Edge sem janela: dentro do iframe, `estado`,
     `mostrarVisao(true)` e `mostrarPasso(n)` são acessíveis pelo protocolo de
     depuração (são do escopo global do script).
+- **Campo geomagnético, em três animações** (a divisão foi escolhida pela pessoa
+  usuária; a física vem da descrição dela, que segue as equações 5.11 a 5.18
+  do livro que ela estuda):
+  1. `geomagnetico-1-campo-num-ponto.html` (feita): o campo de dipolo num
+     ponto. De longe, a Terra como um ímã em barra, com um ponto para arrastar
+     e a curva de mesma intensidade. De perto, o desenho gira até "para fora da
+     Terra" ficar para cima, e a conta vem em cinco passos: M/r³,
+     √(1 + 3 sen² λ), as partes B_r e B_λ, Pitágoras e a agulha da bússola.
+     Valores na seção 2 do script: 0,31 gauss = 31 000 nT no equador, ímã
+     inclinado 11°. A inclinação da agulha (tan = |B_r|/B_λ) foi tirada das duas
+     partes, não do livro.
+  2. As linhas de campo (a fazer): r = r₀·cos² λ, onde cada linha toca o chão,
+     a faixa de 65° a 72° (oval auroral e índice AE).
+  3. Além do dipolo (a fazer): dipolo deslocado e Atlântico Sul, harmônicos
+     esféricos, IGRF, onde cada modelo vale. **Antes de fazer**, confirme com
+     ela a queda com a distância: o texto dela diz R^(−(n+1)) e também que o
+     dipolo cai com R³ (normalmente n+1 é do potencial; o campo cai com n+2).
+- **Formato das animações com física** (aprovado na magnetopausa): duas visões
+  ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
+  barra de controles embaixo do desenho, conta em passos (fórmula, números de
+  agora, resultado, legenda). Cada arquivo é independente: o estilo é copiado,
+  não compartilhado.
+  - Com a mesma ideia de teste: `estado`, `mostrarVisao` e `mostrarPasso` no
+    escopo global.
 - **Manifesto:** `animacoes/manifesto.json`, no formato
   `{ "animacoes": [{ "arquivo", "titulo", "descricao" }] }` (também aceita só a
   lista). Outras chaves, como `"leia-me"`, são ignoradas.

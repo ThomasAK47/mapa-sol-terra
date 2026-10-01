@@ -1,0 +1,1599 @@
+<!doctype html>
+<!--
+  =============================================================================
+  geomagnetico-1-campo-num-ponto.html: animação do Mapa de Estudos Sol–Terra.
+  Primeira de três sobre o campo geomagnético:
+    1. o campo num ponto (esta);  2. as linhas de campo;  3. além do dipolo.
+
+  O que mostra: o campo de dipolo da Terra, visto num ponto.
+    • De longe: a Terra como um ímã em barra, com as linhas de campo. O ponto
+      pode ser arrastado; a curva tracejada passa por onde o campo tem a
+      mesma intensidade que no ponto.
+    • De perto: a conta em cinco passos, no ponto escolhido: a queda com a
+      distância, o efeito da latitude, as duas partes da seta, Pitágoras e a
+      agulha da bússola.
+
+  A física segue a descrição escrita por quem mantém o mapa (equações 5.11 a
+  5.13 e 5.15 do livro que ela estuda):
+    intensidade:          B = (M/r³)·√(1 + 3 sen² λ)
+    parte radial:         B_r = −2·M·sen λ / r³
+    parte horizontal:     B_λ = M·cos λ / r³
+    em raios da Terra:    M/r³ = 0,31 gauss / R³   (0,31 G = 31 000 nT)
+  A inclinação da agulha é só o ângulo da seta com o horizontal, tirado das
+  duas partes: tan(inclinação) = |B_r| / B_λ.
+
+  Todos os valores ficam na seção 2 do script.
+  Feita no formato de animacoes/magnetopausa.html, seguindo animacoes/CONTRATO.md.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campo geomagnético 1: o campo num ponto</title>
+  <style>
+    /* Cores: branco e cinzas, mais uma cor com significado: azul = campo magnético da Terra. */
+    :root {
+      --campo: #86b9ff;
+      --texto: #ececec;
+      --texto-2: #a9a9a9;
+      --texto-3: #747474;
+      --borda: #2b2b2b;
+      --borda-forte: #3d3d3d;
+      --fonte-mat: Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+      --largura-painel: clamp(300px, 34vw, 420px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--texto);
+      font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; color: inherit; }
+    sub, sup { line-height: 0; }
+    [hidden] { display: none !important; }
+
+    /* O desenho ocupa a área inteira. Por cima dele ficam o título, o painel
+       de explicação (à direita) e a barra de controles (embaixo do desenho). */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .topo {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      max-width: calc(100% - var(--largura-painel) - 52px);
+      pointer-events: none;
+      text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000;
+    }
+    .topo h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .topo p { margin: 2px 0 0; font-size: 12.5px; color: var(--texto-2); }
+    .curto { display: none; }          /* versão curta de um texto, para telas estreitas (troca com .longo) */
+    .campo { color: var(--campo); }
+
+    /* ---- Painel de explicação ---- */
+    #painel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      bottom: 12px;
+      width: var(--largura-painel);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+      overflow: hidden;
+    }
+    .visoes {
+      flex: none;
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+    .visoes button {
+      flex: 1;
+      height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .visoes button:hover { color: var(--texto); }
+    .visoes button.ativo { background: #ededed; color: #000; }
+    .conteudo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+    /* Visão de longe: resumo. */
+    #resumo h2 { margin: 2px 0 6px; font-size: 15px; font-weight: 600; }
+    #resumo p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    #resumo p b { color: var(--texto); font-weight: 600; }
+    .dica { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    .leituras { margin: 0; border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .leituras div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 10px; }
+    .leituras div + div { border-top: 1px solid var(--borda); }
+    .leituras dt { font-size: 12px; color: var(--texto-2); }
+    .leituras dd { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* Visão de perto: os cinco passos da conta. */
+    #passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .passo { border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .passo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .passo-titulo:hover { color: var(--texto); }
+    .numero {
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      font-size: 11.5px;
+    }
+    .passo.ativo { border-color: #5a5a5a; background: #131313; }
+    .passo.ativo .passo-titulo { color: #fff; cursor: default; }
+    .passo.ativo .numero { background: #ededed; border-color: #ededed; color: #000; }
+    .passo-corpo { display: none; padding: 0 12px 12px; }
+    .passo.ativo .passo-corpo { display: block; }
+
+    /* Fórmulas: letras em itálico, como num livro. */
+    .formula { font-family: var(--fonte-mat); font-size: 19px; line-height: 1.55; white-space: nowrap; }
+    .formula.pequena { font-size: 16px; }
+    .formula.central { text-align: center; padding: 2px 0 10px; font-size: 20px; }
+    .formula small { font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--texto-3); margin-right: 8px; }
+    .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.12em; line-height: 1.15; }
+    .fr > span:first-child { padding: 0 0.22em 0.04em; border-bottom: 1px solid currentColor; }
+    .fr > span:last-child { padding: 0.04em 0.22em 0; }
+    /* Ao abrir um passo, a fórmula "se escreve" da esquerda para a direita;
+       logo depois aparecem a conta com os números e o resultado. */
+    @keyframes escrever { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6px 0 0); } }
+    @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .passo.ativo .formula { animation: escrever 0.9s ease-out both; }
+    .passo.ativo .conta { animation: surgir 0.4s ease-out 0.6s both; }
+    .passo.ativo .valor { animation: surgir 0.4s ease-out 0.85s both; }
+    .conta { margin-top: 5px; font-size: 12.5px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+    .valor { margin-top: 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .barras + .valor { margin-top: 8px; }
+    .conta sup, .valor sup, .legenda sup { font-size: 0.72em; }
+    .explicacao { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto-2); }
+    /* O que é cada letra, com o valor de agora. */
+    .legenda { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 9px; font-size: 12px; line-height: 1.45; color: var(--texto-2); }
+    .legenda dt { font-family: var(--fonte-mat); font-style: italic; font-size: 14px; line-height: 1.25; color: var(--texto); white-space: nowrap; }
+    .legenda dt sub { font-style: normal; }
+    .legenda dt.unidade { font-family: inherit; font-style: normal; font-size: 12px; line-height: 1.45; }
+    .legenda dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+    /* Barras para comparar valores. */
+    .barras { margin-top: 10px; display: grid; gap: 6px; }
+    .barra { display: grid; grid-template-columns: 74px 1fr 78px; align-items: center; gap: 8px; font-size: 12px; }
+    .barra .trilho { height: 8px; border-radius: 4px; background: #1d1d1d; overflow: hidden; }
+    .barra .nivel { display: block; height: 100%; border-radius: 4px; }
+    .barra .nivel.campo { background: var(--campo); }
+    .barra .num { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; }
+
+    /* Rodapé do painel: o convite para ver de perto, ou a troca de passo. */
+    .rodape, .navegacao { flex: none; }
+    .navegacao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .navegacao .botao { padding: 0 8px; gap: 2px; }
+    #contador-de-passos { font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+    .pontos { display: none; gap: 6px; }
+    .pontos button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pontos button:hover { color: #fff; border-color: #6a6a6a; }
+    .pontos button.ativo { background: #ededed; border-color: #ededed; color: #000; cursor: default; }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .botao:hover { background: #1b1b1b; }
+    .botao:disabled { opacity: 0.35; cursor: default; background: transparent; }
+    .botao svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .botao.principal { background: #ededed; border-color: #ededed; color: #000; font-weight: 600; }
+    .botao.principal:hover { background: #fff; }
+    .botao.principal:disabled { background: #ededed; }
+    .botao.largo { width: 100%; height: 36px; }
+    .nota { flex: none; margin: 0; font-size: 11px; line-height: 1.45; color: var(--texto-3); }
+
+    /* ---- Controles: uma barra embaixo do desenho, à esquerda do painel ---- */
+    .controles {
+      position: fixed;
+      left: 12px;
+      right: calc(var(--largura-painel) + 32px);
+      bottom: 12px;
+      max-width: 640px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+      align-items: center;
+      gap: 8px 20px;
+      padding: 9px 14px 10px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+    }
+    .controle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; font-size: 12.5px; color: var(--texto-2); }
+    .controle .nome { white-space: nowrap; overflow: hidden; }
+    .controle .nome i { font-family: var(--fonte-mat); font-size: 15px; color: var(--texto); margin-right: 5px; }
+    .controle .nome small { font-size: 12px; }
+    .controle output { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .controle input { grid-column: 1 / -1; }
+    input[type="range"] { width: 100%; min-width: 0; height: 16px; margin: 0; accent-color: #ededed; cursor: pointer; }
+    .botoes { display: flex; gap: 8px; }
+    #bt-pausar { min-width: 84px; }
+
+    /* Só uma das duas partes do conteúdo aparece de cada vez. */
+    body:not(.perto) .so-perto { display: none !important; }
+    body.perto .so-longe { display: none !important; }
+
+    /* Próprio desta animação. */
+    .passo-corpo .formula + .valor { margin-top: 0; }
+    .passo-corpo .valor + .formula { margin-top: 6px; }
+
+    /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 5 para trocar ---- */
+    @media (max-height: 700px) {
+      .passo:not(.ativo) { display: none; }
+      .pontos { display: flex; }
+      #contador-de-passos { display: none; }
+    }
+    @media (max-height: 540px) {
+      .dica { display: none; }
+    }
+    @media (max-height: 520px) {
+      .nota { display: none; }
+    }
+    @media (max-height: 460px) {
+      #painel { top: 8px; bottom: 8px; padding: 12px; gap: 10px; }
+      .controles { bottom: 8px; }
+    }
+    /* ---- Janelas mais estreitas: a barra de controles e o painel encolhem ---- */
+    @media (max-width: 1180px) {
+      .controle .nome small { display: none; }
+    }
+    @media (max-width: 1060px) {
+      .navegacao .rotulo { display: none; }
+      .navegacao .botao { width: 34px; padding: 0; }
+    }
+    @media (max-width: 1000px) and (max-height: 700px) {
+      .dica { display: none; }
+    }
+    @media (max-width: 1000px) and (max-height: 640px) {
+      .nota { display: none; }
+    }
+    @media (max-width: 920px) {
+      .controles { gap: 8px 14px; }
+      #bt-pausar { min-width: 76px; }
+    }
+    @media (max-width: 860px) {
+      .longo { display: none; }
+      .curto { display: inline; }
+    }
+
+    /* ---- Telas estreitas (ou muito baixas): tudo num painel compacto, embaixo ---- */
+    @media (max-width: 760px), (max-height: 380px) {
+      :root { --largura-painel: 0px; }
+      .topo { left: 12px; top: 8px; max-width: calc(100% - 24px); }
+      .topo h1 { font-size: 13px; }
+      .topo p { font-size: 11.5px; }
+      #painel {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 62%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .visoes { grid-column: 1; grid-row: 1; }
+      body:not(.perto) .visoes { grid-column: 1 / -1; }
+      .navegacao { grid-column: 2; grid-row: 1; }
+      .navegacao .botao { width: 32px; padding: 0; }
+      .navegacao .rotulo, .pontos, #contador-de-passos { display: none; }
+      .conteudo { grid-column: 1 / -1; grid-row: 2; }
+      .controles {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 3;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 8px 10px;
+        align-items: end;
+      }
+      .passo:not(.ativo) { display: none; }
+      .passo, .passo.ativo { border: 0; background: transparent; }
+      .passo-titulo { padding: 0 0 2px; }
+      .passo-corpo { padding: 0; }
+      .numero { display: none; }
+      .formula { font-size: 16px; }
+      .formula.central { padding: 0 0 6px; font-size: 16px; text-align: left; }
+      .explicacao, .legenda, .conta, .barras, .nota, .rodape, #resumo h2, #resumo p { display: none; }
+      .valor, .barras + .valor { margin-top: 2px; }
+      .leituras { margin: 0; }
+      .leituras div { padding: 5px 8px; }
+      .leituras dd { font-size: 12.5px; }
+      .controle { font-size: 11.5px; gap: 0 4px; }
+      .controle .nome small { display: none; }
+      #bt-pausar { min-width: 0; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .topo p, .passo-titulo, .formula.central, .leituras div:first-child { display: none; }
+      .leituras div:nth-child(2) { border-top: 0; }
+      .valor { font-size: 12px; }
+    }
+    @media (max-width: 420px) {
+      .passo .formula small { display: none; }
+      .formula { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .passo.ativo .formula, .passo.ativo .conta, .passo.ativo .valor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="topo">
+    <h1>Campo geomagnético<span class="longo">: quanto vale e para onde aponta</span></h1>
+    <p id="subtitulo"></p>
+  </div>
+
+  <aside id="painel" aria-label="Explicação e controles">
+    <div class="visoes" role="group" aria-label="Visão">
+      <button id="bt-longe" type="button" class="ativo" aria-pressed="true">De longe</button>
+      <button id="bt-perto" type="button" aria-pressed="false">De perto</button>
+    </div>
+
+    <div class="conteudo">
+      <!-- Visão de longe -->
+      <section id="resumo" class="so-longe">
+        <h2>A Terra como um ímã</h2>
+        <p>Perto da superfície, a Terra se comporta aproximadamente como um <b>ímã em barra</b> no centro do
+          planeta, inclinado uns 11° em relação ao eixo de rotação. A intensidade do
+          <span class="campo">campo</span> depende da distância ao centro, <i>r</i>, e da latitude
+          magnética, <i>λ</i>:</p>
+        <div class="formula central campo">
+          <i>B</i> = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(1 + 3 sen<sup>2</sup> <i>λ</i>)
+        </div>
+        <dl class="leituras">
+          <div><dt>Distância ao centro da Terra</dt><dd id="l-distancia"></dd></div>
+          <div><dt>Latitude magnética</dt><dd id="l-latitude"></dd></div>
+          <div><dt>Intensidade do campo no ponto</dt><dd id="l-campo"></dd></div>
+        </dl>
+      </section>
+
+      <!-- Visão de perto: a conta em cinco passos. Em cada um: a fórmula, a conta
+           com os números de agora, o resultado e o que é cada letra. -->
+      <ol id="passos" class="so-perto">
+        <li class="passo" data-passo="0">
+          <button class="passo-titulo" type="button"><span class="numero">1</span>A queda com a distância</button>
+          <div class="passo-corpo">
+            <div class="formula campo"><span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span> =
+              <span class="fr"><span>0,31 G</span><span><i>R</i><sup>3</sup></span></span></div>
+            <div class="conta" id="conta-0"></div>
+            <div class="valor" id="valor-0"></div>
+            <p class="explicacao" id="explicacao-0"></p>
+            <dl class="legenda">
+              <dt>M</dt><dd>momento de dipolo: a "força" do ímã</dd>
+              <dt>r</dt><dd>distância ao centro da Terra; <i>R</i> = <i>r</i>/<i>R</i><sub>E</sub> é a mesma distância em raios da Terra</dd>
+              <dt class="unidade">0,31 G</dt><dd id="leg-gauss"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="1">
+          <button class="passo-titulo" type="button"><span class="numero">2</span>O efeito da latitude</button>
+          <div class="passo-corpo">
+            <div class="formula campo">√(1 + 3 sen<sup>2</sup> <i>λ</i>)</div>
+            <div class="conta" id="conta-1"></div>
+            <div class="valor" id="valor-1"></div>
+            <div class="barras">
+              <div class="barra"><span>no equador</span><span class="trilho"><span class="nivel campo" id="barra-equador"></span></span><span class="num" id="num-equador"></span></div>
+              <div class="barra"><span class="campo">aqui</span><span class="trilho"><span class="nivel campo" id="barra-aqui"></span></span><span class="num" id="num-aqui"></span></div>
+              <div class="barra"><span>no polo</span><span class="trilho"><span class="nivel campo" id="barra-polo"></span></span><span class="num" id="num-polo"></span></div>
+            </div>
+            <p class="explicacao">No equador (<i>λ</i> = 0) o fator vale 1; no polo (<i>λ</i> = 90°) vale √4 = 2. À mesma
+              distância, o campo nos polos é o dobro do campo no equador.</p>
+            <dl class="legenda">
+              <dt>λ</dt><dd id="leg-latitude"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="2">
+          <button class="passo-titulo" type="button"><span class="numero">3</span>As duas partes da seta</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo"><i>B</i><sub>r</sub> = −<span class="fr"><span>2·<i>M</i>·sen <i>λ</i></span><span><i>r</i><sup>3</sup></span></span></div>
+            <div class="valor" id="valor-2r"></div>
+            <div class="formula pequena campo"><i>B</i><sub>λ</sub> = <span class="fr"><span><i>M</i>·cos <i>λ</i></span><span><i>r</i><sup>3</sup></span></span></div>
+            <div class="valor" id="valor-2l"></div>
+            <p class="explicacao" id="explicacao-2"></p>
+          </div>
+        </li>
+        <li class="passo" data-passo="3">
+          <button class="passo-titulo" type="button"><span class="numero">4</span>Pitágoras: de onde vem o 3</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo"><i>B</i> = √(<i>B</i><sub>r</sub><sup>2</sup> + <i>B</i><sub>λ</sub><sup>2</sup>)<br>
+              = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(4 sen<sup>2</sup> <i>λ</i> + cos<sup>2</sup> <i>λ</i>)<br>
+              = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(1 + 3 sen<sup>2</sup> <i>λ</i>)</div>
+            <div class="conta" id="conta-3"></div>
+            <div class="valor" id="valor-3"></div>
+            <p class="explicacao">As duas partes são os catetos, e a seta do campo é a hipotenusa. O 3 aparece porque
+              cos<sup>2</sup> <i>λ</i> = 1 − sen<sup>2</sup> <i>λ</i>. Vale fazer essa conta no papel: é curta.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="4">
+          <button class="passo-titulo" type="button"><span class="numero">5</span>A agulha da bússola</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo">tan (inclinação) = <span class="fr"><span>|<i>B</i><sub>r</sub>|</span><span><i>B</i><sub>λ</sub></span></span></div>
+            <div class="conta" id="conta-4"></div>
+            <div class="valor" id="valor-4"></div>
+            <p class="explicacao">Uma agulha livre se alinha com a seta do campo. No equador ela fica deitada; em
+              latitudes altas, mergulha: é a inclinação da agulha de uma bússola. No hemisfério norte o campo
+              entra na Terra: o polo norte geográfico é, magneticamente, um polo sul.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="rodape so-longe">
+      <p class="dica">Arraste o ponto em volta da Terra, ou use os controles embaixo do desenho.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+    </div>
+    <div class="navegacao so-perto">
+      <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span class="rotulo">Anterior</span></button>
+      <span id="contador-de-passos"></span>
+      <div class="pontos" role="group" aria-label="Ir para o passo">
+        <button type="button" data-passo="0" title="Passo 1: a queda com a distância">1</button>
+        <button type="button" data-passo="1" title="Passo 2: o efeito da latitude">2</button>
+        <button type="button" data-passo="2" title="Passo 3: as duas partes da seta">3</button>
+        <button type="button" data-passo="3" title="Passo 4: Pitágoras">4</button>
+        <button type="button" data-passo="4" title="Passo 5: a agulha da bússola">5</button>
+      </div>
+      <button id="bt-proximo" type="button" class="botao principal" title="Próximo passo" aria-label="Próximo passo">
+        <span class="rotulo">Próximo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
+    <div class="controles" role="group" aria-label="Controles">
+      <label class="controle"><span class="nome"><i>R</i><small>distância ao centro</small></span><output id="o-r"></output>
+        <input id="c-r" type="range" min="1" max="4" step="0.05" value="2"></label>
+      <label class="controle"><span class="nome"><i>λ</i><small>latitude magnética</small></span><output id="o-lat"></output>
+        <input id="c-lat" type="range" min="-90" max="90" step="1" value="30"></label>
+      <div class="botoes">
+        <button id="bt-pausar" type="button" class="botao">Pausar</button>
+      </div>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </aside>
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do contrato).
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Valores e contas. Tudo o que é física está aqui.
+    //    As distâncias são em raios da Terra (R = r/R_E) e o campo, em nanotesla.
+    // -------------------------------------------------------------------------
+    const CAMPO_NO_EQUADOR = 31000;       // nT: 0,31 gauss, o campo no equador, na superfície (eq. 5.15)
+    const INCLINACAO_DO_IMA = 11;         // graus entre o eixo do ímã e o eixo de rotação da Terra
+    const POLO_NORTE_DO_IMA = '79°N 70°O';
+    const POLO_SUL_DO_IMA = '79°S 70°E';
+    const R_MAXIMO = 4;                   // até onde o ponto vai, em raios da Terra
+    const COMECO = { R: 2, graus: 30 };   // o ponto ao abrir a animação
+
+    /** M/r³: o campo sobre o equador a "R" raios da Terra do centro (em nT). */
+    const parteDaDistancia = (R) => CAMPO_NO_EQUADOR / R ** 3;
+    /** √(1 + 3 sen² λ): quanto o campo cresce com a latitude magnética (1 no equador, 2 no polo). */
+    const fatorDaLatitude = (lat) => Math.sqrt(1 + 3 * Math.sin(lat) ** 2);
+    /** O campo no ponto (R, λ): intensidade B e as partes radial (Br) e horizontal (Bl), em nT. */
+    function campoEm(R, lat) {
+      const base = parteDaDistancia(R), fator = fatorDaLatitude(lat);
+      return {
+        base, fator,
+        B: base * fator,                         // (M/r³)·√(1 + 3 sen² λ)
+        Br: -2 * base * Math.sin(lat),           // −2·M·sen λ / r³: negativa (para dentro da Terra) no norte
+        Bl: base * Math.cos(lat),                // M·cos λ / r³: sempre para o norte
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. Estado da animação.
+    // -------------------------------------------------------------------------
+    const entre = (a, b, t) => a + (b - a) * t;
+    const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+    const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+    const suaveEntre = (a, b, t) => suave((t - a) / (b - a));
+
+    const estado = {
+      R: COMECO.R, graus: COMECO.graus,     // o ponto escolhido: distância (raios da Terra) e latitude magnética (graus)
+      lado: 1,                              // de que lado da Terra ele está no desenho (1 = direita, −1 = esquerda)
+      perto: false, z: 0,                   // visão escolhida e andamento do zoom (0 = de longe, 1 = de perto)
+      passo: 0, tempo: 0, pausado: false,
+      agulha: 0, giroDaAgulha: 0,           // a agulha da bússola: ângulo na tela e velocidade de giro
+    };
+    const latitude = () => (estado.graus * Math.PI) / 180;
+    /** O ponto escolhido no desenho: a Terra fica em (0, 0), o eixo do ímã é vertical e o norte fica em cima. */
+    function ponto() {
+      const fi = estado.lado > 0 ? latitude() : Math.PI - latitude();       // ângulo em volta da Terra
+      return { X: estado.R * Math.cos(fi), Y: estado.R * Math.sin(fi), fi };
+    }
+    /** A direção do campo no ponto, no desenho (vetor de comprimento 1). */
+    function direcaoDoCampo() {
+      const { fi } = ponto();
+      const c = campoEm(estado.R, latitude());
+      const paraFora = { x: Math.cos(fi), y: Math.sin(fi) };
+      const paraONorte = { x: -estado.lado * Math.sin(fi), y: estado.lado * Math.cos(fi) };
+      return { x: (c.Br * paraFora.x + c.Bl * paraONorte.x) / c.B, y: (c.Br * paraFora.y + c.Bl * paraONorte.y) / c.B };
+    }
+    /** De perto, o desenho gira até "para fora da Terra" ficar para cima. Aqui, a seta do campo nessa tela. */
+    function setaDePerto() {
+      const c = campoEm(estado.R, latitude());
+      const inclinacao = Math.atan2(Math.abs(c.Br), c.Bl);                  // ângulo entre a seta e o horizontal
+      const norte = estado.lado > 0 ? -1 : 1;                               // de que lado da tela fica o norte
+      const paraBaixo = c.Br < 0 ? 1 : -1;                                  // para dentro da Terra é para baixo
+      return { inclinacao, norte, paraBaixo, x: norte * Math.cos(inclinacao), y: paraBaixo * Math.sin(inclinacao) };
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. Tela, tamanho e câmera.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const painel = document.getElementById('painel');
+    const controles = document.querySelector('.controles');
+    let largura = 0, altura = 0;
+    // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
+    // "fundo" é até onde o desenho aparece (ele continua por trás da barra de controles).
+    let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100 };
+    let ESPACO_DO_TITULO = 46;                   // altura ocupada pelo título, medida em medirCena()
+    const AMPLIACAO = 4;                         // quantas vezes o zoom aumenta até a visão de perto
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      medirCena();
+      desenhar();
+    }
+    function medirCena() {
+      ESPACO_DO_TITULO = Math.round(document.querySelector('.topo').getBoundingClientRect().bottom) + 4;
+      const p = painel.getBoundingClientRect();
+      if (p.left > largura * 0.3) {
+        // Painel ao lado: a barra de controles fica embaixo do desenho.
+        const barra = controles.getBoundingClientRect();
+        const livre = barra.height > 0 && barra.top > altura * 0.4 ? barra.top - 6 : altura;
+        cena = { x: 0, y: 0, w: Math.max(120, p.left - 8), h: Math.max(90, livre), fundo: altura };
+      } else {
+        // Painel embaixo (telas estreitas): os controles ficam dentro dele.
+        const h = Math.max(90, p.top - 4);
+        cena = { x: 0, y: 0, w: largura, h, fundo: h };
+      }
+    }
+    window.addEventListener('resize', ajustarTamanho);
+    const aoMudarDeTamanho = new ResizeObserver(() => { medirCena(); });
+    aoMudarDeTamanho.observe(painel);
+    aoMudarDeTamanho.observe(controles);
+
+    /** Visão de longe: escala (pixels por raio da Terra) e posição da Terra na tela. */
+    function cameraDeLonge() {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const S = Math.max(8, Math.min(cena.w / 13, (alturaLivre - 14) / (2 * R_MAXIMO + 1.3)));
+      return { S, ox: cena.x + cena.w / 2, oy: cena.y + ESPACO_DO_TITULO + alturaLivre / 2 };
+    }
+    /** Visão de perto: o lugar da tela onde fica o ponto escolhido. */
+    function centroDePerto() {
+      return { x: cena.x + cena.w * 0.5, y: cena.y + ESPACO_DO_TITULO + (cena.h - ESPACO_DO_TITULO) * 0.5 };
+    }
+
+    // A projeção do quadro atual: o ponto (PX, PY) do desenho cai em (cx, cy) da tela, com escala S
+    // e o desenho girado de "a". Durante o zoom, ela vai da visão de longe até o ponto escolhido,
+    // ampliado e girado até "para fora da Terra" ficar para cima.
+    let projecao = { S: 1, a: 0, cos: 1, sin: 0, cx: 0, cy: 0, PX: 0, PY: 0 };
+    function atualizarProjecao() {
+      const camera = cameraDeLonge();
+      const P = ponto();
+      const e = suave(estado.z);
+      const longe = { x: camera.ox + P.X * camera.S, y: camera.oy - P.Y * camera.S };
+      const alvo = centroDePerto();
+      const a = (Math.PI / 2 - P.fi) * e;
+      projecao = { S: camera.S * Math.pow(AMPLIACAO, e), a, cos: Math.cos(a), sin: Math.sin(a),
+        cx: entre(longe.x, alvo.x, e), cy: entre(longe.y, alvo.y, e), PX: P.X, PY: P.Y };
+    }
+    const telaX = (X, Y) => projecao.cx + projecao.S * ((X - projecao.PX) * projecao.cos - (Y - projecao.PY) * projecao.sin);
+    const telaY = (X, Y) => projecao.cy - projecao.S * ((X - projecao.PX) * projecao.sin + (Y - projecao.PY) * projecao.cos);
+
+    // -------------------------------------------------------------------------
+    // 5. Ferramentas de desenho.
+    // -------------------------------------------------------------------------
+    const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+    const FONTE_MAT = "Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif";
+    const COR_CAMPO = '134, 185, 255';
+    const AZUL = `rgb(${COR_CAMPO})`;
+
+    /** Fundo escuro arredondado atrás de um rótulo, para ele não se misturar com o que passa por trás. */
+    function desenharPlaca(x, y, larguraDoTexto, tamanho, alinhar) {
+      const w = larguraDoTexto + 16, h = tamanho + 10;
+      const esquerda = alinhar === 'center' ? x - w / 2 : alinhar === 'right' ? x - w + 8 : x - 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda, y - h / 2, w, h, h / 2); else ctx.rect(esquerda, y - h / 2, w, h);
+      ctx.fill();
+    }
+    /** Texto com contorno preto, legível por cima do desenho. Com "placa", ganha também um fundo escuro. */
+    function escrever(texto, x, y, { tamanho = 12, cor = '#ececec', alinhar = 'left', peso = 500, placa = false } = {}) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      if (placa) desenharPlaca(x, y, ctx.measureText(texto).width, tamanho, alinhar);
+      ctx.textAlign = alinhar;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.strokeText(texto, x, y);
+      ctx.fillStyle = cor;
+      ctx.fillText(texto, x, y);
+    }
+    /**
+     * Pedaços de uma fórmula, cada um com a sua fonte: letras em itálico; números, sinais, "sen", "cos"
+     * e "nT" em pé; "B_r" vira B com o r pequeno e mais baixo.
+     */
+    function partesDaFormula(texto, tamanho) {
+      const partes = texto.split(/(cos|sen|tan|nT|_[A-Za-zλ]|[^A-Za-zλ_]+)/).filter(Boolean).map((parte) => {
+        const indice = parte[0] === '_';
+        const escrito = indice ? parte.slice(1) : parte;
+        const emPe = /^(cos|sen|tan|nT)$/.test(escrito) || !/^[A-Za-zλ]+$/.test(escrito);
+        return { texto: escrito, indice, largura: 0, fonte: `${emPe ? '' : 'italic '}${indice ? tamanho * 0.7 : tamanho}px ${FONTE_MAT}` };
+      });
+      let total = 0;
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        parte.largura = ctx.measureText(parte.texto).width;
+        total += parte.largura;
+      }
+      return { partes, total };
+    }
+    /** Fórmula no canvas. Devolve a largura. */
+    function escreverFormula(texto, x, y, { tamanho = 15, cor = '#ffffff', alinhar = 'left', placa = false } = {}) {
+      const { partes, total } = partesDaFormula(texto, tamanho);
+      if (placa) desenharPlaca(x, y, total, tamanho, alinhar);
+      let px = alinhar === 'center' ? x - total / 2 : alinhar === 'right' ? x - total : x;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      for (const parte of partes) {
+        const py = parte.indice ? y + tamanho * 0.3 : y;
+        ctx.font = parte.fonte;
+        ctx.strokeText(parte.texto, px, py);
+        ctx.fillStyle = cor;
+        ctx.fillText(parte.texto, px, py);
+        px += parte.largura;
+      }
+      return total;
+    }
+    /** Seta de (x1, y1) até (x2, y2). */
+    function seta(x1, y1, x2, y2, { cor = '#fff', espessura = 1.6, ponta = 7, tracejada = false } = {}) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const comprimento = Math.hypot(dx, dy);
+      if (comprimento < 1) return;
+      const ux = dx / comprimento, uy = dy / comprimento;
+      const cabeca = Math.min(ponta, comprimento * 0.6);
+      ctx.strokeStyle = cor;
+      ctx.fillStyle = cor;
+      ctx.lineWidth = espessura;
+      ctx.lineCap = 'round';
+      ctx.setLineDash(tracejada ? [5, 4] : []);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2 - ux * cabeca * 0.8, y2 - uy * cabeca * 0.8);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * cabeca - uy * cabeca * 0.5, y2 - uy * cabeca + ux * cabeca * 0.5);
+      ctx.lineTo(x2 - ux * cabeca + uy * cabeca * 0.5, y2 - uy * cabeca - ux * cabeca * 0.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+    /** Linha tracejada de (x1, y1) até (x2, y2). */
+    function tracejado(x1, y1, x2, y2, cor, tracos = [5, 5]) {
+      ctx.strokeStyle = cor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash(tracos);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Números em português.
+    const numero = (valor, casas = 1) => valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    /** "31 000": número inteiro, com os milhares separados por espaço (que não quebra a linha). */
+    const comMilhar = (valor) => Math.round(Math.abs(valor)).toLocaleString('pt-BR').replace(/\./g, ' ');
+    /** "−3 875 nT": campo em nanotesla, com o sinal. */
+    const emNT = (valor) => `${Math.round(valor) < 0 ? '−' : ''}${comMilhar(valor)} nT`;
+    /** "2,00 raios" ou "1,50 raio": a distância com a palavra no singular ou no plural. */
+    const emRaios = (R) => `${numero(R, 2)} ${R >= 2 ? 'raios' : 'raio'}`;
+    /** "30° norte", "30° sul" ou "0° (equador)". */
+    const latitudeEmTexto = (graus) => (graus === 0 ? '0° (equador)' : `${Math.abs(graus)}° ${graus > 0 ? 'norte' : 'sul'}${Math.abs(graus) === 90 ? ' (polo)' : ''}`);
+
+    /** Comprimento da seta do campo na tela: cresce devagar (escala logarítmica) com a intensidade. */
+    function comprimentoDaSeta(B) {
+      const minimo = Math.log10(parteDaDistancia(R_MAXIMO)), maximo = Math.log10(2 * CAMPO_NO_EQUADOR);
+      return 64 + 86 * limitar((Math.log10(B) - minimo) / (maximo - minimo), 0, 1);
+    }
+
+    // Estrelas de fundo (posições fixas, em frações da tela).
+    const ESTRELAS = Array.from({ length: 90 }, (_, i) => {
+      const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.1 + 0.25 * ((i * 37) % 10) / 10 };
+    });
+
+    // -------------------------------------------------------------------------
+    // 6. O campo desenhado: brilho, linhas de campo e a Terra com o ímã.
+    //    Cada linha de campo é r = r₀·cos² λ (r₀ é a altura dela sobre o equador): é a forma das
+    //    linhas de um dipolo, o assunto da segunda animação. Aqui elas mostram por onde o campo passa.
+    // -------------------------------------------------------------------------
+    /** Trechos de uma linha de campo (pontos x0, y0, x1, y1…), do sul para o norte, só fora da Terra e até "alcance". */
+    function trechosDaLinha(r0, lado, alcance) {
+      const noChao = Math.acos(Math.sqrt(1 / r0));                 // latitude em que a linha toca o chão
+      const ponto = (lat, lista) => {
+        const r = r0 * Math.cos(lat) ** 2;
+        lista.push(lado * r * Math.cos(lat), r * Math.sin(lat));
+      };
+      if (r0 <= alcance) {
+        const inteira = [];
+        for (let i = 0; i <= 72; i++) ponto(-noChao + (2 * noChao * i) / 72, inteira);
+        return [inteira];
+      }
+      // Linha que vai longe demais: só os dois trechos perto da Terra.
+      const longe = Math.acos(Math.sqrt(alcance / r0));
+      const sul = [], norte = [];
+      for (let i = 0; i <= 40; i++) {
+        ponto(-noChao + ((noChao - longe) * i) / 40, sul);          // do chão, no sul, para longe
+        ponto(longe + ((noChao - longe) * i) / 40, norte);          // de longe para o chão, no norte
+      }
+      return [sul, norte];
+    }
+    // As linhas da visão de longe, dos dois lados da Terra.
+    const LINHAS = [];
+    for (const r0 of [1.5, 2, 2.5, 3, 4, 5, 6.5, 8.5, 11, 15]) {
+      for (const lado of [1, -1]) LINHAS.push({ fase: (r0 * 37 + (lado > 0 ? 0 : 53)) % 104, trechos: trechosDaLinha(r0, lado, 16) });
+    }
+
+    const bufferX = new Float32Array(128), bufferY = new Float32Array(128);
+    /** Traça uma linha de campo na tela e as setinhas que mostram o sentido do campo (do sul para o norte). */
+    function tracarLinha(pontos, forca, forcaDasSetinhas, fase) {
+      const n = pontos.length / 2;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        bufferX[i] = telaX(pontos[2 * i], pontos[2 * i + 1]);
+        bufferY[i] = telaY(pontos[2 * i], pontos[2 * i + 1]);
+        if (i === 0) ctx.moveTo(bufferX[i], bufferY[i]); else ctx.lineTo(bufferX[i], bufferY[i]);
+      }
+      ctx.strokeStyle = `rgba(${COR_CAMPO}, ${forca})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      if (forcaDasSetinhas <= 0.01) return;
+      const DISTANCIA = 104;                                         // entre uma setinha e a seguinte, em pixels
+      let falta = (estado.tempo * 22 + fase) % DISTANCIA;
+      ctx.strokeStyle = `rgba(${COR_CAMPO}, ${forcaDasSetinhas})`;
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let i = 1; i < n; i++) {
+        const dx = bufferX[i] - bufferX[i - 1], dy = bufferY[i] - bufferY[i - 1];
+        const trecho = Math.hypot(dx, dy);
+        if (trecho < 1e-6) continue;
+        const ux = dx / trecho, uy = dy / trecho;
+        let andado = falta;
+        while (andado <= trecho) {
+          const x = bufferX[i - 1] + ux * andado, y = bufferY[i - 1] + uy * andado;
+          if (x > cena.x - 8 && x < cena.x + cena.w + 8 && y > cena.y - 8 && y < cena.fundo + 8) {
+            ctx.beginPath();
+            ctx.moveTo(x - ux * 4.5 - uy * 3, y - uy * 4.5 + ux * 3);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x - ux * 4.5 + uy * 3, y - uy * 4.5 - ux * 3);
+            ctx.stroke();
+          }
+          andado += DISTANCIA;
+        }
+        falta = andado - trecho;
+      }
+    }
+
+    function desenharCampo(alfaDeLonge, alfaDePerto) {
+      const S = projecao.S;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+
+      // Brilho: mais forte perto da Terra. A mancha é mais comprida no sentido dos polos, porque ali
+      // a mesma intensidade fica mais longe (o fator da latitude vai de 1 a 2).
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.rotate(-projecao.a);
+      ctx.scale(1, Math.cbrt(2));
+      const brilho = ctx.createRadialGradient(0, 0, S * 0.8, 0, 0, S * 6);
+      brilho.addColorStop(0, `rgba(${COR_CAMPO}, 0.3)`);
+      brilho.addColorStop(0.18, `rgba(${COR_CAMPO}, 0.13)`);
+      brilho.addColorStop(0.5, `rgba(${COR_CAMPO}, 0.045)`);
+      brilho.addColorStop(1, `rgba(${COR_CAMPO}, 0)`);
+      ctx.fillStyle = brilho;
+      ctx.beginPath();
+      ctx.arc(0, 0, S * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // De longe: as linhas de sempre. De perto: as linhas que passam perto do ponto, mais juntas
+      // onde o campo é mais forte.
+      if (alfaDeLonge > 0.01) {
+        for (const linha of LINHAS) for (const trecho of linha.trechos) tracarLinha(trecho, 0.36 * alfaDeLonge, 0.6 * alfaDeLonge, linha.fase);
+      }
+      if (alfaDePerto > 0.01) {
+        const P = ponto();
+        const campo = direcaoDoCampo();
+        const B = campoEm(estado.R, latitude()).B;
+        const espaco = limitar(70 - 23 * (Math.log10(B) - 2.5), 16, 70) / S;        // entre uma linha e a vizinha
+        for (let k = -9; k <= 9; k++) {
+          const X = P.X - campo.y * k * espaco, Y = P.Y + campo.x * k * espaco;
+          const r = Math.hypot(X, Y);
+          if (r < 1) continue;                                                       // dentro da Terra
+          const cos2 = 1 - (Y / r) ** 2;
+          const forca = (k === 0 ? 0.75 : 0.46 - 0.028 * Math.abs(k)) * alfaDePerto;     // a linha do ponto é a mais forte
+          if (cos2 < 1e-5) {
+            // Em cima do eixo do ímã, a linha é reta: sai do polo sul e entra no polo norte.
+            tracarLinha(Y > 0 ? [0, R_MAXIMO + 8, 0, 1] : [0, -1, 0, -(R_MAXIMO + 8)], forca, 0.7 * alfaDePerto, 0);
+            continue;
+          }
+          for (const trecho of trechosDaLinha(r / cos2, X >= 0 ? 1 : -1, estado.R + 7)) tracarLinha(trecho, forca, 0.7 * alfaDePerto, (k * 29 + 290) % 104);
+        }
+      }
+    }
+
+    function desenharTerra(alfaDeLonge) {
+      const S = projecao.S;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+      // Os dois eixos: o do ímã (vertical no desenho de longe) e o de rotação, inclinado em relação a ele.
+      const inclinacao = (INCLINACAO_DO_IMA * Math.PI) / 180;
+      const eixo = { x: Math.sin(inclinacao), y: Math.cos(inclinacao) };
+      tracejado(telaX(0, -1.5), telaY(0, -1.5), telaX(0, 1.5), telaY(0, 1.5), 'rgba(255, 255, 255, 0.4)', [4, 4]);
+      tracejado(telaX(-eixo.x * 1.5, -eixo.y * 1.5), telaY(-eixo.x * 1.5, -eixo.y * 1.5), telaX(eixo.x * 1.5, eixo.y * 1.5), telaY(eixo.x * 1.5, eixo.y * 1.5),
+        'rgba(255, 255, 255, 0.22)', [2, 4]);
+
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.rotate(-projecao.a);
+      const luz = ctx.createRadialGradient(-S * 0.35, -S * 0.35, S * 0.1, 0, 0, S);
+      luz.addColorStop(0, '#4f4f4f');
+      luz.addColorStop(1, '#181818');
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(0, 0, S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // O ímã em barra. O polo dele que fica perto do norte geográfico é, magneticamente, um polo sul.
+      const meio = S * 0.5, grossura = Math.max(4, S * 0.18);
+      ctx.fillStyle = '#dcdcdc';
+      ctx.fillRect(-grossura / 2, -meio, grossura, meio);
+      ctx.fillStyle = '#6c6c6c';
+      ctx.fillRect(-grossura / 2, 0, grossura, meio);
+      ctx.restore();
+      if (S >= 40) {
+        // As letras do ímã ficam em pé, mesmo com o desenho girado.
+        ctx.font = `700 ${Math.min(13, S * 0.2)}px ${FONTE}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#111';
+        ctx.fillText('S', telaX(0, 0.26), telaY(0, 0.26));
+        ctx.fillStyle = '#f2f2f2';
+        ctx.fillText('N', telaX(0, -0.26), telaY(0, -0.26));
+      }
+    }
+    /** Os nomes em volta da Terra, na visão de longe. Cada um some um pouco quando algo do ponto chega perto. */
+    function desenharNomesDaTerra(alfa, ocupados) {
+      const inclinacao = (INCLINACAO_DO_IMA * Math.PI) / 180;
+      const eixo = { x: Math.sin(inclinacao), y: Math.cos(inclinacao) };
+      const livre = (x, y) => Math.min(...ocupados.map((o) => limitar((Math.hypot(o.x - x, o.y - y) - 44) / 46, 0.12, 1)));
+      const cima = { x: telaX(0, 1.5), y: telaY(0, 1.5) }, baixo = { x: telaX(0, -1.5), y: telaY(0, -1.5) };
+      const rotacao = { x: telaX(eixo.x * 1.5, eixo.y * 1.5), y: telaY(eixo.x * 1.5, eixo.y * 1.5) };
+      ctx.globalAlpha = alfa * livre(cima.x - 60, cima.y - 12);
+      escrever(`polo do ímã: ${POLO_NORTE_DO_IMA}`, cima.x - 6, cima.y - 12, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
+      ctx.globalAlpha = alfa * livre(rotacao.x + 60, rotacao.y - 10);
+      escrever(`eixo de rotação (${INCLINACAO_DO_IMA}°)`, rotacao.x + 6, rotacao.y - 10, { tamanho: 11, cor: '#747474' });
+      ctx.globalAlpha = alfa * livre(baixo.x, baixo.y + 13);
+      escrever(`polo do ímã: ${POLO_SUL_DO_IMA}`, baixo.x, baixo.y + 13, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. Visão de longe: o ponto, a distância, a latitude e a curva de mesma intensidade.
+    // -------------------------------------------------------------------------
+    /** Antes da Terra: o equador magnético e a curva por onde o campo tem a mesma intensidade que no ponto. */
+    function desenharReferencias(alfa) {
+      const lat = latitude();
+      ctx.globalAlpha = alfa;
+      // O equador magnético, do lado do ponto: é dele que se mede a latitude.
+      tracejado(telaX(0, 0), telaY(0, 0), telaX(estado.lado * (R_MAXIMO + 0.5), 0), telaY(estado.lado * (R_MAXIMO + 0.5), 0), 'rgba(255, 255, 255, 0.2)', [3, 5]);
+      // B igual em todos os pontos da curva: r = r do equador × (1 + 3 sen² λ)^(1/6).
+      const noEquador = estado.R / Math.cbrt(fatorDaLatitude(lat));
+      ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.62)`;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const fi = (i / 120) * Math.PI * 2;
+        const r = noEquador * Math.cbrt(fatorDaLatitude(fi));
+        const x = telaX(r * Math.cos(fi), r * Math.sin(fi)), y = telaY(r * Math.cos(fi), r * Math.sin(fi));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+    function desenharDeLonge(alfa) {
+      const P = ponto();
+      const c = campoEm(estado.R, latitude());
+      const S = projecao.S;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+      const px = telaX(P.X, P.Y), py = telaY(P.X, P.Y);
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const comZoom = 1 - suaveEntre(0.03, 0.35, estado.z);          // partes que somem logo no começo do zoom
+      const ocupados = [{ x: px, y: py }];                            // lugares já tomados por algo do ponto
+
+      // A distância: do centro da Terra até o ponto.
+      ctx.globalAlpha = alfa * comZoom;
+      const alcance = Math.max(estado.R, 1.42);
+      tracejado(terra.x, terra.y, telaX(P.X * alcance / estado.R, P.Y * alcance / estado.R), telaY(P.X * alcance / estado.R, P.Y * alcance / estado.R), 'rgba(255, 255, 255, 0.6)', [4, 4]);
+      if (estado.R >= 1.7) {
+        // "R" fica no meio do trecho de fora da Terra, do lado oposto ao do arco da latitude.
+        const meio = (1 + estado.R) / 2;
+        const lado = (estado.graus >= 0 ? 1 : -1) * estado.lado;
+        const mx = telaX(P.X * meio / estado.R, P.Y * meio / estado.R) - Math.sin(P.fi + projecao.a) * 13 * lado;
+        const my = telaY(P.X * meio / estado.R, P.Y * meio / estado.R) - Math.cos(P.fi + projecao.a) * 13 * lado;
+        escreverFormula('R', mx, my, { tamanho: 15, alinhar: 'center' });
+        ocupados.push({ x: mx, y: my });
+      }
+      // A latitude magnética: o ângulo entre o equador do ímã e a direção do ponto.
+      if (Math.abs(estado.graus) >= 6) {
+        const raio = S * 1.3;
+        const doEquador = -((estado.lado > 0 ? 0 : Math.PI) + projecao.a), doPonto = -(P.fi + projecao.a);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(terra.x, terra.y, raio, doEquador, doPonto, doPonto < doEquador);
+        ctx.stroke();
+        const meio = (doEquador + doPonto) / 2;
+        const lx = terra.x + Math.cos(meio) * (raio + 10), ly = terra.y + Math.sin(meio) * (raio + 10);
+        escreverFormula(`λ = ${Math.abs(estado.graus)}°`, lx, ly, { tamanho: 14, alinhar: estado.lado > 0 ? 'left' : 'right' });
+        ocupados.push({ x: lx + estado.lado * 26, y: ly });
+      }
+
+      // A seta do campo no ponto.
+      ctx.globalAlpha = alfa;
+      const campo = direcaoDoCampo();
+      const naTela = { x: campo.x * projecao.cos - campo.y * projecao.sin, y: -(campo.x * projecao.sin + campo.y * projecao.cos) };
+      const comprimento = comprimentoDaSeta(c.B) * entre(0.55, 1, suave(estado.z)) * Math.min(1, alturaLivre / 400);
+      seta(px, py, px + naTela.x * comprimento, py + naTela.y * comprimento, { cor: AZUL, espessura: 2.4, ponta: 9 });
+
+      // O ponto (dá para arrastar).
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.25 + 0.3 * pulso})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px, py, 10 + 3 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // O valor do campo, do lado oposto ao da seta.
+      ctx.globalAlpha = alfa * comZoom;
+      const paraFora = { x: Math.cos(P.fi + projecao.a), y: -Math.sin(P.fi + projecao.a) };
+      let fuga = { x: paraFora.x - naTela.x * 0.9, y: paraFora.y - naTela.y * 0.9 };
+      const tamanhoDaFuga = Math.hypot(fuga.x, fuga.y);
+      fuga = tamanhoDaFuga > 0.2 ? { x: fuga.x / tamanhoDaFuga, y: fuga.y / tamanhoDaFuga } : paraFora;
+      escreverFormula(`B = ${emNT(c.B)}`, px + fuga.x * 30, py + fuga.y * 24, { tamanho: 15, cor: AZUL, alinhar: fuga.x > 0.35 ? 'left' : fuga.x < -0.35 ? 'right' : 'center', placa: true });
+      ocupados.push({ x: px + fuga.x * 70, y: py + fuga.y * 24 }, { x: px + naTela.x * comprimento, y: py + naTela.y * comprimento });
+      desenharNomesDaTerra(alfa * comZoom, ocupados);
+      ctx.globalAlpha = alfa * comZoom;
+
+      // Legenda, embaixo do título.
+      if (alturaLivre > 200) {
+        const y = cena.y + ESPACO_DO_TITULO + 20;
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.75)`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cena.x + 18, y); ctx.lineTo(cena.x + 56, y);
+        ctx.stroke();
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(cena.x + 36, y - 3); ctx.lineTo(cena.x + 40.5, y); ctx.lineTo(cena.x + 36, y + 3);
+        ctx.stroke();
+        escrever('linhas do campo (as setinhas mostram o sentido)', cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
+        tracejado(cena.x + 18, y + 18, cena.x + 56, y + 18, `rgba(${COR_CAMPO}, 0.75)`, [6, 5]);
+        escrever('mesma intensidade que no ponto', cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. Visão de perto: a seta do campo no ponto, com "para fora da Terra" para cima.
+    // -------------------------------------------------------------------------
+    function desenharDePerto(alfa) {
+      const C = centroDePerto();
+      const c = campoEm(estado.R, latitude());
+      const s = setaDePerto();
+      const passo = estado.passo;
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const L = comprimentoDaSeta(c.B) * Math.min(1, alturaLivre / 400);
+      const ponta = { x: C.x + s.x * L, y: C.y + s.y * L };
+      const horizontal = { x: C.x + s.x * L, y: C.y };              // onde termina a parte horizontal
+      const vertical = { x: C.x, y: C.y + s.y * L };                // onde termina a parte vertical
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      ctx.clip();
+
+      // As duas direções do lugar: a vertical (para fora ou para dentro da Terra) e a horizontal (norte–sul).
+      const braco = Math.min(L + 84, alturaLivre / 2 - 30), bracoDeLado = Math.min(L + 150, cena.w * 0.42, cena.w / 2 - 46);
+      ctx.globalAlpha = alfa;
+      tracejado(C.x, C.y - braco, C.x, C.y + braco, 'rgba(255, 255, 255, 0.34)');
+      tracejado(C.x - bracoDeLado, C.y, C.x + bracoDeLado, C.y, 'rgba(255, 255, 255, 0.34)');
+      escrever('para fora da Terra', C.x, C.y - braco - 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      escrever(`para o centro da Terra (a ${emRaios(estado.R)})`, C.x, C.y + braco + 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      escrever('norte', C.x + s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'left' : 'right' });
+      escrever('sul', C.x - s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'right' : 'left' });
+
+      if (passo === 0) {
+        // Passo 1: a régua da distância, na vertical do lugar. R = 1 é o chão.
+        tracejado(C.x, C.y + braco + 22, C.x, cena.y + cena.h - 8, 'rgba(255, 255, 255, 0.34)');
+        for (let meios = 2; meios <= 2 * (R_MAXIMO + 1); meios++) {
+          const R = meios / 2;
+          const y = C.y - (R - estado.R) * projecao.S;
+          if (Math.abs(R - estado.R) < 0.13 || y < C.y - braco + 8 || y > cena.y + cena.h - 14 || Math.abs(y - (C.y + braco + 11)) < 13) continue;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(C.x - 5, y); ctx.lineTo(C.x + 5, y);
+          ctx.stroke();
+          escreverFormula(`R = ${numero(R, R % 1 ? 1 : 0)}`, C.x - s.norte * 12, y, { tamanho: 13, cor: '#d0d0d0', alinhar: s.norte > 0 ? 'right' : 'left' });
+        }
+      } else if (passo === 1) {
+        // Passo 2: a curva de mesma distância ao centro, com a latitude magnética marcada de 10 em 10 graus.
+        const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 5]);
+        ctx.beginPath();
+        ctx.arc(terra.x, terra.y, estado.R * projecao.S, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        for (let graus = -90; graus <= 90; graus += 10) {
+          if (Math.abs(graus - estado.graus) < 4) continue;
+          const lat = (graus * Math.PI) / 180, fi = estado.lado > 0 ? lat : Math.PI - lat;
+          const X = Math.cos(fi), Y = Math.sin(fi);
+          const x = telaX(X * estado.R, Y * estado.R), y = telaY(X * estado.R, Y * estado.R);
+          if (x < cena.x + 34 || x > cena.x + cena.w - 34 || y < cena.y + ESPACO_DO_TITULO + 30 || y > cena.y + cena.h - 18) continue;
+          const m = lugarDaMiniatura();
+          if (m && x < m.x + m.w + 26 && y > m.y - 40) continue;                                             // atrás da miniatura
+          const fx = X * projecao.cos - Y * projecao.sin, fy = -(X * projecao.sin + Y * projecao.cos);      // para fora da Terra, na tela
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x - fx * 4, y - fy * 4); ctx.lineTo(x + fx * 4, y + fy * 4);
+          ctx.stroke();
+          escrever(graus === 0 ? 'equador' : `${Math.abs(graus)}° ${graus > 0 ? 'N' : 'S'}`, x + fx * 16, y + fy * 16, { tamanho: 11, cor: '#d0d0d0', alinhar: 'center' });
+        }
+      }
+
+      if (passo === 4) {
+        // Passo 5: a agulha, dentro de uma bússola de inclinação.
+        const raio = L * 0.78 + 12;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.arc(C.x, C.y, raio, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        for (let i = 0; i < 12; i++) {
+          const a = (i * Math.PI) / 6;
+          ctx.beginPath();
+          ctx.moveTo(C.x + Math.cos(a) * raio, C.y + Math.sin(a) * raio);
+          ctx.lineTo(C.x + Math.cos(a) * (raio - (i % 3 === 0 ? 8 : 4)), C.y + Math.sin(a) * (raio - (i % 3 === 0 ? 8 : 4)));
+          ctx.stroke();
+        }
+        tracejado(C.x - raio, C.y, C.x + raio, C.y, 'rgba(255, 255, 255, 0.5)');
+        // A seta do campo, apagada, e a agulha por cima dela.
+        ctx.globalAlpha = alfa * 0.4;
+        seta(C.x, C.y, ponta.x, ponta.y, { cor: AZUL, espessura: 2, ponta: 8 });
+        ctx.globalAlpha = alfa;
+        const dx = Math.cos(estado.agulha), dy = Math.sin(estado.agulha);
+        const meia = L * 0.78, grossura = 6;
+        ctx.fillStyle = '#f2f2f2';                                   // a ponta norte da agulha
+        ctx.beginPath();
+        ctx.moveTo(C.x + dx * meia, C.y + dy * meia);
+        ctx.lineTo(C.x - dy * grossura, C.y + dx * grossura);
+        ctx.lineTo(C.x + dy * grossura, C.y - dx * grossura);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#6c6c6c';
+        ctx.beginPath();
+        ctx.moveTo(C.x - dx * meia, C.y - dy * meia);
+        ctx.lineTo(C.x - dy * grossura, C.y + dx * grossura);
+        ctx.lineTo(C.x + dy * grossura, C.y - dx * grossura);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(C.x, C.y, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+        // O ângulo da inclinação, entre o horizontal (do lado do norte) e a agulha.
+        const graus = Math.round((s.inclinacao * 180) / Math.PI);
+        if (graus >= 4) {
+          const doNorte = s.norte > 0 ? 0 : Math.PI, daSeta = Math.atan2(s.y, s.x);
+          let ate = daSeta;
+          if (ate - doNorte > Math.PI) ate -= Math.PI * 2;
+          if (ate - doNorte < -Math.PI) ate += Math.PI * 2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.arc(C.x, C.y, raio + 9, doNorte, ate, ate < doNorte);
+          ctx.stroke();
+          const meio = (doNorte + ate) / 2;
+          escrever(`inclinação: ${graus}°`, C.x + Math.cos(meio) * (raio + 20), C.y + Math.sin(meio) * (raio + 20),
+            { tamanho: 12.5, peso: 600, alinhar: s.norte > 0 ? 'left' : 'right', placa: true });
+        }
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        desenharMiniatura(alfa);
+        return;
+      }
+
+      if (passo === 3) {
+        // Passo 4: o triângulo de Pitágoras.
+        ctx.fillStyle = `rgba(${COR_CAMPO}, 0.16)`;
+        ctx.beginPath();
+        ctx.moveTo(C.x, C.y); ctx.lineTo(horizontal.x, horizontal.y); ctx.lineTo(ponta.x, ponta.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(C.x, C.y); ctx.lineTo(horizontal.x, horizontal.y); ctx.lineTo(ponta.x, ponta.y);
+        ctx.stroke();
+        if (Math.abs(horizontal.x - C.x) > 16 && Math.abs(ponta.y - horizontal.y) > 16) {
+          // O ângulo reto entre as duas partes.
+          const q = 9;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(horizontal.x - s.norte * q, horizontal.y);
+          ctx.lineTo(horizontal.x - s.norte * q, horizontal.y + s.paraBaixo * q);
+          ctx.lineTo(horizontal.x, horizontal.y + s.paraBaixo * q);
+          ctx.stroke();
+        }
+      } else if (passo === 2) {
+        // Passo 3: as duas partes, tracejadas, e as linhas que fecham o retângulo.
+        tracejado(horizontal.x, horizontal.y, ponta.x, ponta.y, 'rgba(255, 255, 255, 0.35)', [3, 4]);
+        tracejado(vertical.x, vertical.y, ponta.x, ponta.y, 'rgba(255, 255, 255, 0.35)', [3, 4]);
+        seta(C.x, C.y, horizontal.x, horizontal.y, { cor: '#ffffff', espessura: 2, ponta: 8 });
+        seta(C.x, C.y, vertical.x, vertical.y, { cor: '#ffffff', espessura: 2, ponta: 8 });
+      }
+
+      // A seta do campo.
+      seta(C.x, C.y, ponta.x, ponta.y, { cor: AZUL, espessura: 3, ponta: 11 });
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(C.x, C.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Os nomes das setas.
+      const aoLado = s.norte > 0 ? 'right' : 'left';                 // texto encostado no lado do sul
+      if (passo >= 2) {
+        const nomes = passo === 2 ? [`B_r = ${emNT(c.Br)}`, `B_λ = ${emNT(c.Bl)}`] : ['|B_r|', 'B_λ'];
+        if (passo === 2) {
+          if (Math.abs(vertical.y - C.y) > 4) escreverFormula(nomes[0], C.x - s.norte * 12, (C.y + vertical.y) / 2, { tamanho: 15, alinhar: aoLado, placa: true });
+          escreverFormula(nomes[1], (C.x + horizontal.x) / 2, C.y - s.paraBaixo * 17, { tamanho: 15, alinhar: 'center', placa: true });
+        } else {
+          // No triângulo, a parte vertical fica do lado da ponta da seta.
+          if (Math.abs(ponta.y - horizontal.y) > 4) escreverFormula(nomes[0], horizontal.x + s.norte * 12, (horizontal.y + ponta.y) / 2, { tamanho: 15, alinhar: s.norte > 0 ? 'left' : 'right', placa: true });
+          escreverFormula(nomes[1], (C.x + horizontal.x) / 2, C.y - s.paraBaixo * 17, { tamanho: 15, alinhar: 'center', placa: true });
+        }
+      }
+      // "B" fica do lado de fora da seta: no meio dela nos passos das partes, depois da ponta nos outros.
+      if (passo >= 2) {
+        const mx = (C.x + ponta.x) / 2 - s.norte * 14 * Math.sin(s.inclinacao), my = (C.y + ponta.y) / 2 + s.paraBaixo * 16 * Math.cos(s.inclinacao) + s.paraBaixo * 6;
+        escreverFormula(passo === 2 ? 'B' : `B = ${emNT(c.B)}`, mx, my, { tamanho: 16, cor: AZUL, alinhar: aoLado, placa: true });
+      } else {
+        escreverFormula(`B = ${emNT(c.B)}`, ponta.x + s.x * 14, ponta.y + s.y * 16, { tamanho: 16, cor: AZUL, alinhar: s.x > 0.4 ? 'left' : s.x < -0.4 ? 'right' : 'center', placa: true });
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      desenharMiniatura(alfa);
+    }
+
+    /** Onde fica a miniatura da visão de longe (ou null, quando não há espaço para ela). */
+    function lugarDaMiniatura() {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      if (cena.w < 520 || alturaLivre < 300) return null;
+      const w = Math.min(limitar(cena.w * 0.19, 130, 180), alturaLivre * 0.4), h = w * 0.74;
+      return { x: cena.x + 16, y: cena.y + cena.h - h - 12, w, h };
+    }
+    /** Miniatura da visão de longe, para mostrar onde está o ponto. */
+    let miniatura = null;       // retângulo na tela (para o clique voltar à visão de longe)
+    function desenharMiniatura(alfa) {
+      miniatura = lugarDaMiniatura();
+      if (!miniatura) return;
+      const { x, y, w, h } = miniatura;
+      const escala = h / (2 * R_MAXIMO + 1.6);
+      const ox = x + w / 2, oy = y + h / 2;
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      ctx.fillStyle = 'rgba(8, 8, 8, 0.9)';
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+      ctx.fill();
+      ctx.stroke();
+      ctx.clip();
+      ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.5)`;
+      for (const r0 of [2, 3.5, 6]) {
+        for (const lado of [1, -1]) {
+          for (const trecho of trechosDaLinha(r0, lado, 16)) {
+            ctx.beginPath();
+            for (let i = 0; i < trecho.length; i += 2) ctx.lineTo(ox + trecho[i] * escala, oy - trecho[i + 1] * escala);
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.fillStyle = '#8a8a8a';
+      ctx.beginPath();
+      ctx.arc(ox, oy, Math.max(2, escala), 0, Math.PI * 2);
+      ctx.fill();
+      const P = ponto();
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + 0.4 * pulso})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(ox + P.X * escala, oy - P.Y * escala, 5 + 2 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ox + P.X * escala, oy - P.Y * escala, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.globalAlpha = alfa;
+      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. O quadro inteiro.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+      atualizarProjecao();
+      const alfaDeLonge = 1 - suaveEntre(0.45, 0.85, estado.z);
+      const alfaDePerto = suaveEntre(0.55, 1, estado.z);
+      for (const estrela of ESTRELAS) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${estrela.brilho * (0.35 + 0.65 * alfaDeLonge)})`;
+        ctx.fillRect(Math.round(estrela.u * largura), Math.round(estrela.v * altura), 1, 1);
+      }
+      desenharCampo(alfaDeLonge, alfaDePerto);
+      if (alfaDeLonge > 0.01) desenharReferencias(alfaDeLonge * (1 - suaveEntre(0.03, 0.35, estado.z)));
+      desenharTerra(alfaDeLonge * (1 - suaveEntre(0.03, 0.35, estado.z)));
+      // Em cima, o desenho some por trás do título (os textos, desenhados depois, ficam nítidos).
+      const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
+      sombra.addColorStop(0, '#000');
+      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), '#000');
+      sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = sombra;
+      ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
+      if (alfaDeLonge > 0.01) desenharDeLonge(alfaDeLonge);
+      if (alfaDePerto > 0.01) desenharDePerto(alfaDePerto);
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. Painel: textos e números que mudam.
+    // -------------------------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+    const textos = new Map();          // o que já está escrito em cada lugar (para não reescrever à toa)
+    function por(id, html) {
+      if (textos.get(id) === html) return;
+      textos.set(id, html);
+      el(id).innerHTML = html;         // só textos fixos e números desta página
+    }
+
+    // Textos que não mudam, mas dependem dos valores da seção 2.
+    const CAMPO_EM_TEXTO = `${comMilhar(CAMPO_NO_EQUADOR)} nT`;
+    por('leg-gauss', `campo no equador, na superfície: 0,31 gauss = ${CAMPO_EM_TEXTO} (1 G = 10<sup>−4</sup> T)`);
+    por('nota', `O modelo de dipolo erra até 30% a menos de 2 ou 3 raios terrestres da superfície; ainda assim, é útil para
+      estimativas. Os polos do ímã ficam em ${POLO_NORTE_DO_IMA} e ${POLO_SUL_DO_IMA}. O comprimento das setas é um esquema.`);
+
+    function atualizarPainel() {
+      const lat = latitude();
+      const c = campoEm(estado.R, lat);
+      const seno = Math.sin(lat), cosseno = Math.cos(lat);
+      const noEquador = estado.graus === 0, noPolo = Math.abs(estado.graus) === 90, noNorte = estado.graus > 0;
+      const distancia = numero(estado.R, 2);
+      const ondeEsta = latitudeEmTexto(estado.graus);
+      const senoEmTexto = seno < 0 ? `(−${numero(-seno, 3)})` : numero(seno, 3);
+      por('subtitulo', estado.perto
+        ? 'De perto: a seta do campo no ponto escolhido<span class="longo">. O comprimento das setas é um esquema.</span><span class="curto">, em esquema.</span>'
+        : 'De longe: a Terra como um ímã em barra.<span class="longo"> Distâncias em raios da Terra.</span>');
+      por('o-r', `${distancia} <i>R</i><sub>E</sub>`);
+      por('o-lat', ondeEsta);
+
+      // Visão de longe.
+      por('l-distancia', `${emRaios(estado.R)} da Terra`);
+      por('l-latitude', ondeEsta);
+      por('l-campo', emNT(c.B));
+
+      // Visão de perto: em cada passo, a conta com os números de agora e o resultado.
+      // Passo 1: M/r³.
+      const cubo = estado.R ** 3;
+      por('conta-0', `= ${CAMPO_EM_TEXTO} ÷ ${distancia}<sup>3</sup>`);
+      por('valor-0', `= <b>${emNT(c.base)}</b> sobre o equador, a esta distância`);
+      por('explicacao-0', estado.R > 1.001
+        ? `É a queda com o cubo da distância, a mesma da conta da magnetopausa. A ${emRaios(estado.R)} da Terra do centro, o campo é ${numero(cubo, cubo < 10 ? 1 : 0)} vezes menor que na superfície (${distancia}<sup>3</sup> = ${numero(cubo, 2)}).`
+        : `É a queda com o cubo da distância, a mesma da conta da magnetopausa. Aqui o ponto está na superfície (<i>R</i> = 1), e o campo sobre o equador vale ${CAMPO_EM_TEXTO}.`);
+      // Passo 2: √(1 + 3 sen² λ).
+      por('conta-1', `= √(1 + 3 · ${senoEmTexto}<sup>2</sup>) = ${numero(c.fator, 3)}`);
+      por('valor-1', `<i>B</i> = ${emNT(c.base)} × ${numero(c.fator, 3)} = <b>${emNT(c.B)}</b>`);
+      por('num-equador', emNT(c.base));
+      por('num-aqui', emNT(c.B));
+      por('num-polo', emNT(2 * c.base));
+      el('barra-equador').style.width = '50%';
+      el('barra-aqui').style.width = `${(50 * c.fator).toFixed(1)}%`;
+      el('barra-polo').style.width = '100%';
+      por('leg-latitude', `latitude magnética, medida a partir do equador magnético (não do geográfico). Aqui: ${ondeEsta}`);
+      // Passo 3: as duas partes.
+      por('valor-2r', `= −2 · ${comMilhar(c.base)} · ${senoEmTexto} = <b>${emNT(c.Br)}</b>`);
+      por('valor-2l', `= ${comMilhar(c.base)} · ${numero(cosseno, 3)} = <b>${emNT(c.Bl)}</b>`);
+      const partes = '<i>B</i><sub>r</sub> é a parte radial (vertical): aponta para dentro ou para fora da Terra. <i>B</i><sub>λ</sub> é a parte horizontal: aponta na direção norte–sul.';
+      por('explicacao-2', noEquador
+        ? `${partes} No equador (sen 0 = 0), <i>B</i><sub>r</sub> = 0: o campo é totalmente horizontal, e a linha de campo passa "deitada".`
+        : noPolo
+          ? `${partes} No polo (cos 90° = 0), <i>B</i><sub>λ</sub> = 0: o campo é totalmente vertical, e a linha de campo "mergulha" na Terra.`
+          : noNorte
+            ? `${partes} O sinal negativo de <i>B</i><sub>r</sub> indica que, no hemisfério norte, o campo aponta para dentro da Terra.`
+            : `${partes} No hemisfério sul, <i>B</i><sub>r</sub> é positivo: o campo aponta para fora da Terra.`);
+      // Passo 4: Pitágoras.
+      por('conta-3', `= √(${comMilhar(c.Br)}<sup>2</sup> + ${comMilhar(c.Bl)}<sup>2</sup>)`);
+      por('valor-3', `= <b>${emNT(c.B)}</b>, o mesmo valor do passo 2`);
+      // Passo 5: a inclinação da agulha.
+      const inclinacao = Math.round((Math.atan2(Math.abs(c.Br), c.Bl) * 180) / Math.PI);
+      por('conta-4', noPolo
+        ? '<i>B</i><sub>λ</sub> = 0: a seta fica na vertical'
+        : `= ${comMilhar(c.Br)} ÷ ${comMilhar(c.Bl)} = ${numero(Math.abs(c.Br) / c.Bl, 3)}`);
+      por('valor-4', `inclinação = <b>${inclinacao}°</b>: ${noEquador
+        ? 'a agulha fica deitada, apontando para o norte'
+        : noPolo
+          ? `a ponta norte da agulha aponta direto para ${noNorte ? 'baixo (o campo entra na Terra)' : 'cima (o campo sai da Terra)'}`
+          : `a ponta norte da agulha aponta para o norte e para ${noNorte ? 'baixo (o campo entra na Terra)' : 'cima (o campo sai da Terra)'}`}`);
+      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+    }
+
+    function mostrarPasso(novo) {
+      const antes = estado.passo;
+      estado.passo = limitar(novo, 0, 4);
+      for (const item of document.querySelectorAll('.passo')) item.classList.toggle('ativo', Number(item.dataset.passo) === estado.passo);
+      for (const marca of document.querySelectorAll('.pontos button')) {
+        const atual = Number(marca.dataset.passo) === estado.passo;
+        marca.classList.toggle('ativo', atual);
+        if (atual) marca.setAttribute('aria-current', 'step'); else marca.removeAttribute('aria-current');
+      }
+      el('bt-anterior').disabled = estado.passo === 0;
+      el('bt-proximo').disabled = estado.passo === 4;
+      document.querySelector('.conteudo').scrollTop = 0;
+      if (estado.passo === 4 && antes !== 4) estado.giroDaAgulha = 5;      // um toque na agulha: ela balança e para na direção do campo
+      atualizarPainel();
+      medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+    }
+    function mostrarVisao(perto) {
+      if (estado.perto === perto) return;
+      estado.perto = perto;
+      document.body.classList.toggle('perto', perto);
+      el('bt-longe').classList.toggle('ativo', !perto);
+      el('bt-perto').classList.toggle('ativo', perto);
+      el('bt-longe').setAttribute('aria-pressed', String(!perto));
+      el('bt-perto').setAttribute('aria-pressed', String(perto));
+      atualizarPainel();
+      medirCena();
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Controles.
+    // -------------------------------------------------------------------------
+    el('bt-longe').addEventListener('click', () => mostrarVisao(false));
+    el('bt-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-ver-de-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-anterior').addEventListener('click', () => mostrarPasso(estado.passo - 1));
+    el('bt-proximo').addEventListener('click', () => mostrarPasso(estado.passo + 1));
+    for (const item of document.querySelectorAll('.passo')) {
+      item.querySelector('.passo-titulo').addEventListener('click', () => mostrarPasso(Number(item.dataset.passo)));
+    }
+    for (const marca of document.querySelectorAll('.pontos button')) {
+      marca.addEventListener('click', () => mostrarPasso(Number(marca.dataset.passo)));
+    }
+    function lerControles() {
+      estado.R = Number(el('c-r').value);
+      estado.graus = Number(el('c-lat').value);
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    for (const id of ['c-r', 'c-lat']) el(id).addEventListener('input', lerControles);
+    function alternarPausa() {
+      estado.pausado = !estado.pausado;
+      el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    }
+    el('bt-pausar').addEventListener('click', alternarPausa);
+    // Teclado (opcional; só depois de clicar na animação): setas trocam de passo, Espaço pausa.
+    window.addEventListener('keydown', (evento) => {
+      if (evento.target !== document.body) return;
+      if (evento.key === ' ') { evento.preventDefault(); alternarPausa(); }
+      else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
+      else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
+    });
+
+    // Na visão de longe: arrastar o ponto em volta da Terra; clicar nele abre a visão de perto.
+    let arrasto = null;
+    /** O lugar do desenho (distância e latitude) que fica embaixo do ponteiro. */
+    function lugarDoPonteiro(x, y) {
+      const camera = cameraDeLonge();
+      const X = (x - camera.ox) / camera.S, Y = (camera.oy - y) / camera.S;
+      const r = Math.hypot(X, Y);
+      return { r, R: limitar(Math.round(r * 20) / 20, 1, R_MAXIMO), graus: r > 0.05 ? Math.round((Math.asin(limitar(Y / r, -1, 1)) * 180) / Math.PI) : estado.graus,
+        lado: Math.abs(X) < 0.04 * Math.max(r, 1) ? estado.lado : (X > 0 ? 1 : -1) };
+    }
+    function distanciaDoPonto(x, y) {
+      const camera = cameraDeLonge(), P = ponto();
+      return Math.hypot(camera.ox + P.X * camera.S - x, camera.oy - P.Y * camera.S - y);
+    }
+    function escolherLugar(lugar) {
+      estado.R = lugar.R;
+      estado.graus = lugar.graus;
+      estado.lado = lugar.lado;
+      el('c-r').value = estado.R;
+      el('c-lat').value = estado.graus;
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    const dentroDaMiniatura = (evento) => miniatura && evento.clientX >= miniatura.x && evento.clientX <= miniatura.x + miniatura.w
+      && evento.clientY >= miniatura.y && evento.clientY <= miniatura.y + miniatura.h;
+    tela.addEventListener('pointerdown', (evento) => {
+      if (estado.perto) {
+        if (dentroDaMiniatura(evento)) mostrarVisao(false);
+        return;
+      }
+      if (estado.z > 0.02) return;
+      const noPonto = distanciaDoPonto(evento.clientX, evento.clientY) < 18;
+      const lugar = lugarDoPonteiro(evento.clientX, evento.clientY);
+      if (!noPonto && lugar.r > R_MAXIMO + 0.9) return;
+      arrasto = { x: evento.clientX, y: evento.clientY, moveu: false, noPonto };
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+      if (!noPonto) escolherLugar(lugar);
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (estado.perto) {
+        tela.style.cursor = dentroDaMiniatura(evento) ? 'pointer' : '';
+        return;
+      }
+      if (arrasto) {
+        if (Math.hypot(evento.clientX - arrasto.x, evento.clientY - arrasto.y) > 4) arrasto.moveu = true;
+        if (arrasto.moveu || !arrasto.noPonto) escolherLugar(lugarDoPonteiro(evento.clientX, evento.clientY));
+        return;
+      }
+      const noPonto = distanciaDoPonto(evento.clientX, evento.clientY) < 18;
+      tela.style.cursor = noPonto ? 'pointer' : lugarDoPonteiro(evento.clientX, evento.clientY).r <= R_MAXIMO + 0.9 ? 'grab' : '';
+    });
+    tela.addEventListener('pointerup', () => {
+      if (arrasto && arrasto.noPonto && !arrasto.moveu) mostrarVisao(true);      // clique no ponto: ver de perto
+      arrasto = null;
+    });
+    tela.addEventListener('pointercancel', () => { arrasto = null; });
+
+    // -------------------------------------------------------------------------
+    // 12. Laço da animação.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      // O zoom e a agulha continuam mesmo na pausa (são respostas aos controles).
+      const alvo = estado.perto ? 1 : 0;
+      if (estado.z !== alvo) estado.z = alvo > estado.z ? Math.min(1, estado.z + intervalo / 1.3) : Math.max(0, estado.z - intervalo / 1.1);
+      // A agulha vai atrás da seta do campo e balança um pouco antes de parar.
+      const s = setaDePerto();
+      let falta = Math.atan2(s.y, s.x) - estado.agulha;
+      while (falta > Math.PI) falta -= Math.PI * 2;
+      while (falta < -Math.PI) falta += Math.PI * 2;
+      estado.giroDaAgulha += (falta * 60 - estado.giroDaAgulha * 7) * intervalo;
+      estado.agulha += estado.giroDaAgulha * intervalo;
+      if (!estado.pausado) estado.tempo += intervalo;
+      desenhar();
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    {
+      const s = setaDePerto();
+      estado.agulha = Math.atan2(s.y, s.x);
+    }
+    mostrarPasso(0);
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>
