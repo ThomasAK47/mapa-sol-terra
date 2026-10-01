@@ -24,7 +24,6 @@ import { el, icone, plural } from './util.js';
 
 const LIMITE_DESCRICAO = 240; // o card mostra só o começo da descrição
 const TAMANHO_PADRAO = { largura: 220, altura: 76 };
-const LADOS_DAS_ALCAS = ['topo', 'direita', 'base', 'esquerda'];
 
 const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, recolher, … }
 const tamanhos = new Map();  // id → { largura, altura } medidos (sem a escala do nível)
@@ -167,13 +166,12 @@ function criarItem(id) {
   const icones = el('div', { class: 'card-icones' });
   // Botão no canto: "+N" num pai recolhido (expande); "−" num pai expandido (recolhe).
   const recolher = el('button', { class: 'card-recolher', type: 'button', hidden: true });
-  // Alças nas bordas: arrastar uma delas até outro card cria uma conexão.
-  const alcas = LADOS_DAS_ALCAS.map((lado) => el('span', {
-    class: `alca alca-${lado}`,
-    title: 'Arraste até outro card para criar uma conexão',
-  }));
+  // Alça de conexão, no meio da borda de baixo: arrastá-la até outro card cria
+  // uma conexão. (A linha sai do lado que aponta para o outro card, seja qual
+  // for o ponto de partida; por isso basta uma alça.)
+  const alca = el('span', { class: 'alca', title: 'Arraste até outro card para criar uma conexão' });
   const raiz = el('div', { class: 'card', 'data-id': id },
-    el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alcas),
+    el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alca),
   );
   definirRitmoDaFlutuacao(raiz, id);
   return {

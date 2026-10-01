@@ -4,7 +4,7 @@
 //   • arrastar um card → mover o card e seus descendentes (com Alt, só o
 //     card); no modo somente leitura, arrastar um card move o mapa;
 //   • clicar no "+N" / "−" de um card pai → expandir / recolher os filhos;
-//   • arrastar a alça ○ na borda de um card até outro card → nova conexão;
+//   • arrastar a alça ○ embaixo de um card até outro card → nova conexão;
 //   • clicar num card → selecionar (modo foco); clicar no fundo → desmarcar;
 //   • clicar no texto de uma conexão → abrir o editor da conexão;
 //   • clicar nos ícones do card → abrir a animação ou o link do Docs;

@@ -418,7 +418,7 @@ function preencherConexoes(caixa, id) {
     );
   });
   const vazio = podeEditar()
-    ? 'Nenhuma conexão ainda. Passe o mouse sobre o card e arraste uma das bolinhas da borda até outro card.'
+    ? 'Nenhuma conexão ainda. Passe o mouse sobre o card e arraste a bolinha de baixo até outro card.'
     : 'Nenhuma conexão.';
   caixa.replaceChildren(
     el('span', { class: 'campo-rotulo' }, doCard.length ? `Conexões (${doCard.length})` : 'Conexões'),

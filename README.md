@@ -76,7 +76,7 @@ os dois assuntos se relacionam.
 
 | Ação | Como |
 |---|---|
-| Criar uma conexão | Passe o mouse sobre um card, arraste uma das bolinhas ○ da borda até outro card, escreva o porquê e aperte Enter |
+| Criar uma conexão | Passe o mouse sobre um card, arraste a bolinha ○ que aparece embaixo dele até outro card, escreva o porquê e aperte Enter |
 | Cancelar a criação | Esc, enquanto escreve o texto da conexão nova |
 | Ler ou editar | Clique no texto da conexão, ou na lista "Conexões" do painel do card |
 | Inverter a direção, tirar a seta | Botões no editor da conexão |

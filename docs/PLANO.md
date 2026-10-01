@@ -228,6 +228,9 @@ arquivo.
   - **Pinça:** 50% mais sensível, a pedido. A roda do mouse não mudou.
   - **Desempenho:** com 150 cards e 300 conexões, os efeitos não mudaram os
     quadros por segundo de mover, de zoom nem do mapa parado.
+- **Melhorias pedidas depois das fases (01/10/2026):**
+  - **Uma alça de conexão só:** fica a de baixo. A linha sempre sai do lado que
+    aponta para o outro card, então o ponto de partida não muda o resultado.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;
