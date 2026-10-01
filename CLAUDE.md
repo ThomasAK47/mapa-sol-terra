@@ -72,10 +72,11 @@ pessoa usuária:
 |---|---|
 | `js/principal.js` | Inicialização: modo (edição / leitura / teste), carga dos dados, câmera inicial |
 | `js/estado.js` | Dados em memória. **Único caminho de alteração** (`alterar`, gestos). Desfazer/refazer (100 ações), seleção |
-| `js/modelo.js` | Versão do formato, `migrar()`, `normalizar()` (reparo + avisos), geometria das zonas |
+| `js/modelo.js` | Versão do formato, `migrar()`, `normalizar()` (reparo + avisos), geometria das zonas, operações de zona como funções puras (`definirLarguraDaZona`, `inserirZonaDepois`, `unirZonaComVizinha`) |
+| `js/zonas.js` | Edição das zonas no modo de edição: janelinha embaixo do nome (nome, descrição, "Nova zona à direita", excluir) e arrasto das marcas de largura (um gesto = uma ação no desfazer). Usa delegação de eventos em `#rotulos-zonas` |
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
 | `js/camera.js` | Pan/zoom, roda/touchpad/pinça (sensibilidades em constantes no topo; `GANHO_DA_PINCA = 1.5`, a pedido), área útil, posição guardada |
-| `js/fundo.js` | Canvas: estrelas, coroa do Sol (`desenharCoroa`), vento solar, Sol, Terra com linhas de campo, limites e nomes das zonas. Redesenha a cada mudança da câmera e, com os efeitos ligados, a cada passo do relógio dos efeitos |
+| `js/fundo.js` | Canvas: estrelas, coroa do Sol (`desenharCoroa`), vento solar, Sol, Terra com linhas de campo, limites das zonas. Cria e posiciona os nomes das zonas e as marcas de largura (`.rotulo-zona`, `.alca-zona`, com `data-zona`). Redesenha a cada mudança da câmera, quando uma zona muda e, com os efeitos ligados, a cada passo do relógio dos efeitos |
 | `js/ceu.js` | Estrelas (estáticas, com paralaxe de 4% só no arrasto) e partículas de vento solar (espaço da tela, dando a volta; só à direita do Sol). Só decoração |
 | `js/efeitos.js` | Liga/desliga os efeitos (`definirEfeitos`, guardado no localStorage; padrão desligado se o sistema pede menos movimento), classe `efeitos-ligados` no `<body>`, relógio a 30 passos/s (`tempoDosEfeitos`, `aoPassoDosEfeitos`), parado com a janela de animação aberta |
 | `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, aplica o tamanho final no `transform` de cada card, botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica o tamanho final), faixa de zoom (`data-detalhe`), alça de conexão (uma, embaixo) e alça de tamanho (canto inferior direito), ritmo da flutuação de cada card (`--flut-duracao`, `--flut-atraso`, classe `flut-a/b/c`, a partir do id). Chama `aoRenderizarCards` no fim |
@@ -88,7 +89,7 @@ pessoa usuária:
 | `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, campo "Animação" (lista do manifesto; a escolha atual continua na lista mesmo fora dele) ou botão "Abrir a animação" na leitura, conexões do card |
 | `js/animacoes.js` | Manifesto (`animacoes/manifesto.json`): leitura ao iniciar e quando a janela volta ao foco, `validarManifesto` (função pura, avisos em português), `arquivoDeAnimacaoValido` (regra do nome), `infoDaAnimacao`, `aoMudarManifesto` |
 | `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
-| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `definirAnimacao`, `definirEscalaDoCard`, `definirEscalaDosCards`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
+| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `definirAnimacao`, `definirEscalaDoCard`, `definirEscalaDosCards`), zonas (`editarZona`, `criarZonaDepoisDe`, `excluirZona`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
 | `js/barra.js` | Barra de ferramentas, indicador de salvamento, botão de efeitos (`#bt-efeitos`), menu de opções (barra "Tamanho de todos os cards", modo da roda), atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
@@ -105,6 +106,10 @@ pessoa usuária:
 
 Arrastos usam `iniciarGesto` / `alterarDuranteGesto` / `concluirGesto`: viram
 uma só ação no desfazer e só salvam ao soltar.
+
+**Geometria das zonas:** `estado.geometria()` fica em cache até a próxima
+notificação. Dentro de uma alteração que mexe nas zonas, calcule com
+`geometriaZonas(dados.zonas)`, que é sempre atual.
 
 **Conexão nova:** a criação usa `marca: 'criar-conexao:<id>'` e
 `agrupar: 'conexao-nova:<id>'` com `agruparSemPrazo`. Tudo o que é feito com ela
@@ -130,7 +135,13 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 ## Modelo de dados (versão 1)
 
 - **Zonas:** `{ id, nome, detalhe, ordem, largura }`, dispostas lado a lado pela
-  `ordem`, a partir de x = 0.
+  `ordem`, a partir de x = 0. São editáveis pelo app (`js/zonas.js`):
+  - mudar a largura desloca as zonas seguintes, com seus cards e a Terra, e
+    não troca nenhum card de zona (o `x` é relativo ao início da zona);
+  - a largura mínima é 300, ou o `x` do card mais à direita da zona + 10;
+  - zonas criadas pelo app têm id `z-xxxxxxxx`;
+  - excluir uma zona é uni-la à vizinha (`unirZonaComVizinha`): o espaço e os
+    cards passam para a vizinha, e nenhuma posição absoluta muda.
 - **Raiz:** `{ versao, escalaDosCards, zonas, cards, conexoes }`.
   `escalaDosCards` é o tamanho de todos os cards (1 = normal; de 0,5 a 2).
 - **Card:** `{ id, titulo, descricao, zona, x, y, pai, recolhido, escala, tags, animacao, linkDocs, criadoEm, atualizadoEm }`.

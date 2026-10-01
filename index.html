@@ -77,7 +77,8 @@
       <div id="camada-rotulos-conexoes"></div>
       <div id="camada-cards"></div>
     </div>
-    <div id="rotulos-zonas" aria-hidden="true"></div>
+    <!-- Nomes das zonas e marcas de largura, presos ao alto da tela (js/fundo.js e js/zonas.js). -->
+    <div id="rotulos-zonas"></div>
   </main>
 
   <!-- Barra de ferramentas. "so-edicao" some no modo somente leitura. -->
@@ -173,6 +174,8 @@
         <div class="so-edicao"><dt>Alt + arrastar um card</dt><dd>mover sem os filhos</dd></div>
         <div class="so-edicao"><dt>Arrastar a bolinha ○ embaixo do card</dt><dd>nova conexão</dd></div>
         <div class="so-edicao"><dt>Arrastar o canto do card</dt><dd>mudar o tamanho</dd></div>
+        <div class="so-edicao"><dt>Clique no nome da zona</dt><dd>editar · nova zona</dd></div>
+        <div class="so-edicao"><dt>Arrastar a marca no alto do limite</dt><dd>largura da zona</dd></div>
         <div><dt>Clique no texto da conexão</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ler</dd></div>
         <div><dt>Clique no +N / − do card</dt><dd>expandir / recolher filhos</dd></div>
         <div><dt>Clique no ícone ▷ do card</dt><dd>abrir a animação</dd></div>
@@ -192,6 +195,9 @@
 
   <!-- Janelinha para ler/editar uma conexão (montada por js/editor-conexao.js). -->
   <div id="editor-conexao" class="editor-conexao" role="dialog" aria-label="Conexão" hidden></div>
+
+  <!-- Janelinha para editar uma zona: nome, descrição, zona nova, excluir (montada por js/zonas.js). -->
+  <div id="editor-zona" class="editor-zona" role="dialog" aria-label="Zona" hidden></div>
 
   <!-- Avisos: faixas persistentes no topo e mensagens rápidas embaixo. -->
   <div id="faixas"></div>

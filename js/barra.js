@@ -19,6 +19,7 @@ import { animacaoAberta, fecharAnimacao } from './janela-animacao.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 import { definirIndicador, exportar, importar, salvarAgora } from './persistencia.js';
 import { digitandoEmCampo, icone } from './util.js';
+import { editorDeZonaAberto, fecharEditorDeZona } from './zonas.js';
 
 const TEXTOS_DO_STATUS = {
   salvo: 'salvo',
@@ -231,6 +232,10 @@ function aoApertarEsc() {
   if (cancelarGestoAtual()) return;
   if (editorDeConexaoAberto()) {
     fecharEditorConexao({ cancelar: true });
+    return;
+  }
+  if (editorDeZonaAberto()) {
+    fecharEditorDeZona();
     return;
   }
   if (!menuOpcoes.hidden) {

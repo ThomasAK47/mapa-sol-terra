@@ -28,6 +28,7 @@ let aoAlterar = () => {};
 
 let geometriaEmCache = null;
 let zonasDoCache = null;
+let versaoDoCache = -1;
 
 /** Estado da interface: não é salvo e não entra no desfazer. */
 export const ui = {
@@ -51,11 +52,16 @@ export function buscarCard(id, fonte = dados) {
   return fonte?.cards.find((card) => card.id === id) ?? null;
 }
 
-/** Geometria das zonas (recalculada só quando as zonas mudam). */
+/**
+ * Geometria das zonas, em cache até a próxima mudança nos dados. (As zonas
+ * podem ser editadas: largura, nome, zona nova. Dentro de uma alteração que
+ * mexe nas zonas, calcule com geometriaZonas(dados.zonas), que é sempre atual.)
+ */
 export function geometria() {
-  if (!geometriaEmCache || zonasDoCache !== dados.zonas) {
+  if (!geometriaEmCache || zonasDoCache !== dados.zonas || versaoDoCache !== versao) {
     geometriaEmCache = geometriaZonas(dados.zonas);
     zonasDoCache = dados.zonas;
+    versaoDoCache = versao;
   }
   return geometriaEmCache;
 }

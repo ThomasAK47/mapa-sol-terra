@@ -5,7 +5,8 @@
 //   • a VERSÃO atual do formato e as zonas padrão;
 //   • a MIGRAÇÃO, que converte arquivos de versões antigas;
 //   • a NORMALIZAÇÃO, que repara arquivos incompletos ou editados à mão;
-//   • a GEOMETRIA das zonas (onde cada zona começa e termina no eixo x).
+//   • a GEOMETRIA das zonas (onde cada zona começa e termina no eixo x);
+//   • a EDIÇÃO das zonas (largura, zona nova, união com a vizinha).
 //
 // Regra de posição: o x de um card é medido a partir do INÍCIO da zona dele,
 // e (x, y) é o CENTRO do card. As zonas ficam lado a lado, na ordem do campo
@@ -328,6 +329,107 @@ export function geometriaZonas(zonas) {
 export function zonaNoX(geo, X) {
   for (const zona of geo.lista) if (X < zona.fim) return zona;
   return geo.lista[geo.lista.length - 1];
+}
+
+// -----------------------------------------------------------------------------
+// Edição das zonas (as operações mexem direto em "dados"; quem chama é
+// js/acoes.js e js/zonas.js, sempre por dentro de estado.alterar ou de um gesto)
+// -----------------------------------------------------------------------------
+
+export const LARGURA_ZONA_MAXIMA = 20000;
+const FOLGA_DO_CARD_NA_ZONA = 10; // o centro do card não fica colado no limite
+
+function renumerarZonas(dados) {
+  dados.zonas.forEach((zona, indice) => {
+    zona.ordem = indice + 1;
+  });
+}
+
+/**
+ * A menor largura que a zona pode ter sem deixar nenhum card dela de fora.
+ * (Na última zona os cards podem passar da largura, para além da Terra.)
+ */
+export function larguraMinimaDaZona(dados, idZona) {
+  const indice = dados.zonas.findIndex((zona) => zona.id === idZona);
+  let minima = LARGURA_ZONA_MINIMA;
+  if (indice === dados.zonas.length - 1) return minima;
+  for (const card of dados.cards) {
+    if (card.zona === idZona) minima = Math.max(minima, Math.ceil(card.x) + FOLGA_DO_CARD_NA_ZONA);
+  }
+  return minima;
+}
+
+/** A largura pedida, ajustada aos limites da zona (número inteiro). */
+export function larguraPermitidaDaZona(dados, idZona, largura) {
+  const minima = larguraMinimaDaZona(dados, idZona);
+  return Math.round(limitar(largura, minima, Math.max(LARGURA_ZONA_MAXIMA, minima)));
+}
+
+/**
+ * Muda a largura de uma zona, dentro dos limites. As zonas seguintes (e os
+ * cards delas) se deslocam junto, porque o x de cada card é medido a partir do
+ * início da zona dele. Devolve a largura aplicada (ou null se a zona não existe).
+ */
+export function definirLarguraDaZona(dados, idZona, largura) {
+  const zona = dados.zonas.find((z) => z.id === idZona);
+  if (!zona) return null;
+  zona.largura = larguraPermitidaDaZona(dados, idZona, largura);
+  return zona.largura;
+}
+
+/**
+ * Insere uma zona logo depois de "idAnterior". Se a anterior era a última, os
+ * cards dela que estavam além da largura (à direita da Terra) passam para a
+ * zona nova, sem sair do lugar. Devolve a zona criada (ou null).
+ */
+export function inserirZonaDepois(dados, idAnterior, { id, nome, detalhe = '', largura = LARGURA_ZONA_PADRAO }) {
+  const indice = dados.zonas.findIndex((zona) => zona.id === idAnterior);
+  if (indice < 0) return null;
+  const anterior = dados.zonas[indice];
+  const nova = { id, nome, detalhe, ordem: 0, largura };
+  if (indice === dados.zonas.length - 1) {
+    for (const card of dados.cards) {
+      if (card.zona === anterior.id && card.x > anterior.largura) {
+        card.zona = nova.id;
+        card.x -= anterior.largura;
+      }
+    }
+  }
+  dados.zonas.splice(indice + 1, 0, nova);
+  renumerarZonas(dados);
+  return nova;
+}
+
+/**
+ * Exclui uma zona unindo-a à vizinha: a da esquerda (ou a da direita, se ela
+ * for a primeira). A vizinha fica com o espaço e com os cards, e nenhum card
+ * sai do lugar. Devolve o id da vizinha (ou null se não deu: zona inexistente
+ * ou a única do mapa).
+ */
+export function unirZonaComVizinha(dados, idZona) {
+  const indice = dados.zonas.findIndex((zona) => zona.id === idZona);
+  if (indice < 0 || dados.zonas.length < 2) return null;
+  const zona = dados.zonas[indice];
+  let vizinha;
+  if (indice > 0) {
+    vizinha = dados.zonas[indice - 1];
+    for (const card of dados.cards) {
+      if (card.zona === zona.id) {
+        card.zona = vizinha.id;
+        card.x += vizinha.largura;
+      }
+    }
+  } else {
+    vizinha = dados.zonas[1];
+    for (const card of dados.cards) {
+      if (card.zona === vizinha.id) card.x += zona.largura;
+      else if (card.zona === zona.id) card.zona = vizinha.id;
+    }
+  }
+  vizinha.largura += zona.largura;
+  dados.zonas.splice(indice, 1);
+  renumerarZonas(dados);
+  return vizinha.id;
 }
 
 /** Posição do centro do card no mundo. */

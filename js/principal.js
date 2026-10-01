@@ -29,6 +29,7 @@ import { iniciarPainel } from './painel.js';
 import * as persistencia from './persistencia.js';
 import { gerarDadosDeTeste, iniciarMedidorDeQuadros, medirPanZoom } from './teste.js';
 import { limitar } from './util.js';
+import * as zonas from './zonas.js';
 
 async function iniciarApp() {
   const parametros = new URLSearchParams(location.search);
@@ -54,6 +55,7 @@ async function iniciarApp() {
   iniciarPainel(document.getElementById('painel'));
   editorConexao.iniciarEditorConexao(document.getElementById('editor-conexao'));
   janelaAnimacao.iniciarJanelaAnimacao(document.getElementById('janela-animacao'));
+  zonas.iniciarZonas(document.getElementById('rotulos-zonas'), document.getElementById('editor-zona'));
   busca.iniciarBusca(document.getElementById('campo-busca'), document.getElementById('contador-busca'));
   iniciarBarra();
   persistencia.iniciarPersistencia();
@@ -63,7 +65,7 @@ async function iniciarApp() {
   // Ferramentas para investigar problemas pelo console do navegador (F12).
   window.mapaDepuracao = {
     estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, efeitos,
-    medirPanZoom,
+    zonas, medirPanZoom,
   };
 
   // 2 e 3. Modo e dados

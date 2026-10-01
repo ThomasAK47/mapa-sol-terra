@@ -239,6 +239,17 @@ arquivo.
     - a barra "Tamanho de todos os cards", em Opções, vale para o mapa inteiro;
     - os dois tamanhos ficam gravados no arquivo (`escala` no card e
       `escalaDosCards` na raiz), entram no desfazer e valem na vitrine.
+  - **Zonas editáveis, de forma discreta:**
+    - clicar no nome da zona, no alto da tela, abre uma janelinha com nome e
+      descrição;
+    - a largura muda arrastando a marca no alto do limite direito da zona. As
+      linhas tracejadas em si não são arrastáveis, para um arrasto do mapa não
+      alargar uma zona sem querer;
+    - "Nova zona à direita" cria a zona depois da escolhida;
+    - excluir une a zona à vizinha, com confirmação: os cards passam para a
+      vizinha e nada sai do lugar (não estava no pedido; foi incluído para uma
+      zona criada por engano não ficar sem saída);
+    - uma zona não encolhe além dos cards dela.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

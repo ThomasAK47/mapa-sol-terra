@@ -128,6 +128,25 @@ fina e escura, com um pontinho do lado do pai, liga pai e filho.
 - Os tamanhos ficam gravados no mapa, então valem também na vitrine.
 - Um card pode ir de 50% a 300%; o tamanho de todos, de 50% a 200%.
 
+### Zonas
+
+As zonas são as faixas verticais do mapa, do Sol até a Terra. O nome de cada
+uma fica no alto da tela.
+
+| Ação | Como |
+|---|---|
+| Mudar o nome ou a descrição | Clique no nome da zona, no alto da tela |
+| Mudar a largura | Arraste a marca que fica no alto do limite direito da zona |
+| Criar uma zona | Clique no nome de uma zona e depois em **Nova zona à direita** |
+| Excluir uma zona | Clique no nome da zona e depois no ícone de lixeira (pede confirmação) |
+
+- A descrição aparece embaixo do nome quando o mouse passa por cima.
+- Ao alargar ou criar uma zona, as zonas seguintes, os cards delas e a Terra se
+  deslocam para a direita. Nenhum card troca de zona.
+- Uma zona não encolhe além do card mais à direita dentro dela.
+- Excluir uma zona não apaga cards: o espaço e os cards dela passam para a zona
+  vizinha, e nada sai do lugar.
+
 ### Busca
 
 Digite no campo **Buscar** da barra (atalho **Ctrl+F**). Os cards que têm as

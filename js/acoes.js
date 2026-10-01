@@ -18,7 +18,7 @@ import {
 } from './hierarquia.js';
 import {
   definirPosicaoAbsoluta, ESCALA_CARD_MAX, ESCALA_CARD_MIN, ESCALA_GERAL_MAX, ESCALA_GERAL_MIN,
-  normalizarEscala, novoCard, posicaoAbsoluta,
+  inserirZonaDepois, LARGURA_ZONA_PADRAO, normalizarEscala, novoCard, posicaoAbsoluta, unirZonaComVizinha,
 } from './modelo.js';
 import { agoraISO, gerarId, limitar, linkSeguro, plural } from './util.js';
 
@@ -174,6 +174,65 @@ export function abrirLinkDocs(id) {
   const url = linkSeguro(card?.linkDocs);
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
   else toast('O link do Docs deste card não é válido (ele precisa começar com https://).');
+}
+
+// --- Zonas ----------------------------------------------------------------------------
+
+/** Muda o nome ou a descrição ("detalhe") de uma zona. */
+export function editarZona(id, campo, valor) {
+  if (campo !== 'nome' && campo !== 'detalhe') return;
+  const zona = obterDados().zonas.find((z) => z.id === id);
+  if (!zona || zona[campo] === valor) return;
+  // Digitação seguida no mesmo campo vira uma só ação no desfazer.
+  alterar(campo === 'nome' ? 'Renomear zona' : 'Editar descrição da zona', (d) => {
+    const alvo = d.zonas.find((z) => z.id === id);
+    if (alvo) alvo[campo] = valor;
+  }, { agrupar: `zona:${id}:${campo}` });
+}
+
+/**
+ * Cria uma zona logo à direita de "idAnterior". As zonas seguintes (e a Terra)
+ * se deslocam para dar lugar. Devolve o id da zona nova (ou null).
+ */
+export function criarZonaDepoisDe(idAnterior) {
+  const dados = obterDados();
+  if (!dados.zonas.some((z) => z.id === idAnterior)) return null;
+  const id = gerarId('z', new Set(dados.zonas.map((z) => z.id)));
+  const ok = alterar('Criar zona', (d) => {
+    inserirZonaDepois(d, idAnterior, { id, nome: 'Nova zona', largura: LARGURA_ZONA_PADRAO });
+  });
+  return ok ? id : null;
+}
+
+/**
+ * Pede confirmação e exclui a zona, unindo-a à vizinha: o espaço e os cards
+ * passam para a zona ao lado, e nada sai do lugar.
+ */
+export async function excluirZona(id) {
+  const dados = obterDados();
+  const indice = dados.zonas.findIndex((z) => z.id === id);
+  if (indice < 0) return false;
+  if (dados.zonas.length < 2) {
+    toast('O mapa precisa ter pelo menos uma zona.');
+    return false;
+  }
+  const zona = dados.zonas[indice];
+  const vizinha = dados.zonas[indice > 0 ? indice - 1 : 1];
+  const nCards = dados.cards.filter((card) => card.zona === id).length;
+  const ok = await confirmar({
+    titulo: `Excluir a zona “${zona.nome}”?`,
+    mensagem: `O espaço dela passa para a zona “${vizinha.nome}”.\n` +
+      (nCards ? `${plural(nCards, 'card muda', 'cards mudam')} para lá, sem sair do lugar.\n` : '') +
+      'Dá para desfazer com Ctrl+Z.',
+    botaoOk: 'Excluir zona',
+    perigo: true,
+  });
+  if (!ok) return false;
+  alterar('Excluir zona', (d) => {
+    unirZonaComVizinha(d, id);
+  });
+  toast('Zona excluída. Ctrl+Z desfaz.');
+  return true;
 }
 
 // --- Hierarquia (pai e filhos) ------------------------------------------------------

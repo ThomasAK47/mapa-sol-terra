@@ -7,7 +7,9 @@
 //   • a Terra com linhas de campo estilizadas, à direita (centro no fim da
 //     última zona);
 //   • as linhas tracejadas entre as zonas.
-// Também posiciona os nomes das zonas, presos ao topo da tela.
+// Também posiciona, presos ao topo da tela, os nomes das zonas e as marcas de
+// arrasto dos limites (clicar num nome ou arrastar uma marca edita a zona;
+// quem cuida disso é js/zonas.js).
 //
 // Tudo é redesenhado a cada movimento da câmera, no mesmo quadro que move os
 // cards. Com os efeitos ligados (js/efeitos.js), o fundo também é redesenhado
@@ -17,7 +19,7 @@
 import { aoMudarCamera, obterCamera } from './camera.js';
 import { acompanharCamera, desenharEstrelas, desenharVento } from './ceu.js';
 import { aoMudarEfeitos, aoPassoDosEfeitos, efeitosLigados, tempoDosEfeitos } from './efeitos.js';
-import { assinar, geometria, obterDados } from './estado.js';
+import { assinar, geometria, obterDados, podeEditar } from './estado.js';
 import { el, limitar } from './util.js';
 
 /** Tamanhos em unidades do mundo (um card tem 220 de largura). */
@@ -34,8 +36,9 @@ let largura = 0;
 let altura = 0;
 let desenhoPendente = false;
 let ultimoDesenho = 0;          // instante (ms) do último desenho
-let rotulos = [];               // [{ zona, elemento, largura, oculto }]
+let rotulos = [];               // [{ id, elemento, alca, largura, oculto, limite, alcaOculta }]
 let assinaturaZonas = '';
+let assinaturaLarguras = '';    // para redesenhar quando uma zona muda de largura
 let linhasDeCampo = null;       // pontos relativos ao centro da Terra
 let limitesLinhasDeCampo = null;
 
@@ -49,7 +52,13 @@ export function iniciarFundo(elementoCanvas, elementoRotulos) {
   new ResizeObserver(redimensionar).observe(canvas);
   aoMudarCamera(desenharFundo);                 // já estamos dentro do quadro
   assinar((mudanca) => {
-    if (mudanca.tipo === 'tudo') agendarDesenho(); // zonas podem ter mudado
+    if (mudanca.tipo === 'selecao' || !obterDados()) return;
+    // As zonas podem ter mudado (nome, largura, zona nova, desfazer…).
+    const larguras = obterDados().zonas.map((zona) => `${zona.id}:${zona.largura}`).join('|');
+    if (mudanca.tipo === 'tudo' || larguras !== assinaturaLarguras || assinaturaDosRotulos(geometria()) !== assinaturaZonas) {
+      assinaturaLarguras = larguras;
+      agendarDesenho();
+    }
   });
   // Efeitos: a cada passo do relógio, redesenha. Se a câmera acabou de
   // desenhar (mapa em movimento), este passo é dispensado.
@@ -103,7 +112,7 @@ export function desenharFundo() {
   desenharSol(cam, geo.inicio);
   desenharTerra(cam, geo.fim);
   desenharLimitesDasZonas(cam, geo);
-  posicionarRotulos(cam);
+  posicionarRotulos(cam, geo);
 }
 
 // --- Sol ---------------------------------------------------------------------
@@ -314,18 +323,38 @@ function desenharLimitesDasZonas(cam, geo) {
   contexto.restore();
 }
 
+/** Muda quando os rótulos precisam ser refeitos (zonas, textos ou modo). */
+function assinaturaDosRotulos(geo) {
+  return `${podeEditar() ? 'edicao' : 'leitura'}\n${geo.lista.map((z) => `${z.id}|${z.nome}|${z.detalhe}`).join('\n')}`;
+}
+
 function atualizarRotulosSeZonasMudaram(geo) {
-  const assinatura = geo.lista.map((z) => `${z.id}|${z.nome}|${z.detalhe}`).join('\n');
+  const assinatura = assinaturaDosRotulos(geo);
   if (assinatura === assinaturaZonas) return;
   assinaturaZonas = assinatura;
+  const editavel = podeEditar();
   camadaRotulos.replaceChildren();
   rotulos = geo.lista.map((zona) => {
-    const elemento = el('div', { class: 'rotulo-zona', title: zona.detalhe ? `${zona.nome}: ${zona.detalhe}` : zona.nome },
-      el('span', { class: 'nome' }, zona.nome),
-      zona.detalhe && el('span', { class: 'detalhe' }, zona.detalhe),
+    const dica = zona.detalhe ? `${zona.nome}: ${zona.detalhe}` : zona.nome;
+    // No modo de edição, o nome é um botão (abre o editor da zona) e cada
+    // zona tem, no limite da direita, uma marca para arrastar a largura.
+    const elemento = el('div', {
+      class: 'rotulo-zona', 'data-zona': zona.id,
+      title: editavel ? `${dica}\n(clique para editar esta zona)` : dica,
+      role: editavel ? 'button' : null, tabindex: editavel ? 0 : null,
+    },
+    el('span', { class: 'nome' }, zona.nome),
+    zona.detalhe && el('span', { class: 'detalhe' }, zona.detalhe),
     );
+    const alca = editavel
+      ? el('div', {
+        class: 'alca-zona', 'data-zona': zona.id,
+        title: `Arraste para alargar ou estreitar a zona “${zona.nome}”`,
+      })
+      : null;
     camadaRotulos.append(elemento);
-    return { zona, elemento, largura: 0, oculto: false, limite: '' };
+    if (alca) camadaRotulos.append(alca);
+    return { id: zona.id, elemento, alca, largura: 0, oculto: false, limite: '', alcaOculta: false };
   });
   medirRotulos();
 }
@@ -337,11 +366,22 @@ function medirRotulos() {
 /**
  * Cada nome fica centrado na parte visível da sua zona. Se não couber, é
  * abreviado com "…"; se a zona estiver estreita demais na tela, some.
+ * As marcas de arrasto ficam sobre o limite direito de cada zona.
  */
-function posicionarRotulos(cam) {
+function posicionarRotulos(cam, geo) {
   for (const rotulo of rotulos) {
-    const inicio = rotulo.zona.inicio * cam.escala + cam.tx;
-    const fim = rotulo.zona.fim * cam.escala + cam.tx;
+    const zona = geo.porId.get(rotulo.id);
+    if (!zona) continue;
+    const inicio = zona.inicio * cam.escala + cam.tx;
+    const fim = zona.fim * cam.escala + cam.tx;
+    if (rotulo.alca) {
+      const fora = fim < -8 || fim > largura + 8;
+      if (fora !== rotulo.alcaOculta) {
+        rotulo.alcaOculta = fora;
+        rotulo.alca.classList.toggle('oculta', fora);
+      }
+      if (!fora) rotulo.alca.style.transform = `translateX(${Math.round(fim)}px)`;
+    }
     const visivelInicio = Math.max(inicio, 0);
     const visivelFim = Math.min(fim, largura);
     const disponivel = visivelFim - visivelInicio - 24; // 12 px de folga de cada lado

@@ -487,6 +487,57 @@ body.somente-leitura .alca-tamanho,
 .rotulo-zona:hover .detalhe { opacity: 1; }
 .rotulo-zona.oculto { visibility: hidden; }
 
+/* No modo de edição, o nome da zona é um botão discreto: clicar abre a
+   janelinha de edição (js/zonas.js). */
+body:not(.somente-leitura) .rotulo-zona { cursor: pointer; }
+body:not(.somente-leitura) .rotulo-zona .nome { transition: color 0.12s ease; }
+body:not(.somente-leitura) .rotulo-zona:hover .nome,
+.rotulo-zona.editando .nome { color: #ededed; }
+.rotulo-zona:focus-visible { outline: 1px solid #8a8a8a; outline-offset: 5px; border-radius: 4px; }
+
+/* Marca de largura: um tracinho no alto do limite direito de cada zona.
+   Arrastá-la alarga ou estreita a zona. */
+.alca-zona {
+  position: absolute;
+  top: -9px;
+  left: 0;
+  width: 16px;
+  height: 34px;
+  margin-left: -8px;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: col-resize;
+}
+.alca-zona::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 3px;
+  height: 20px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.12s ease;
+}
+.alca-zona:hover::before,
+.alca-zona.arrastando::before { background: #fff; }
+/* Durante o arrasto, uma linha mostra o limite até embaixo da tela. */
+.alca-zona.arrastando::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+.alca-zona.oculta,
+body.somente-leitura .alca-zona { display: none; }
+body.redimensionando-zona,
+body.redimensionando-zona * { cursor: col-resize !important; }
+
 /* ---------------------------------------------------------------------------
    Barra de ferramentas
    ------------------------------------------------------------------------ */
@@ -884,7 +935,10 @@ select.entrada { cursor: pointer; }
    Editor de conexão (janelinha presa ao meio da curva)
    ------------------------------------------------------------------------ */
 
-.editor-conexao {
+/* A mesma caixa serve à janelinha de edição de zona (js/zonas.js), que fica
+   embaixo do nome da zona. */
+.editor-conexao,
+.editor-zona {
   position: fixed;
   left: 0;
   top: 0;
@@ -900,6 +954,11 @@ select.entrada { cursor: pointer; }
   border-radius: 12px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65);
 }
+.editor-zona { width: 300px; }
+.editor-zona-cabecalho { display: flex; align-items: center; justify-content: space-between; margin: -4px -4px -4px 0; }
+.editor-zona-acoes { display: flex; align-items: center; gap: 6px; }
+.editor-zona-acoes .espaco { flex: 1; }
+.editor-zona .dica { margin: 0; color: var(--texto-3); }
 .editor-conexao-cabecalho {
   display: flex;
   align-items: center;
