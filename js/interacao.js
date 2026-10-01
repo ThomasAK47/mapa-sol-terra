@@ -5,6 +5,8 @@
 //     card); no modo somente leitura, arrastar um card move o mapa;
 //   • clicar no "+N" / "−" de um card pai → expandir / recolher os filhos;
 //   • arrastar a alça ○ embaixo de um card até outro card → nova conexão;
+//   • arrastar a alça do canto inferior direito de um card → mudar o tamanho
+//     dele e dos descendentes (duplo clique nela: tamanho normal);
 //   • clicar num card → selecionar (modo foco); clicar no fundo → desmarcar;
 //   • clicar no texto de uma conexão → abrir o editor da conexão;
 //   • clicar nos ícones do card → abrir a animação ou o link do Docs;
@@ -14,9 +16,12 @@
 // sozinho naquela direção. A roda do mouse e o touchpad ficam em camera.js.
 // =============================================================================
 
-import { abrirLinkDocs, alternarRecolhido, criarCard, criarConexao, expandirCards } from './acoes.js';
+import {
+  abrirLinkDocs, alternarRecolhido, criarCard, criarConexao, definirEscalaDoCard, expandirCards,
+} from './acoes.js';
+import { toast } from './avisos.js';
 import { aoMudarCamera, areaUtil, moverPor, telaParaMundo, zoomNoPonto } from './camera.js';
-import { marcarAlvoDeConexao, marcarArrastando } from './cards.js';
+import { marcarAlvoDeConexao, marcarArrastando, marcarRedimensionando } from './cards.js';
 import { apagarRascunho, desenharRascunho } from './conexoes.js';
 import { abrirEditorConexao } from './editor-conexao.js';
 import {
@@ -25,7 +30,9 @@ import {
 } from './estado.js';
 import { descendentes } from './hierarquia.js';
 import { abrirAnimacaoDoCard } from './janela-animacao.js';
-import { definirPosicaoAbsoluta, posicaoAbsoluta } from './modelo.js';
+import {
+  definirPosicaoAbsoluta, ESCALA_CARD_MAX, ESCALA_CARD_MIN, normalizarEscala, posicaoAbsoluta,
+} from './modelo.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 
 const LIMIAR_ARRASTO = 4;        // pixels de movimento até um clique virar arrasto
@@ -73,6 +80,13 @@ export function cancelarGestoAtual() {
     finalizarCriacaoDeConexao(terminado, false);
     return true;
   }
+  if (acao?.tipo === 'redimensionando-card') {
+    marcarRedimensionando(acao.id, null);
+    acao = null;
+    encerrarArrasto();
+    cancelarGesto();
+    return true;
+  }
   return false;
 }
 
@@ -87,7 +101,7 @@ function pontoMedio(a, b) {
 function encerrarArrasto() {
   ultimoPonteiro = null;
   pararAutoPan();
-  palco.classList.remove('panoramica', 'arrastando', 'conectando');
+  palco.classList.remove('panoramica', 'arrastando', 'conectando', 'redimensionando');
 }
 
 /**
@@ -117,7 +131,13 @@ function aoPressionar(evento) {
   if (ponteiros.size > 2) return;
 
   const ponto = { x: evento.clientX, y: evento.clientY };
-  const alca = evento.button === 0 && podeEditar() ? evento.target.closest('.alca') : null;
+  const editavel = evento.button === 0 && podeEditar();
+  const alcaTamanho = editavel ? evento.target.closest('.alca-tamanho') : null;
+  if (alcaTamanho) {
+    iniciarRedimensionamento(evento.pointerId, alcaTamanho.closest('.card').dataset.id, ponto);
+    return;
+  }
+  const alca = editavel ? evento.target.closest('.alca') : null;
   if (alca) {
     iniciarCriacaoDeConexao(evento.pointerId, alca.closest('.card').dataset.id, ponto);
     return;
@@ -165,6 +185,8 @@ function aoMover(evento) {
     atualizarArrasto(ponto);
   } else if (acao.tipo === 'criando-conexao') {
     atualizarCriacaoDeConexao(ponto);
+  } else if (acao.tipo === 'redimensionando-card') {
+    atualizarRedimensionamento(ponto);
   }
 }
 
@@ -189,6 +211,8 @@ function aoSoltar(evento) {
     finalizarArrasto(terminado);
   } else if (terminado.tipo === 'criando-conexao') {
     finalizarCriacaoDeConexao(terminado, true);
+  } else if (terminado.tipo === 'redimensionando-card') {
+    finalizarRedimensionamento(terminado);
   } else if (terminado.tipo === 'panoramica' && !terminado.moveu) {
     selecionar(null);                            // clique simples no fundo: sai do modo foco
     fecharPainel();
@@ -200,6 +224,7 @@ function aoCancelarPonteiro(evento) {
   if (acao?.ponteiro === evento.pointerId) {
     if (acao.tipo === 'arrastando-card') finalizarArrasto(acao);
     else if (acao.tipo === 'criando-conexao') finalizarCriacaoDeConexao(acao, false);
+    else if (acao.tipo === 'redimensionando-card') finalizarRedimensionamento(acao);
   }
   if (acao?.tipo !== 'pinca' || ponteiros.size === 0) acao = null;
   encerrarArrasto();
@@ -293,6 +318,47 @@ function finalizarCriacaoDeConexao(terminado, criar) {
   if (id) abrirEditorConexao(id, { nova: true });
 }
 
+// --- Mudar o tamanho de um card (arrastando a alça do canto) ---------------------------
+
+function iniciarRedimensionamento(ponteiro, id, ponto) {
+  const card = buscarCard(id);
+  if (!card || !iniciarGesto('Mudar tamanho do card')) return;
+  const centro = posicaoAbsoluta(card, geometria());
+  const p = telaParaMundo(ponto.x, ponto.y);
+  acao = {
+    tipo: 'redimensionando-card', id, ponteiro, centro,
+    // O card cresce em volta do centro: o tamanho acompanha a distância do
+    // cursor até o centro, e o canto arrastado fica embaixo do cursor.
+    distanciaInicial: Math.max(1, Math.hypot(p.X - centro.X, p.Y - centro.Y)),
+    escalaInicial: card.escala ?? 1,
+    escalaAtual: card.escala ?? 1,
+  };
+  capturarPonteiro(ponteiro);
+  palco.classList.add('redimensionando');
+  marcarRedimensionando(id, `${Math.round(acao.escalaAtual * 100)}%`);
+  selecionar(id);
+}
+
+function atualizarRedimensionamento(ponto) {
+  const p = telaParaMundo(ponto.x, ponto.y);
+  const fator = Math.hypot(p.X - acao.centro.X, p.Y - acao.centro.Y) / acao.distanciaInicial;
+  const nova = normalizarEscala(acao.escalaInicial * fator, ESCALA_CARD_MIN, ESCALA_CARD_MAX);
+  if (nova === acao.escalaAtual) return;
+  acao.escalaAtual = nova;
+  const { id } = acao;
+  alterarDuranteGesto((dados) => {
+    const card = dados.cards.find((c) => c.id === id);
+    if (card) card.escala = nova;
+  });
+  marcarRedimensionando(id, `${Math.round(nova * 100)}%`);
+}
+
+function finalizarRedimensionamento(terminado) {
+  marcarRedimensionando(terminado.id, null);
+  encerrarArrasto();
+  concluirGesto();
+}
+
 // --- O mapa anda sozinho perto da borda --------------------------------------------
 
 function avaliarAutoPan(ponto) {
@@ -323,6 +389,7 @@ function pararAutoPan() {
 function iniciarPinca() {
   if (acao?.tipo === 'arrastando-card') finalizarArrasto(acao);
   else if (acao?.tipo === 'criando-conexao') finalizarCriacaoDeConexao(acao, false);
+  else if (acao?.tipo === 'redimensionando-card') finalizarRedimensionamento(acao);
   encerrarArrasto();
   const [a, b] = [...ponteiros.values()];
   acao = { tipo: 'pinca', distancia: distancia(a, b), centro: pontoMedio(a, b) };
@@ -344,6 +411,16 @@ function atualizarPinca() {
 function aoDuploClique(evento) {
   const alvo = document.elementFromPoint(evento.clientX, evento.clientY);
   if (!alvo || !palco.contains(alvo) || alvo.closest('.card-acao, .rotulo-conexao, .alca, .card-recolher')) return;
+  // Duplo clique na alça de tamanho: o card volta ao tamanho normal.
+  const alcaTamanho = alvo.closest('.alca-tamanho');
+  if (alcaTamanho) {
+    const id = alcaTamanho.closest('.card').dataset.id;
+    if (podeEditar() && (buscarCard(id)?.escala ?? 1) !== 1) {
+      definirEscalaDoCard(id, 1);
+      toast('Card no tamanho normal. Ctrl+Z desfaz.', { duracao: 2400 });
+    }
+    return;
+  }
   const elementoCard = alvo.closest('.card');
   if (elementoCard) {
     abrirPainel(elementoCard.dataset.id);

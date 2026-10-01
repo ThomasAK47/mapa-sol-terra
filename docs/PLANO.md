@@ -231,6 +231,14 @@ arquivo.
 - **Melhorias pedidas depois das fases (01/10/2026):**
   - **Uma alça de conexão só:** fica a de baixo. A linha sempre sai do lado que
     aponta para o outro card, então o ponto de partida não muda o resultado.
+  - **Tamanho dos cards:**
+    - a alça no canto inferior direito muda o tamanho do card e, na mesma
+      proporção, o dos descendentes dele; os outros cards não mudam;
+    - o card cresce em volta do centro, e nenhuma posição muda;
+    - duplo clique na alça volta a 100%;
+    - a barra "Tamanho de todos os cards", em Opções, vale para o mapa inteiro;
+    - os dois tamanhos ficam gravados no arquivo (`escala` no card e
+      `escalaDosCards` na raiz), entram no desfazer e valem na vitrine.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

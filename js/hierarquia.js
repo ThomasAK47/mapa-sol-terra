@@ -3,6 +3,10 @@
 //
 //   • Nível: 0 para quem não tem pai, 1 para os filhos, 2 para os netos…
 //     Cards de nível mais alto são desenhados maiores (escalaDoNivel).
+//   • Tamanho: cada card pode ter um tamanho próprio ("escala"), que vale
+//     também para os descendentes dele. O tamanho final de um card é
+//       nível × escala dele × escala de cada ancestral × escala geral
+//     (a escala geral é "escalaDosCards", na raiz do arquivo).
 //   • Recolher: um pai recolhido esconde todos os descendentes e mostra um
 //     contador ("+4"). O "representante" de um card escondido é o ancestral
 //     recolhido visível que o esconde; as conexões dele passam a sair do
@@ -47,6 +51,7 @@ export function estaRecolhido(card) {
  *   representante      id → id do card visível que o representa (ele mesmo, se visível)
  *   visiveis           Set com os ids visíveis
  *   totalDescendentes  id → quantos descendentes (filhos, netos…) ele tem
+ *   escala             id → tamanho final do card (1 = normal de nível mais alto)
  */
 export function hierarquia() {
   const chave = `${versaoDosDados()}:${versaoLocal}:${podeEditar()}`;
@@ -68,20 +73,25 @@ function calcular(dados) {
 
   const nivel = new Map();
   const representante = new Map();
+  const escala = new Map();
   const visitados = new Set();
+  const escalaGeral = escalaValida(dados.escalaDosCards);
   // Percorre a árvore a partir das raízes (cards sem pai válido). "rep" é o
   // ancestral recolhido visível que esconde o card (null se ele está visível).
+  // "herdada" é o produto das escalas dos ancestrais.
   const pilha = dados.cards
     .filter((card) => !card.pai || !porId.has(card.pai))
-    .map((card) => ({ id: card.id, n: 0, rep: null }));
+    .map((card) => ({ id: card.id, n: 0, rep: null, herdada: 1 }));
   while (pilha.length) {
-    const { id, n, rep } = pilha.pop();
+    const { id, n, rep, herdada } = pilha.pop();
     if (visitados.has(id)) continue;
     visitados.add(id);
     nivel.set(id, n);
     representante.set(id, rep ?? id);
+    const acumulada = herdada * escalaValida(porId.get(id).escala);
+    escala.set(id, escalaDoNivel(n) * acumulada * escalaGeral);
     const repDosFilhos = rep ?? (estaRecolhido(porId.get(id)) && filhos.has(id) ? id : null);
-    for (const filho of filhos.get(id) ?? []) pilha.push({ id: filho, n: n + 1, rep: repDosFilhos });
+    for (const filho of filhos.get(id) ?? []) pilha.push({ id: filho, n: n + 1, rep: repDosFilhos, herdada: acumulada });
   }
   // Segurança: um ciclo de parentesco (que a normalização e o painel impedem)
   // deixaria cards sem visita. Eles são tratados como raízes.
@@ -89,6 +99,7 @@ function calcular(dados) {
     if (!visitados.has(card.id)) {
       nivel.set(card.id, 0);
       representante.set(card.id, card.id);
+      escala.set(card.id, escalaValida(card.escala) * escalaGeral);
     }
   }
 
@@ -104,7 +115,12 @@ function calcular(dados) {
     }
   }
 
-  return { porId, filhos, nivel, representante, visiveis, totalDescendentes };
+  return { porId, filhos, nivel, representante, visiveis, totalDescendentes, escala };
+}
+
+/** Uma escala utilizável (dados antigos não têm o campo: vale 1). */
+function escalaValida(valor) {
+  return typeof valor === 'number' && Number.isFinite(valor) && valor > 0 ? valor : 1;
 }
 
 /** Todos os descendentes (filhos, netos…) de um card. */

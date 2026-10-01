@@ -16,7 +16,10 @@ import {
   ancestraisRecolhidos, definirRecolhimentoLocal, descendentes, esquecerExpansaoTemporaria,
   estaRecolhido, hierarquia, podeSerPai,
 } from './hierarquia.js';
-import { definirPosicaoAbsoluta, novoCard, posicaoAbsoluta } from './modelo.js';
+import {
+  definirPosicaoAbsoluta, ESCALA_CARD_MAX, ESCALA_CARD_MIN, ESCALA_GERAL_MAX, ESCALA_GERAL_MIN,
+  normalizarEscala, novoCard, posicaoAbsoluta,
+} from './modelo.js';
 import { agoraISO, gerarId, limitar, linkSeguro, plural } from './util.js';
 
 /** Cria um card vazio com o centro em (X, Y) do mundo. Devolve o id. */
@@ -123,6 +126,30 @@ export function enquadrarTudo({ animar = true } = {}) {
     maxY = Math.max(maxY, cards.y + cards.altura);
   }
   enquadrar({ x: minX, y: minY, largura: maxX - minX, altura: maxY - minY }, { animar });
+}
+
+/**
+ * Define o tamanho próprio de um card (1 = normal). Os descendentes dele
+ * acompanham na mesma proporção; os outros cards não mudam.
+ */
+export function definirEscalaDoCard(id, escala) {
+  const card = buscarCard(id);
+  const valor = normalizarEscala(escala, ESCALA_CARD_MIN, ESCALA_CARD_MAX);
+  if (!card || (card.escala ?? 1) === valor) return;
+  alterar('Mudar tamanho do card', (d) => {
+    const alvo = d.cards.find((c) => c.id === id);
+    if (alvo) alvo.escala = valor;
+  });
+}
+
+/** Define o tamanho de todos os cards de uma vez (1 = normal). */
+export function definirEscalaDosCards(escala) {
+  const valor = normalizarEscala(escala, ESCALA_GERAL_MIN, ESCALA_GERAL_MAX);
+  if ((obterDados().escalaDosCards ?? 1) === valor) return;
+  // Arrastar a barra gera muitas mudanças seguidas: viram uma só no desfazer.
+  alterar('Mudar tamanho de todos os cards', (d) => {
+    d.escalaDosCards = valor;
+  }, { agrupar: 'escala-dos-cards' });
 }
 
 /**

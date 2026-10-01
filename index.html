@@ -136,6 +136,17 @@
 
   <!-- Menu de opções (abre pelo botão à direita da barra). -->
   <div id="menu-opcoes" class="menu" hidden>
+    <!-- Tamanho de todos os cards (fica gravado no mapa; js/barra.js). -->
+    <div class="menu-secao so-edicao">
+      <label class="menu-titulo" for="tamanho-cards">Tamanho de todos os cards</label>
+      <div class="controle-tamanho">
+        <input id="tamanho-cards" type="range" min="50" max="200" step="5" value="100">
+        <output id="tamanho-cards-valor" for="tamanho-cards">100%</output>
+        <button id="tamanho-cards-normal" class="botao botao-contorno botao-pequeno" type="button"
+                title="Voltar ao tamanho normal (100%)">Normal</button>
+      </div>
+      <p class="menu-dica">Para mudar um card só (e os filhos dele), arraste o canto inferior direito do card.</p>
+    </div>
     <fieldset class="menu-secao">
       <legend>Roda do mouse e touchpad</legend>
       <label class="opcao">
@@ -161,6 +172,7 @@
         <div class="so-edicao"><dt>Arrastar um card</dt><dd>mover o card</dd></div>
         <div class="so-edicao"><dt>Alt + arrastar um card</dt><dd>mover sem os filhos</dd></div>
         <div class="so-edicao"><dt>Arrastar a bolinha ○ embaixo do card</dt><dd>nova conexão</dd></div>
+        <div class="so-edicao"><dt>Arrastar o canto do card</dt><dd>mudar o tamanho</dd></div>
         <div><dt>Clique no texto da conexão</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ler</dd></div>
         <div><dt>Clique no +N / − do card</dt><dd>expandir / recolher filhos</dd></div>
         <div><dt>Clique no ícone ▷ do card</dt><dd>abrir a animação</dd></div>

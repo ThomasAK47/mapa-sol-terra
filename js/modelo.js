@@ -21,6 +21,21 @@ export const VERSAO_ATUAL = 1;
 export const LARGURA_ZONA_PADRAO = 1200;
 export const LARGURA_ZONA_MINIMA = 300;
 
+/**
+ * Tamanhos (1 = normal). "escala" de um card vale para ele e seus
+ * descendentes; "escalaDosCards", na raiz do arquivo, vale para todos.
+ */
+export const ESCALA_CARD_MIN = 0.5;
+export const ESCALA_CARD_MAX = 3;
+export const ESCALA_GERAL_MIN = 0.5;
+export const ESCALA_GERAL_MAX = 2;
+
+/** Um tamanho válido dentro dos limites, com duas casas (ex.: 1.25); senão, 1. */
+export function normalizarEscala(valor, minimo, maximo) {
+  if (typeof valor !== 'number' || !Number.isFinite(valor) || valor <= 0) return 1;
+  return Math.round(limitar(valor, minimo, maximo) * 100) / 100;
+}
+
 /** Zonas iniciais (as mesmas do data/estudos.json de exemplo). */
 export const ZONAS_PADRAO = Object.freeze([
   { id: 'sol', nome: 'Sol', detalhe: 'interior e superfície', ordem: 1, largura: 1200 },
@@ -33,14 +48,14 @@ export const ZONAS_PADRAO = Object.freeze([
 
 /** Dados de um mapa vazio (usado quando data/estudos.json não existe). */
 export function dadosVazios() {
-  return { versao: VERSAO_ATUAL, zonas: structuredClone(ZONAS_PADRAO), cards: [], conexoes: [] };
+  return { versao: VERSAO_ATUAL, escalaDosCards: 1, zonas: structuredClone(ZONAS_PADRAO), cards: [], conexoes: [] };
 }
 
 /** Um card novo, com todos os campos na ordem padrão do arquivo. */
 export function novoCard(id, agora = agoraISO()) {
   return {
     id, titulo: '', descricao: '', zona: '', x: 0, y: 0,
-    pai: null, recolhido: false, tags: [],
+    pai: null, recolhido: false, escala: 1, tags: [],
     animacao: null, linkDocs: null,
     criadoEm: agora, atualizadoEm: agora,
   };
@@ -117,7 +132,7 @@ function normalizarTags(tags) {
 export function normalizar(bruto) {
   const avisos = [];
   const agora = agoraISO();
-  const { versao: _versao, zonas, cards, conexoes, ...extrasRaiz } = bruto ?? {};
+  const { versao: _versao, escalaDosCards, zonas, cards, conexoes, ...extrasRaiz } = bruto ?? {};
 
   // --- zonas ---
   const zonasOk = [];
@@ -161,7 +176,7 @@ export function normalizar(bruto) {
   for (const card of Array.isArray(cards) ? cards : []) {
     if (!card || typeof card !== 'object') continue;
     const {
-      id, titulo, descricao, zona, x, y, pai, recolhido, tags,
+      id, titulo, descricao, zona, x, y, pai, recolhido, escala, tags,
       animacao, linkDocs, criadoEm, atualizadoEm, ...extras
     } = card;
     let idOk = comoTexto(id).trim();
@@ -185,6 +200,7 @@ export function normalizar(bruto) {
       y: Math.round(comoNumero(y, 0)),
       pai: comoTextoOuNulo(pai),
       recolhido: recolhido === true,
+      escala: normalizarEscala(escala, ESCALA_CARD_MIN, ESCALA_CARD_MAX),
       tags: normalizarTags(tags),
       animacao: comoTextoOuNulo(animacao),
       linkDocs: comoTextoOuNulo(linkDocs),
@@ -275,7 +291,11 @@ export function normalizar(bruto) {
   if (conexoesIdNovo) avisos.push(`${plural(conexoesIdNovo, 'conexão recebeu', 'conexões receberam')} um id novo (estava vazio ou repetido).`);
 
   return {
-    dados: { versao: VERSAO_ATUAL, zonas: zonasOk, cards: cardsOk, conexoes: conexoesOk, ...extrasRaiz },
+    dados: {
+      versao: VERSAO_ATUAL,
+      escalaDosCards: normalizarEscala(escalaDosCards, ESCALA_GERAL_MIN, ESCALA_GERAL_MAX),
+      zonas: zonasOk, cards: cardsOk, conexoes: conexoesOk, ...extrasRaiz,
+    },
     avisos,
   };
 }

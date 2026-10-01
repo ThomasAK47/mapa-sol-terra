@@ -113,6 +113,21 @@ fina e escura, com um pontinho do lado do pai, liga pai e filho.
 - Na vitrine, os visitantes também podem recolher e expandir, mas isso vale só
   para a tela deles.
 
+### Tamanho dos cards
+
+| Ação | Como |
+|---|---|
+| Mudar o tamanho de um card | Passe o mouse sobre ele e arraste os risquinhos do canto inferior direito |
+| Voltar ao tamanho normal | Duplo clique nos risquinhos |
+| Mudar o tamanho de todos | **Opções** → barra **Tamanho de todos os cards** |
+
+- Os filhos e netos do card acompanham, na mesma proporção. Os outros cards não
+  mudam.
+- O card cresce em volta do centro, e nenhum card muda de lugar. Se um ficar
+  por cima de outro, arraste-o.
+- Os tamanhos ficam gravados no mapa, então valem também na vitrine.
+- Um card pode ir de 50% a 300%; o tamanho de todos, de 50% a 200%.
+
 ### Busca
 
 Digite no campo **Buscar** da barra (atalho **Ctrl+F**). Os cards que têm as

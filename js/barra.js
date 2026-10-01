@@ -3,14 +3,15 @@
 // atalhos de teclado.
 // =============================================================================
 
-import { criarCard, enquadrarTudo, excluirCard } from './acoes.js';
+import { criarCard, definirEscalaDosCards, enquadrarTudo, excluirCard } from './acoes.js';
 import { janelaAberta, toast } from './avisos.js';
 import { focarCampoDeBusca } from './busca.js';
 import { areaUtil, definirModoRoda, obterModoRoda, telaParaMundo } from './camera.js';
 import { editorDeConexaoAberto, fecharEditorConexao } from './editor-conexao.js';
 import { aoMudarEfeitos, definirEfeitos, efeitosLigados } from './efeitos.js';
 import {
-  assinar, desfazer, podeDesfazer, podeEditar, podeRefazer, refazer, selecionar, ui,
+  assinar, desfazer, encerrarAgrupamento, obterDados, podeDesfazer, podeEditar, podeRefazer, refazer,
+  selecionar, ui,
 } from './estado.js';
 import { hierarquia } from './hierarquia.js';
 import { cancelarGestoAtual } from './interacao.js';
@@ -87,6 +88,27 @@ export function iniciarBarra() {
       toast(`Roda do mouse e touchpad: ${NOMES_DO_MODO_DA_RODA[opcao.value]}.`);
     });
   }
+
+  // Barra do tamanho de todos os cards (o valor fica gravado no mapa).
+  const barraTamanho = document.getElementById('tamanho-cards');
+  const valorTamanho = document.getElementById('tamanho-cards-valor');
+  const botaoTamanhoNormal = document.getElementById('tamanho-cards-normal');
+  const mostrarTamanho = () => {
+    const porcento = Math.round((obterDados()?.escalaDosCards ?? 1) * 100);
+    if (Number(barraTamanho.value) !== porcento) barraTamanho.value = String(porcento);
+    valorTamanho.textContent = `${porcento}%`;
+    botaoTamanhoNormal.disabled = porcento === 100;
+  };
+  barraTamanho.addEventListener('input', () => definirEscalaDosCards(Number(barraTamanho.value) / 100));
+  barraTamanho.addEventListener('change', encerrarAgrupamento);
+  botaoTamanhoNormal.addEventListener('click', () => {
+    encerrarAgrupamento();
+    definirEscalaDosCards(1);
+    encerrarAgrupamento();
+  });
+  assinar((mudanca) => {
+    if (mudanca.tipo !== 'selecao' && mudanca.tipo !== 'gesto') mostrarTamanho();
+  });
 
   // Botão dos efeitos animados (vento solar, coroa do Sol, flutuação dos cards).
   const botaoEfeitos = document.getElementById('bt-efeitos');

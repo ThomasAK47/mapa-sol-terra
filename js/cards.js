@@ -6,10 +6,12 @@
 // do tamanho). A cada mudança nos dados, renderizar() compara a tela com os
 // dados e só altera o necessário.
 //
-// Hierarquia: cards de nível mais alto são maiores (classes nivel-1, nivel-2,
-// nivel-3 reduzem a escala); cards dentro de um pai recolhido ficam
-// escondidos, e o pai mostra um contador "+N" (que também é o botão de
-// expandir). Busca e modo foco viram classes nos cards e no #palco.
+// Tamanho: cada card é ampliado ou reduzido conforme o nível hierárquico, o
+// tamanho próprio dele e dos ancestrais e o tamanho geral (a conta fica em
+// js/hierarquia.js). A alça no canto inferior direito muda o tamanho próprio.
+// Hierarquia: cards dentro de um pai recolhido ficam escondidos, e o pai
+// mostra um contador "+N" (que também é o botão de expandir). Busca e modo
+// foco viram classes nos cards e no #palco.
 // A flutuação dos cards (efeitos) é feita em CSS; aqui só se define o ritmo
 // de cada um.
 // =============================================================================
@@ -18,7 +20,7 @@ import { aoMudarCamera } from './camera.js';
 import { resultadosDaBusca } from './busca.js';
 import { assinar, geometria, obterDados, ui } from './estado.js';
 import { focoAtual } from './foco.js';
-import { escalaDoNivel, estaRecolhido, hierarquia } from './hierarquia.js';
+import { estaRecolhido, hierarquia } from './hierarquia.js';
 import { posicaoAbsoluta } from './modelo.js';
 import { el, icone, plural } from './util.js';
 
@@ -26,7 +28,7 @@ const LIMITE_DESCRICAO = 240; // o card mostra só o começo da descrição
 const TAMANHO_PADRAO = { largura: 220, altura: 76 };
 
 const itens = new Map();     // id → { id, raiz, titulo, descricao, icones, recolher, … }
-const tamanhos = new Map();  // id → { largura, altura } medidos (sem a escala do nível)
+const tamanhos = new Map();  // id → { largura, altura } medidos (em tamanho normal, sem escala)
 const aposRenderizar = [];   // funções chamadas depois de cada renderização
 let camada = null;
 let palco = null;
@@ -127,11 +129,12 @@ export function renderizarAgora() {
       item.Y = Y;
     }
 
-    const nivel = Math.min(h.nivel.get(card.id) ?? 0, 3);
-    if (item.nivel !== nivel) {
-      if (item.nivel) item.raiz.classList.remove(`nivel-${item.nivel}`);
-      if (nivel) item.raiz.classList.add(`nivel-${nivel}`);
-      item.nivel = nivel;
+    // Tamanho final (nível × tamanho próprio × ancestrais × geral), aplicado em
+    // volta do centro do card, que continua em left/top.
+    const escala = Number((h.escala.get(card.id) ?? 1).toFixed(4));
+    if (item.escala !== escala) {
+      item.raiz.style.transform = escala === 1 ? '' : `translate(-50%, -50%) scale(${escala})`;
+      item.escala = escala;
     }
     atualizarBotaoRecolher(item, card, h);
 
@@ -151,7 +154,7 @@ export function renderizarAgora() {
   }
 
   // Mede depois de todas as mudanças (uma única leitura de layout).
-  // offsetWidth/offsetHeight ignoram o zoom e a escala do nível: o resultado
+  // offsetWidth/offsetHeight ignoram o zoom e a escala do card: o resultado
   // está em unidades do mundo, para o card em tamanho normal.
   for (const item of paraMedir) {
     tamanhos.set(item.id, { largura: item.raiz.offsetWidth, altura: item.raiz.offsetHeight });
@@ -170,13 +173,19 @@ function criarItem(id) {
   // uma conexão. (A linha sai do lado que aponta para o outro card, seja qual
   // for o ponto de partida; por isso basta uma alça.)
   const alca = el('span', { class: 'alca', title: 'Arraste até outro card para criar uma conexão' });
+  // Alça de tamanho, no canto inferior direito: arrastá-la aumenta ou diminui
+  // este card (e os descendentes dele, na mesma proporção).
+  const alcaTamanho = el('span', {
+    class: 'alca-tamanho',
+    title: 'Arraste para mudar o tamanho do card (os filhos acompanham). Duplo clique: tamanho normal.',
+  });
   const raiz = el('div', { class: 'card', 'data-id': id },
-    el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alca),
+    el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alca, alcaTamanho),
   );
   definirRitmoDaFlutuacao(raiz, id);
   return {
     id, raiz, titulo, descricao, icones, recolher,
-    assinatura: null, X: null, Y: null, nivel: 0, oculto: false, estadoRecolher: null, classes: {},
+    assinatura: null, X: null, Y: null, escala: 1, oculto: false, estadoRecolher: null, classes: {},
   };
 }
 
@@ -261,16 +270,28 @@ function atualizarNivelDeDetalhe(camera) {
 
 // --- Consultas usadas por outros módulos -----------------------------------------
 
-/** Tamanho do card em unidades do mundo (já com a escala do nível). */
+/** Tamanho do card em unidades do mundo (já com o tamanho final aplicado). */
 export function tamanhoDoCard(id) {
   const tamanho = tamanhos.get(id) ?? TAMANHO_PADRAO;
-  const escala = escalaDoNivel(itens.get(id)?.nivel ?? 0);
+  const escala = itens.get(id)?.escala ?? 1;
   return { largura: tamanho.largura * escala, altura: tamanho.altura * escala };
 }
 
 /** Marca visualmente o card que está sendo arrastado. */
 export function marcarArrastando(id, sim) {
   itens.get(id)?.raiz.classList.toggle('arrastando', sim);
+}
+
+/**
+ * Marca o card cujo tamanho está sendo mudado e mostra o valor ao lado dele
+ * (ex.: "125%"). Com "texto" nulo, tira a marca.
+ */
+export function marcarRedimensionando(id, texto) {
+  const raiz = itens.get(id)?.raiz;
+  if (!raiz) return;
+  raiz.classList.toggle('redimensionando', texto !== null);
+  if (texto === null) delete raiz.dataset.tamanho;
+  else raiz.dataset.tamanho = texto;
 }
 
 /** Marca visualmente o card que vai receber a conexão sendo criada. */
