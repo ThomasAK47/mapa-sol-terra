@@ -1,5 +1,8 @@
 // =============================================================================
-// fundo.js — o fundo do mapa, desenhado num <canvas>:
+// fundo.js — o fundo do mapa, desenhado num <canvas>, nesta ordem:
+//   • as estrelas (js/ceu.js);
+//   • a coroa do Sol (o brilho em volta dele);
+//   • o vento solar (js/ceu.js), só com os efeitos ligados;
 //   • o Sol, à esquerda (centro no início da primeira zona);
 //   • a Terra com linhas de campo estilizadas, à direita (centro no fim da
 //     última zona);
@@ -7,10 +10,13 @@
 // Também posiciona os nomes das zonas, presos ao topo da tela.
 //
 // Tudo é redesenhado a cada movimento da câmera, no mesmo quadro que move os
-// cards. (Estrelas, vento solar e a coroa animada chegam na Fase 5.)
+// cards. Com os efeitos ligados (js/efeitos.js), o fundo também é redesenhado
+// cerca de 30 vezes por segundo, para a coroa "respirar" e o vento andar.
 // =============================================================================
 
 import { aoMudarCamera, obterCamera } from './camera.js';
+import { acompanharCamera, desenharEstrelas, desenharVento } from './ceu.js';
+import { aoMudarEfeitos, aoPassoDosEfeitos, efeitosLigados, tempoDosEfeitos } from './efeitos.js';
 import { assinar, geometria, obterDados } from './estado.js';
 import { el, limitar } from './util.js';
 
@@ -27,6 +33,7 @@ let pixelRatio = 1;
 let largura = 0;
 let altura = 0;
 let desenhoPendente = false;
+let ultimoDesenho = 0;          // instante (ms) do último desenho
 let rotulos = [];               // [{ zona, elemento, largura, oculto }]
 let assinaturaZonas = '';
 let linhasDeCampo = null;       // pontos relativos ao centro da Terra
@@ -44,6 +51,12 @@ export function iniciarFundo(elementoCanvas, elementoRotulos) {
   assinar((mudanca) => {
     if (mudanca.tipo === 'tudo') agendarDesenho(); // zonas podem ter mudado
   });
+  // Efeitos: a cada passo do relógio, redesenha. Se a câmera acabou de
+  // desenhar (mapa em movimento), este passo é dispensado.
+  aoPassoDosEfeitos(() => {
+    if (performance.now() - ultimoDesenho >= 25) desenharFundo();
+  });
+  aoMudarEfeitos(agendarDesenho);
   document.fonts?.ready.then(() => {
     medirRotulos();
     agendarDesenho();
@@ -75,9 +88,18 @@ export function desenharFundo() {
   const cam = obterCamera();
   const geo = geometria();
   atualizarRotulosSeZonasMudaram(geo);
+  ultimoDesenho = performance.now();
+  acompanharCamera(cam);
+  // Com os efeitos desligados, o relógio fica parado e a coroa não se mexe.
+  const tempo = tempoDosEfeitos();
 
   contexto.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   contexto.clearRect(0, 0, largura, altura);
+  desenharEstrelas(contexto, largura, altura, pixelRatio);
+  desenharCoroa(cam, geo.inicio, tempo);
+  if (efeitosLigados()) {
+    desenharVento(contexto, largura, altura, pixelRatio, tempo, geo.inicio * cam.escala + cam.tx);
+  }
   desenharSol(cam, geo.inicio);
   desenharTerra(cam, geo.fim);
   desenharLimitesDasZonas(cam, geo);
@@ -86,25 +108,72 @@ export function desenharFundo() {
 
 // --- Sol ---------------------------------------------------------------------
 
-function desenharSol(cam, X) {
+const ALCANCE_DA_COROA = 1.9;      // até onde o brilho pode chegar, em raios do Sol
+// Manchas de brilho suave em volta do disco. Cada uma tem a sua posição
+// (ângulo, em radianos), um giro muito lento, um tamanho (em raios do Sol) e
+// o seu próprio ritmo de crescer e encolher.
+const LOBOS_DA_COROA = [
+  { angulo: 0.3, giro: 0.010, tamanho: 0.62, ritmo: 0.31, fase: 0.0 },
+  { angulo: 1.5, giro: -0.008, tamanho: 0.50, ritmo: 0.23, fase: 1.9 },
+  { angulo: 2.6, giro: 0.013, tamanho: 0.58, ritmo: 0.27, fase: 3.1 },
+  { angulo: 3.9, giro: -0.011, tamanho: 0.46, ritmo: 0.36, fase: 4.4 },
+  { angulo: 5.2, giro: 0.007, tamanho: 0.66, ritmo: 0.19, fase: 5.6 },
+];
+
+/**
+ * A coroa: o brilho em volta do Sol. É um desenho, não um modelo físico.
+ * Ela "respira" bem devagar: um halo redondo que cresce e encolhe um pouco,
+ * e manchas de brilho que mudam de tamanho e de lugar aos poucos.
+ */
+function desenharCoroa(cam, X, tempo) {
   const cx = X * cam.escala + cam.tx;
   const cy = cam.ty;
   const r = SOL.raio * cam.escala;
-  const rBrilho = r * 1.75;
-  if (cx + rBrilho < 0 || cx - rBrilho > largura || cy + rBrilho < 0 || cy - rBrilho > altura) return;
+  const alcance = r * ALCANCE_DA_COROA;
+  if (cx + alcance < 0 || cx - alcance > largura || cy + alcance < 0 || cy - alcance > altura) return;
 
-  // Brilho ao redor (a coroa, que será animada na Fase 5).
-  let gradiente = contexto.createRadialGradient(cx, cy, r * 0.95, cx, cy, rBrilho);
-  gradiente.addColorStop(0, 'rgba(255, 176, 80, 0.30)');
+  // Duas ondas de períodos diferentes (uns 13 s e 30 s), para a respiração
+  // não parecer um pisca-pisca regular. O resultado fica entre 0 e 1.
+  const respiro = 0.5 + 0.3 * Math.sin(tempo * 0.48) + 0.2 * Math.sin(tempo * 0.21 + 1.7);
+
+  // Halo redondo.
+  const rHalo = r * (1.66 + 0.16 * respiro);
+  let gradiente = contexto.createRadialGradient(cx, cy, r * 0.95, cx, cy, rHalo);
+  gradiente.addColorStop(0, `rgba(255, 176, 80, ${(0.25 + 0.07 * respiro).toFixed(3)})`);
   gradiente.addColorStop(0.3, 'rgba(255, 150, 60, 0.10)');
   gradiente.addColorStop(1, 'rgba(255, 130, 40, 0)');
   contexto.fillStyle = gradiente;
   contexto.beginPath();
-  contexto.arc(cx, cy, rBrilho, 0, VOLTA);
+  contexto.arc(cx, cy, rHalo, 0, VOLTA);
   contexto.fill();
 
+  // Manchas de brilho: círculos esfumados com o centro na borda do disco. A
+  // metade de dentro fica escondida atrás do Sol, desenhado depois.
+  for (const lobo of LOBOS_DA_COROA) {
+    const angulo = lobo.angulo + lobo.giro * tempo;
+    const cresce = 0.5 + 0.5 * Math.sin(tempo * lobo.ritmo + lobo.fase); // entre 0 e 1
+    const raio = r * lobo.tamanho * (0.8 + 0.35 * cresce);
+    const x = cx + r * 0.96 * Math.cos(angulo);
+    const y = cy + r * 0.96 * Math.sin(angulo);
+    gradiente = contexto.createRadialGradient(x, y, 0, x, y, raio);
+    gradiente.addColorStop(0, `rgba(255, 184, 100, ${(0.15 + 0.07 * cresce).toFixed(3)})`);
+    gradiente.addColorStop(0.55, 'rgba(255, 160, 70, 0.06)');
+    gradiente.addColorStop(1, 'rgba(255, 140, 50, 0)');
+    contexto.fillStyle = gradiente;
+    contexto.beginPath();
+    contexto.arc(x, y, raio, 0, VOLTA);
+    contexto.fill();
+  }
+}
+
+function desenharSol(cam, X) {
+  const cx = X * cam.escala + cam.tx;
+  const cy = cam.ty;
+  const r = SOL.raio * cam.escala;
+  if (cx + r < 0 || cx - r > largura || cy + r < 0 || cy - r > altura) return;
+
   // Disco: mais claro no centro e mais escuro na borda.
-  gradiente = contexto.createRadialGradient(cx, cy, 0, cx, cy, r);
+  let gradiente = contexto.createRadialGradient(cx, cy, 0, cx, cy, r);
   gradiente.addColorStop(0, '#fff6dc');
   gradiente.addColorStop(0.5, '#ffd98a');
   gradiente.addColorStop(0.82, '#ffb04a');

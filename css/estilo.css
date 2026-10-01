@@ -244,6 +244,33 @@ body.somente-leitura .card { cursor: pointer; }
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
+/* Flutuação: com os efeitos ligados (classe no <body>, js/efeitos.js), cada
+   card sobe e desce bem devagar, alguns pixels. É só visual: a posição salva
+   não muda. O navegador faz esse movimento na placa de vídeo ("translate"),
+   sem redesenhar o mapa. O ritmo de cada card vem de js/cards.js. Com o zoom
+   bem afastado o movimento seria invisível, então fica desligado. */
+@keyframes flutuar-a { from { translate: 0 -2.5px; } to { translate: 0 2.5px; } }
+@keyframes flutuar-b { from { translate: -1px -2px; } to { translate: 1px 2px; } }
+@keyframes flutuar-c { from { translate: 1px -2px; } to { translate: -1px 2px; } }
+body.efeitos-ligados #palco:not([data-detalhe="baixo"]) .card {
+  animation-name: flutuar-a;
+  animation-duration: var(--flut-duracao, 6s);
+  animation-delay: var(--flut-atraso, 0s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+body.efeitos-ligados #palco:not([data-detalhe="baixo"]) .card.flut-b { animation-name: flutuar-b; }
+body.efeitos-ligados #palco:not([data-detalhe="baixo"]) .card.flut-c { animation-name: flutuar-c; }
+/* A flutuação para durante os gestos (mover, zoom, arrastar, criar conexão),
+   sob o mouse (para o alvo não fugir do clique) e atrás da janela de animação. */
+#palco.movendo .card,
+#palco.panoramica .card,
+#palco.arrastando .card,
+#palco.conectando .card,
+.card:hover,
+body:has(#janela-animacao[open]) .card { animation-play-state: paused; }
+
 /* Tamanho pelo nível hierárquico: filhos menores que os pais. A escala é
    aplicada em volta do centro, que continua em left/top. */
 .card.nivel-1 { transform: translate(-50%, -50%) scale(0.85); }
@@ -493,6 +520,7 @@ a.botao { text-decoration: none; }
 .botao.icone { width: 32px; padding: 0; justify-content: center; }
 .botao .ico { width: 17px; height: 17px; }
 .botao[aria-expanded="true"] { background: var(--superficie-3); color: var(--texto); }
+.botao[aria-pressed="false"] { color: var(--texto-3); }  /* botão de liga/desliga na posição "desligado" */
 
 .botao-contorno { border-color: var(--borda-forte); color: var(--texto); }
 .botao-principal { background: #ededed; border-color: #ededed; color: #000; }
@@ -1092,4 +1120,5 @@ body.falha-ao-iniciar .tela-inicial-caixa p { color: var(--texto); }
     transition-duration: 0s !important;
     animation-duration: 0s !important;
   }
+  .card { animation: none !important; } /* sem flutuação */
 }

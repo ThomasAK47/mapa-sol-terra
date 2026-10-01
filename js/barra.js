@@ -8,6 +8,7 @@ import { janelaAberta, toast } from './avisos.js';
 import { focarCampoDeBusca } from './busca.js';
 import { areaUtil, definirModoRoda, obterModoRoda, telaParaMundo } from './camera.js';
 import { editorDeConexaoAberto, fecharEditorConexao } from './editor-conexao.js';
+import { aoMudarEfeitos, definirEfeitos, efeitosLigados } from './efeitos.js';
 import {
   assinar, desfazer, podeDesfazer, podeEditar, podeRefazer, refazer, selecionar, ui,
 } from './estado.js';
@@ -86,6 +87,23 @@ export function iniciarBarra() {
       toast(`Roda do mouse e touchpad: ${NOMES_DO_MODO_DA_RODA[opcao.value]}.`);
     });
   }
+
+  // Botão dos efeitos animados (vento solar, coroa do Sol, flutuação dos cards).
+  const botaoEfeitos = document.getElementById('bt-efeitos');
+  const mostrarEfeitos = () => {
+    const ligados = efeitosLigados();
+    botaoEfeitos.replaceChildren(icone(ligados ? 'efeitos' : 'efeitos-desligados'));
+    botaoEfeitos.setAttribute('aria-pressed', String(ligados));
+    botaoEfeitos.title = ligados
+      ? 'Efeitos animados ligados (vento solar, brilho do Sol e flutuação dos cards). Clique para desligar e deixar o mapa mais leve.'
+      : 'Efeitos animados desligados. Clique para ligar.';
+  };
+  botaoEfeitos.addEventListener('click', () => {
+    definirEfeitos(!efeitosLigados());
+    toast(efeitosLigados() ? 'Efeitos animados ligados.' : 'Efeitos animados desligados: o mapa fica mais leve.', { duracao: 2600 });
+  });
+  aoMudarEfeitos(mostrarEfeitos);
+  mostrarEfeitos();
 
   definirIndicador(mostrarStatus);
   assinar(atualizarBotoesDoHistorico);

@@ -15,6 +15,12 @@ import { limitar, local, PREFIXO_LOCAL } from './util.js';
 export const ZOOM_MIN = 0.05;
 export const ZOOM_MAX = 3;
 
+// Quanto o zoom responde a cada tipo de gesto. Para deixar um deles mais (ou
+// menos) sensível, aumente (ou diminua) o número correspondente.
+const SENSIBILIDADE_RODA = 0.0015;    // roda do mouse: passos grandes (~100 por "clique")
+const SENSIBILIDADE_TOUCHPAD = 0.01;  // dois dedos no touchpad, no modo "sempre zoom"
+const GANHO_DA_PINCA = 1.5;           // pinça no touchpad: 50% mais sensível que o padrão
+
 const CHAVE_CAMERA = PREFIXO_LOCAL + 'camera';
 const CHAVE_RODA = PREFIXO_LOCAL + 'roda';
 
@@ -248,8 +254,11 @@ function aoRodar(evento) {
     moverPor(-dx, -dy);
   } else {
     // Roda do mouse: passos grandes (~100) → sensibilidade menor.
-    // Pinça: passos pequenos e frequentes → sensibilidade maior.
-    const sensibilidade = pareceRodaDeMouse(evento) ? 0.0015 : 0.01;
+    // Touchpad: passos pequenos e frequentes → sensibilidade maior. A pinça
+    // chega como "roda com Ctrl" e ganha um reforço.
+    const sensibilidade = pareceRodaDeMouse(evento) ? SENSIBILIDADE_RODA
+      : evento.ctrlKey ? SENSIBILIDADE_TOUCHPAD * GANHO_DA_PINCA
+        : SENSIBILIDADE_TOUCHPAD;
     const fator = Math.exp(-limitar(dy, -120, 120) * sensibilidade);
     zoomNoPonto(evento.clientX, evento.clientY, fator);
   }
@@ -262,7 +271,8 @@ function aoIniciarGestoSafari(evento) {
 
 function aoMudarGestoSafari(evento) {
   evento.preventDefault();
-  const alvo = escalaNoInicioDoGesto * evento.scale;
+  // O mesmo reforço da pinça, aplicado à abertura dos dedos informada pelo Safari.
+  const alvo = escalaNoInicioDoGesto * Math.pow(evento.scale, GANHO_DA_PINCA);
   zoomNoPonto(evento.clientX, evento.clientY, alvo / camera.escala);
 }
 

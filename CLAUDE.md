@@ -35,7 +35,19 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   painel, janela grande com `<iframe sandbox="allow-scripts">` criado ao abrir e
   removido ao fechar, Esc por mensagem, `_modelo.html`, demonstração,
   `CONTRATO.md`, cabeçalho de isolamento no servidor)
-- [ ] Fase 5: efeitos visuais, botão de desempenho, README e CLAUDE.md finais, GitHub Pages
+- [x] Fase 5: efeitos visuais (estrelas, vento solar, coroa do Sol animada,
+  flutuação dos cards), botão de efeitos, pinça 50% mais sensível, README e
+  CLAUDE.md finais, passo a passo do GitHub Pages
+
+**Todas as fases do plano foram entregues.** O que vem depois é decidido pela
+pessoa usuária:
+
+- **Ajustes de layout:** ela pediu para deixá-los para depois das fases. Espere
+  o pedido dela; não proponha mudanças visuais grandes por conta própria.
+- **GitHub:** o push e a ativação do GitHub Pages são feitos por ela (passo a
+  passo no README).
+- **Animações novas:** chegam por outras conversas, seguindo
+  `animacoes/CONTRATO.md`.
 
 ## Arquitetura
 
@@ -44,7 +56,8 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 - **Módulos ES** em `js/`. Funcionam no servidor local e no GitHub Pages (não em
   `file://`).
 - **Camadas da tela, de trás para frente:**
-  1. `<canvas id="fundo">`: Sol, Terra e limites das zonas;
+  1. `<canvas id="fundo">`: estrelas, coroa do Sol, vento solar, Sol, Terra e
+     limites das zonas;
   2. `#mundo`: recebe um único `transform` de pan/zoom. Contém, nesta ordem:
      - o `<svg id="camada-conexoes">`, com os grupos `#linhas-familia`
        (pai → filho), `#linhas-conexoes` (conexões) e `#linhas-redirecionadas`
@@ -61,9 +74,11 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 | `js/estado.js` | Dados em memória. **Único caminho de alteração** (`alterar`, gestos). Desfazer/refazer (100 ações), seleção |
 | `js/modelo.js` | Versão do formato, `migrar()`, `normalizar()` (reparo + avisos), geometria das zonas |
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
-| `js/camera.js` | Pan/zoom, roda/touchpad/pinça, área útil, posição guardada |
-| `js/fundo.js` | Canvas: Sol, Terra com linhas de campo, limites e nomes das zonas |
-| `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, classes `nivel-1..3` (escala), botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica a escala do nível), faixa de zoom (`data-detalhe`), alças. Chama `aoRenderizarCards` no fim |
+| `js/camera.js` | Pan/zoom, roda/touchpad/pinça (sensibilidades em constantes no topo; `GANHO_DA_PINCA = 1.5`, a pedido), área útil, posição guardada |
+| `js/fundo.js` | Canvas: estrelas, coroa do Sol (`desenharCoroa`), vento solar, Sol, Terra com linhas de campo, limites e nomes das zonas. Redesenha a cada mudança da câmera e, com os efeitos ligados, a cada passo do relógio dos efeitos |
+| `js/ceu.js` | Estrelas (estáticas, com paralaxe de 4% só no arrasto) e partículas de vento solar (espaço da tela, dando a volta; só à direita do Sol). Só decoração |
+| `js/efeitos.js` | Liga/desliga os efeitos (`definirEfeitos`, guardado no localStorage; padrão desligado se o sistema pede menos movimento), classe `efeitos-ligados` no `<body>`, relógio a 30 passos/s (`tempoDosEfeitos`, `aoPassoDosEfeitos`), parado com a janela de animação aberta |
+| `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, classes `nivel-1..3` (escala), botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica a escala do nível), faixa de zoom (`data-detalhe`), alças, ritmo da flutuação de cada card (`--flut-duracao`, `--flut-atraso`, classe `flut-a/b/c`, a partir do id). Chama `aoRenderizarCards` no fim |
 | `js/conexoes.js` | Linhas pai → filho; conexões como curvas SVG (Bézier quadrática, leque por par de cards **visíveis**), setas, textos no meio; conexões de cards escondidos redirecionadas ao representante (tracejadas; várias viram "N conexões", com `data-expandir`); linha provisória; espessura constante na tela |
 | `js/hierarquia.js` | `hierarquia()` em cache: filhos, nível, representante visível, visíveis, total de descendentes. `descendentes`, `podeSerPai`, `ancestraisRecolhidos`, `estaRecolhido` (considera o recolhimento local da vitrine e as expansões temporárias da busca) |
 | `js/busca.js` | Campo de busca: `filtrarCards` (função pura), resultados na ordem do mapa, Enter/Shift+Enter/Esc, expansão temporária de pais recolhidos |
@@ -74,7 +89,7 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 | `js/animacoes.js` | Manifesto (`animacoes/manifesto.json`): leitura ao iniciar e quando a janela volta ao foco, `validarManifesto` (função pura, avisos em português), `arquivoDeAnimacaoValido` (regra do nome), `infoDaAnimacao`, `aoMudarManifesto` |
 | `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
 | `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `definirAnimacao`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
-| `js/barra.js` | Barra de ferramentas, indicador de salvamento, menu de opções, atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
+| `js/barra.js` | Barra de ferramentas, indicador de salvamento, botão de efeitos (`#bt-efeitos`), menu de opções, atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
 | `js/util.js` | Auxiliares: `el()`, `icone()`, ids, datas, localStorage seguro, `localizarErroJson` (linha/coluna de um erro de JSON) |
@@ -132,6 +147,7 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 - **Fora do JSON (localStorage):**
   - `mapa-sol-terra:camera`: posição da câmera;
   - `mapa-sol-terra:roda`: comportamento da roda;
+  - `mapa-sol-terra:efeitos`: efeitos animados ligados (`true`) ou não;
   - `mapa-sol-terra:reserva`: alterações não gravadas.
 
 ## Servidor (`iniciar.py`, só biblioteca padrão)
@@ -175,6 +191,57 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 **Opções:** `--porta N` e `--sem-navegador` (ou as variáveis `MAPA_PORTA` e
 `MAPA_SEM_NAVEGADOR=1`).
 
+## Efeitos visuais
+
+São só decoração: não representam medidas nem um modelo físico, e nunca tocam
+nos dados.
+
+- **Liga/desliga:** `js/efeitos.js` guarda a escolha em
+  `mapa-sol-terra:efeitos` e põe a classe `efeitos-ligados` no `<body>`. Sem
+  escolha guardada, o padrão é ligado, exceto com `prefers-reduced-motion`.
+- **Desligado custa zero:** sem os efeitos, nenhum laço roda e o fundo só é
+  redesenhado quando a câmera ou os dados mudam. Mantenha isso em qualquer
+  efeito novo.
+- **Relógio:** 30 passos por segundo (`tempoDosEfeitos()`, em segundos). Ele
+  para com os efeitos desligados e com a janela de animação aberta.
+- **Fundo:** a cada passo, `fundo.js` redesenha, a menos que a câmera tenha
+  desenhado há menos de 25 ms (mapa em movimento). Um redesenho custa menos de
+  0,1 ms de JavaScript.
+- **Estrelas:** sempre visíveis, sem piscar. Deslocam-se 4% do que o mapa é
+  arrastado; o zoom não as move (`acompanharCamera` só soma arrastos).
+- **Vento solar:** riscos no espaço da tela, que dão a volta nas bordas. Só
+  aparecem à direita do centro do Sol e surgem aos poucos. O Sol e a Terra,
+  desenhados depois, cobrem o que passa atrás deles.
+- **Coroa:** um halo que "respira" e cinco manchas de brilho esfumado
+  (`LOBOS_DA_COROA`). Um contorno preenchido não serve: fica com borda dura.
+- **Flutuação dos cards:** animação CSS de `translate` (`flutuar-a/b/c`), com o
+  ritmo de cada card vindo do id.
+  - Ela roda na placa de vídeo, sem redesenhar o mapa, e não tem custo
+    mensurável nem com 130 cards.
+  - As regras usam as propriedades separadas (`animation-name` etc.), e não o
+    atalho `animation`. Assim a pausa (`animation-play-state`) vale sempre.
+  - Ela pausa com `#palco.movendo`, `.panoramica`, `.arrastando` e
+    `.conectando`, sob o mouse e atrás da janela de animação.
+  - Fica desligada com `data-detalhe="baixo"` e com `prefers-reduced-motion`.
+  - As linhas não flutuam. As folgas em `js/conexoes.js` (`FOLGA_INICIO`,
+    `FOLGA_SETA`, `FOLGA_FAMILIA`) cobrem os 2,5 px do movimento.
+- **Nunca** anime a posição dos cards por JavaScript nem por `left`/`top`: isso
+  obriga o navegador a repintar o mapa, incluindo o SVG das conexões.
+
+## GitHub Pages (a vitrine)
+
+- O repositório é `ThomasAK47/mapa-sol-terra`, e a vitrine fica em
+  `https://thomasak47.github.io/mapa-sol-terra/`. O push e a ativação são da
+  pessoa usuária.
+- **Subpasta:** todos os caminhos do app são relativos.
+- **Maiúsculas:** o Pages diferencia maiúsculas nos nomes de arquivo; o Windows,
+  não. Um `import` com a grafia errada funciona aqui e quebra lá.
+- **`.nojekyll`:** sem ele, o Pages não serve arquivos que começam com `_`
+  (`animacoes/_modelo.html`).
+- **Modo:** sem `api/status` (404), o app abre só para leitura.
+- **O que vai para lá:** tudo o que não está no `.gitignore`, incluindo
+  `data/estudos.json`.
+
 ## Convenções
 
 - **Textos da pessoa usuária:** nunca use `innerHTML`; use `el()` / `textContent`.
@@ -196,12 +263,16 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 - **Cópia de teste:** copie o projeto para uma pasta temporária e rode lá:
   `python iniciar.py --porta 8765 --sem-navegador`.
   Outra porta também isola a reserva do localStorage.
-- **Somente leitura (como no GitHub Pages):** `python -m http.server 8770` na
-  cópia.
+- **Somente leitura (como no GitHub Pages):**
+  `python -m http.server 8770 --bind 127.0.0.1` na cópia.
+- **Simulação fiel do Pages:** um servidor estático que sirva a cópia sob
+  `/mapa-sol-terra/`, confira a grafia exata de cada pedaço do caminho e só
+  entregue o que `git ls-files --cached --others --exclude-standard` lista.
+  Nenhum pedido pode falhar, exceto `api/status`.
 - **Desempenho:** `?teste=150` na URL. No console, `await mapaDepuracao.medirPanZoom()`.
 - **Depuração:** `window.mapaDepuracao` expõe `estado`, `camera`,
-  `persistencia`, `acoes`, `hierarquia`, `busca`, `animacoes` e
-  `janelaAnimacao`.
+  `persistencia`, `acoes`, `hierarquia`, `busca`, `animacoes`,
+  `janelaAnimacao` e `efeitos`.
 - **Navegador de verdade (Edge sem janela):** o navegador embutido do Claude não
   carrega iframes com sandbox (veja "Armadilhas"). Para testar animações e
   medir quadros por segundo reais, controle o Edge pelo protocolo de depuração
@@ -238,7 +309,14 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
     de tracejadas, o que confunde com as redirecionadas;
   - um protótipo em canvas, com as curvas num único `Path2D`, deixou o zoom a
     cerca de 90 qps, mas mover caiu para 77 a 100 qps;
-  - ainda não há decisão (proposta para a Fase 5).
+  - **decisão:** a pessoa testou e disse que a pinça não trava, então as linhas
+    continuam em SVG. Só troque para canvas se ela pedir;
+  - os efeitos da Fase 5 não mudam esses números (medido com e sem eles).
+- **Roda do mouse nos testes:** um `WheelEvent` criado em JavaScript não tem o
+  `wheelDeltaY` de uma roda de verdade, e o app o trata como touchpad. Para
+  simular a roda, use `Input.dispatchMouseEvent` com `type: 'mouseWheel'` (CDP).
+  O `WheelEvent` fabricado, com `ctrlKey: true` e `deltaY` pequeno, serve para
+  simular a pinça.
 - **Alças:** ficam com `opacity: 0`, e não `visibility: hidden`. Um elemento
   oculto não recebe o clique, e um gesto rápido acabaria arrastando o card em
   vez de criar a conexão.

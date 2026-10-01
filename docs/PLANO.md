@@ -206,8 +206,28 @@ arquivo.
     terminando em `.html` e sem começar com `_`.
   - **Atalhos:** com a janela aberta, os do mapa ficam desligados.
   - **Desempenho do zoom com 300 conexões:** o zoom contínuo fica abaixo do
-    ideal, porque o SVG das linhas é repintado a cada mudança de escala.
-    Proposta para a Fase 5.
+    ideal, porque o SVG das linhas é repintado a cada mudança de escala. Ao
+    testar, a pessoa usuária disse que a pinça não trava, e as linhas
+    continuaram em SVG.
+- **Acréscimos da Fase 5 (efeitos):**
+  - **Estrelas:** não piscam e ficam sempre visíveis. Ao arrastar o mapa, elas
+    se deslocam 4% do movimento, para dar profundidade.
+  - **Vento solar:** riscos claros e discretos, da esquerda para a direita, só à
+    direita do Sol.
+  - **Coroa do Sol:** um halo e manchas de brilho que crescem e encolhem
+    devagar.
+  - **Flutuação:** cada card sobe e desce até 2,5 px, com ritmo próprio. Ela
+    pausa durante os gestos e sob o mouse, e desliga com o zoom bem afastado.
+    Para as linhas não encostarem nos cards, a folga das linhas pai → filho
+    passou de 2 para 4.
+  - **Botão de efeitos:** liga e desliga vento, coroa e flutuação. A escolha
+    fica no navegador. Sem os efeitos, nada roda com o mapa parado.
+  - **Menos movimento:** se o sistema estiver configurado para reduzir
+    animações, os efeitos começam desligados e os cards não flutuam.
+  - **Janela de animação aberta:** os efeitos de trás param.
+  - **Pinça:** 50% mais sensível, a pedido. A roda do mouse não mudou.
+  - **Desempenho:** com 150 cards e 300 conexões, os efeitos não mudaram os
+    quadros por segundo de mover, de zoom nem do mapa parado.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

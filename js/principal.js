@@ -18,6 +18,7 @@ import * as camera from './camera.js';
 import { iniciarCards, renderizarAgora } from './cards.js';
 import { iniciarConexoes } from './conexoes.js';
 import * as editorConexao from './editor-conexao.js';
+import * as efeitos from './efeitos.js';
 import * as estado from './estado.js';
 import { iniciarFundo } from './fundo.js';
 import * as hierarquia from './hierarquia.js';
@@ -38,6 +39,7 @@ async function iniciarApp() {
   // 1. Tela
   const palco = document.getElementById('palco');
   iniciarAvisos();
+  efeitos.iniciarEfeitos(); // antes do fundo e da barra, que consultam se os efeitos estão ligados
   camera.iniciarCamera(palco, document.getElementById('mundo'), { guardarPosicao: quantidadeTeste === null });
   iniciarFundo(document.getElementById('fundo'), document.getElementById('rotulos-zonas'));
   iniciarCards(document.getElementById('camada-cards'), palco);
@@ -60,7 +62,8 @@ async function iniciarApp() {
 
   // Ferramentas para investigar problemas pelo console do navegador (F12).
   window.mapaDepuracao = {
-    estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, medirPanZoom,
+    estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, efeitos,
+    medirPanZoom,
   };
 
   // 2 e 3. Modo e dados

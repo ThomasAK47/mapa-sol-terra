@@ -10,6 +10,8 @@
 // nivel-3 reduzem a escala); cards dentro de um pai recolhido ficam
 // escondidos, e o pai mostra um contador "+N" (que também é o botão de
 // expandir). Busca e modo foco viram classes nos cards e no #palco.
+// A flutuação dos cards (efeitos) é feita em CSS; aqui só se define o ritmo
+// de cada um.
 // =============================================================================
 
 import { aoMudarCamera } from './camera.js';
@@ -173,10 +175,27 @@ function criarItem(id) {
   const raiz = el('div', { class: 'card', 'data-id': id },
     el('div', { class: 'card-corpo' }, titulo, descricao, icones, recolher, alcas),
   );
+  definirRitmoDaFlutuacao(raiz, id);
   return {
     id, raiz, titulo, descricao, icones, recolher,
     assinatura: null, X: null, Y: null, nivel: 0, oculto: false, estadoRecolher: null, classes: {},
   };
+}
+
+/**
+ * Flutuação (com os efeitos ligados, o card sobe e desce alguns pixels; veja
+ * css/estilo.css). Aqui só se define o ritmo de cada card: duração, ponto de
+ * partida e direção saem do id, então os vizinhos não se movem juntos e o
+ * ritmo de um card é sempre o mesmo. A posição salva nunca muda.
+ */
+function definirRitmoDaFlutuacao(raiz, id) {
+  let numero = 2166136261;
+  for (let i = 0; i < id.length; i++) numero = Math.imul(numero ^ id.charCodeAt(i), 16777619) >>> 0;
+  // Duração de uma subida (ou descida): de 4,0 a 7,0 s. O "atraso" negativo faz
+  // cada card começar num ponto diferente do vaivém.
+  raiz.style.setProperty('--flut-duracao', `${(4 + (numero % 31) / 10).toFixed(1)}s`);
+  raiz.style.setProperty('--flut-atraso', `${(-((numero >>> 8) % 140) / 10).toFixed(1)}s`);
+  raiz.classList.add(['flut-a', 'flut-b', 'flut-c'][(numero >>> 16) % 3]);
 }
 
 /** Atualiza o texto do card. Devolve true se algo mudou (precisa medir). */
