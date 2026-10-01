@@ -5,7 +5,7 @@ um título e uma descrição curta, e cada conexão explica por que dois assunto
 relacionam. As explicações longas ficam no Google Docs.
 
 > **README em construção.** Esta versão cobre o uso no dia a dia. A versão
-> completa, com animações e publicação no GitHub Pages, chega na Fase 5.
+> completa, com a publicação no GitHub Pages, chega na Fase 5.
 
 ## Como abrir
 
@@ -115,6 +115,31 @@ o primeiro.
   ao limpar a busca, o pai volta a ficar recolhido. A busca nunca altera o
   arquivo.
 
+### Animações
+
+Um card pode ter uma animação: um arquivo da pasta `animacoes/` que abre numa
+janela grande.
+
+| Ação | Como |
+|---|---|
+| Escolher a animação do card | Campo **Animação** no painel do card |
+| Abrir | Ícone ▷ no card, ou botão **Abrir** no painel |
+| Recomeçar do início | Botão de seta circular, no alto da janela |
+| Fechar | Botão ×, tecla Esc, ou clique fora da janela |
+
+- A lista do campo **Animação** vem do arquivo `animacoes/manifesto.json`.
+- A animação roda isolada: ela não enxerga nem altera os dados do mapa.
+- Com a janela aberta, os atalhos do mapa (Delete, Ctrl+Z…) ficam desligados.
+
+**Para acrescentar uma animação nova:**
+
+1. Numa conversa, cole o arquivo `animacoes/CONTRATO.md` e descreva a animação
+   que você quer. A resposta traz um arquivo HTML e um trecho para o manifesto.
+2. Salve o arquivo HTML na pasta `animacoes/`, com o nome indicado.
+3. Acrescente o trecho em `animacoes/manifesto.json`. O passo a passo está na
+   seção "Registrar no manifesto" do contrato.
+4. Volte ao mapa: a lista do campo **Animação** se atualiza sozinha.
+
 ## Guardar uma cópia no GitHub
 
 O repositório é <https://github.com/ThomasAK47/mapa-sol-terra>. Para enviar
@@ -150,6 +175,12 @@ Envia as fotos para o GitHub. Na **primeira vez**, use `git push -u origin main`
 - **"O arquivo de dados mudou fora desta aba"**: o arquivo foi alterado em outra
   aba, à mão ou pelo git. Escolha qual versão manter. A outra fica guardada, em
   `data/backups/` ou baixada como `.json`.
+- **Uma animação nova não aparece na lista**: confira o `animacoes/manifesto.json`.
+  Se ele tiver um erro de digitação (como uma vírgula faltando), o campo
+  **Animação** do painel diz em que linha.
+- **"O arquivo … não foi encontrado"** ao abrir uma animação: o nome no
+  manifesto e o nome do arquivo na pasta `animacoes/` precisam ser iguais, letra
+  por letra.
 
 ## Teste de desempenho
 

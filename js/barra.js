@@ -13,6 +13,7 @@ import {
 } from './estado.js';
 import { hierarquia } from './hierarquia.js';
 import { cancelarGestoAtual } from './interacao.js';
+import { animacaoAberta, fecharAnimacao } from './janela-animacao.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 import { definirIndicador, exportar, importar, salvarAgora } from './persistencia.js';
 import { digitandoEmCampo, icone } from './util.js';
@@ -137,6 +138,12 @@ function aoTeclar(evento) {
   if (ctrl && letra === 's') {
     evento.preventDefault(); // impede o "Salvar página como" do navegador
     salvarAgora();
+    return;
+  }
+  if (animacaoAberta()) {
+    // Com a animação aberta, os atalhos do mapa ficam desligados (um Delete
+    // não pode excluir o card que ficou selecionado atrás da janela).
+    if (tecla === 'Escape') fecharAnimacao();
     return;
   }
   if (ctrl && letra === 'f') {

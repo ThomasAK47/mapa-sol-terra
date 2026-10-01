@@ -1,0 +1,10 @@
+{
+  "leia-me": "Lista das animações do mapa. Para acrescentar uma, siga animacoes/CONTRATO.md (seção 'Registrar no manifesto').",
+  "animacoes": [
+    {
+      "arquivo": "demonstracao.html",
+      "titulo": "[exemplo] Demonstração",
+      "descricao": "Teste técnico do sistema de animações: pontos em onda, com controles. Não representa nenhum fenômeno físico."
+    }
+  ]
+}

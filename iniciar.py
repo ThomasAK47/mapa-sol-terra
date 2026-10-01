@@ -23,6 +23,8 @@ O que este programa faz
   meio, o arquivo antigo continua inteiro.
 * Antes da primeira gravação de cada dia, guarda uma cópia do arquivo em
   data/backups/ (mantém as 30 mais recentes).
+* Envia os arquivos da pasta animacoes/ com um cabeçalho de isolamento: mesmo
+  abertos direto numa aba, eles não acessam os dados do mapa.
 
 Usa apenas a biblioteca padrão do Python: não é preciso instalar nada.
 
@@ -324,10 +326,22 @@ class Manipulador(http.server.SimpleHTTPRequestHandler):
 
     # ---- respostas -----------------------------------------------------
 
+    def _pasta_de_animacoes(self):
+        """True para qualquer endereço dentro da pasta animacoes/."""
+        limpo = posixpath.normpath(urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)).lower()
+        # No Windows, "animacoes." e "animacoes " abrem a mesma pasta.
+        partes = [parte.rstrip(". ") for parte in limpo.split("/") if parte]
+        return bool(partes) and partes[0] == "animacoes"
+
     def end_headers(self):
         # Nada fica em cache: o navegador sempre recebe a versão mais recente
         # dos arquivos do app e dos dados.
         self.send_header("Cache-Control", "no-store")
+        # As animações rodam sempre isoladas, como no iframe do app, mesmo se
+        # alguém abrir o arquivo direto numa aba: não enxergam os dados do
+        # navegador e não conseguem gravar no mapa.
+        if self._pasta_de_animacoes():
+            self.send_header("Content-Security-Policy", "sandbox allow-scripts")
         super().end_headers()
 
     def _responder_json(self, codigo, dados, cabecalhos=None):

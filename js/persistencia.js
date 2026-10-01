@@ -15,7 +15,9 @@
 import { alertar, confirmar, escolher, mostrarFaixa, removerFaixa, toast } from './avisos.js';
 import { obterDados, substituirTudo, ui } from './estado.js';
 import { ErroVersaoFutura, migrar, normalizar } from './modelo.js';
-import { baixarArquivo, carimboParaArquivo, formatarDataHora, local, plural, PREFIXO_LOCAL } from './util.js';
+import {
+  baixarArquivo, carimboParaArquivo, formatarDataHora, local, localizarErroJson, plural, PREFIXO_LOCAL,
+} from './util.js';
 
 const ESPERA_SALVAR_MS = 1000;
 const CHAVE_RESERVA = PREFIXO_LOCAL + 'reserva';
@@ -69,20 +71,6 @@ export async function lerArquivoDeDados() {
   } catch (erro) {
     return { tipo: 'json-invalido', ...localizarErroJson(texto, erro) };
   }
-}
-
-/** Descobre linha e coluna de um erro de JSON (as mensagens variam por navegador). */
-export function localizarErroJson(texto, erro) {
-  const mensagem = String(erro?.message ?? erro);
-  let encontrado = mensagem.match(/line (\d+) column (\d+)/i);
-  if (encontrado) return { linha: Number(encontrado[1]), coluna: Number(encontrado[2]), mensagem };
-  encontrado = mensagem.match(/position (\d+)/i);
-  if (encontrado) {
-    const posicao = Number(encontrado[1]);
-    const antes = texto.slice(0, posicao);
-    return { linha: antes.split('\n').length, coluna: posicao - antes.lastIndexOf('\n'), mensagem };
-  }
-  return { linha: null, coluna: null, mensagem };
 }
 
 /** Guarda a versão do arquivo que foi carregado ('novo' se ele não existia). */

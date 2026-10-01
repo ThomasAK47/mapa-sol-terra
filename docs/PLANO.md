@@ -138,7 +138,8 @@ arquivo.
 | Maiúsculas em nomes de arquivo no Pages | Nomes em minúsculas; caminhos relativos |
 | Desempenho com 150 cards / 300 conexões | Flutuação pausa em pan/zoom/arrasto; nível de detalhe por zoom; modo `?teste` |
 | Textos das conexões sobrepostos | Truncados; somem no zoom afastado |
-| Iframe de animação (Esc, localStorage, CDN offline) | Botão × sempre visível; regras no `CONTRATO.md` |
+| Iframe de animação (Esc, localStorage, CDN offline) | Botão × sempre visível; Esc dentro da animação por mensagem; botão "Recomeçar"; regras no `CONTRATO.md` |
+| Animação aberta direto numa aba | O servidor envia `animacoes/` com `Content-Security-Policy: sandbox allow-scripts` |
 
 ## 7. Decisões de comportamento
 
@@ -189,6 +190,24 @@ arquivo.
     escondem;
   - no modo foco, o pai e os filhos do card também ficam em destaque;
   - enquanto há uma busca ativa, o modo foco fica suspenso.
+- **Acréscimos da Fase 4 (animações):**
+  - **Janela:** ocupa quase a tela toda. Fecha com ×, Esc, clique fora ou um
+    pedido da própria animação: o Esc dentro dela envia a mensagem
+    `fechar-animacao`, e nenhuma outra mensagem é aceita.
+  - **Recomeçar:** um botão recarrega a animação, o que também resolve uma
+    biblioteca da internet que falhou.
+  - **Arquivo inexistente:** antes de abrir, o app confere se o arquivo existe e,
+    se não existir, explica o problema.
+  - **Manifesto:**
+    - é relido quando a janela do navegador volta ao foco;
+    - os erros dele aparecem no campo "Animação" do painel;
+    - a animação escolhida continua na lista mesmo se sair do manifesto.
+  - **Nomes de arquivo:** letras minúsculas sem acento, números, `-` e `_`,
+    terminando em `.html` e sem começar com `_`.
+  - **Atalhos:** com a janela aberta, os do mapa ficam desligados.
+  - **Desempenho do zoom com 300 conexões:** o zoom contínuo fica abaixo do
+    ideal, porque o SVG das linhas é repintado a cada mudança de escala.
+    Proposta para a Fase 5.
 - **Desfazer:**
   - 100 ações, em memória;
   - dentro de um campo de texto, o Ctrl+Z desfaz o texto, não o mapa;

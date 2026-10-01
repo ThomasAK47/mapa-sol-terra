@@ -7,6 +7,7 @@
 //   • arrastar a alça ○ na borda de um card até outro card → nova conexão;
 //   • clicar num card → selecionar (modo foco); clicar no fundo → desmarcar;
 //   • clicar no texto de uma conexão → abrir o editor da conexão;
+//   • clicar nos ícones do card → abrir a animação ou o link do Docs;
 //   • duplo clique no card → abrir o painel; no fundo → criar um card ali;
 //   • dois dedos numa tela sensível ao toque → pinça (zoom).
 // Ao arrastar um card ou uma conexão perto da borda da tela, o mapa anda
@@ -14,7 +15,6 @@
 // =============================================================================
 
 import { abrirLinkDocs, alternarRecolhido, criarCard, criarConexao, expandirCards } from './acoes.js';
-import { toast } from './avisos.js';
 import { aoMudarCamera, areaUtil, moverPor, telaParaMundo, zoomNoPonto } from './camera.js';
 import { marcarAlvoDeConexao, marcarArrastando } from './cards.js';
 import { apagarRascunho, desenharRascunho } from './conexoes.js';
@@ -24,6 +24,7 @@ import {
   obterDados, podeEditar, selecionar,
 } from './estado.js';
 import { descendentes } from './hierarquia.js';
+import { abrirAnimacaoDoCard } from './janela-animacao.js';
 import { definirPosicaoAbsoluta, posicaoAbsoluta } from './modelo.js';
 import { abrirPainel, fecharPainel, painelAberto } from './painel.js';
 
@@ -379,5 +380,5 @@ function aoClicar(evento) {
   const id = botao.closest('.card')?.dataset.id;
   if (!id || !obterDados()) return;
   if (botao.dataset.acao === 'docs') abrirLinkDocs(id);
-  else if (botao.dataset.acao === 'animacao') toast('As animações chegam na Fase 4.');
+  else if (botao.dataset.acao === 'animacao') abrirAnimacaoDoCard(id);
 }

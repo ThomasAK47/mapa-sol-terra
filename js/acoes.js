@@ -36,7 +36,7 @@ export function criarCard(X, Y) {
 
 /** true se o card não tem nada escrito. */
 function cardVazio(card) {
-  return !card.titulo.trim() && !card.descricao.trim() && card.tags.length === 0 && !card.linkDocs;
+  return !card.titulo.trim() && !card.descricao.trim() && card.tags.length === 0 && !card.linkDocs && !card.animacao;
 }
 
 /**
@@ -123,6 +123,22 @@ export function enquadrarTudo({ animar = true } = {}) {
     maxY = Math.max(maxY, cards.y + cards.altura);
   }
   enquadrar({ x: minX, y: minY, largura: maxX - minX, altura: maxY - minY }, { animar });
+}
+
+/**
+ * Associa ao card uma animação (o nome de um arquivo da pasta animacoes/),
+ * ou nenhuma (null).
+ */
+export function definirAnimacao(id, arquivo) {
+  const card = buscarCard(id);
+  const valor = arquivo || null;
+  if (!card || card.animacao === valor) return;
+  alterar(valor ? 'Escolher animação' : 'Remover animação', (d) => {
+    const alvo = d.cards.find((c) => c.id === id);
+    if (!alvo) return;
+    alvo.animacao = valor;
+    alvo.atualizadoEm = agoraISO();
+  });
 }
 
 /** Abre o link do Google Docs do card numa nova aba. */

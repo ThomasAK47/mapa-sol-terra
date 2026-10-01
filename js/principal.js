@@ -10,6 +10,7 @@
 // =============================================================================
 
 import * as acoes from './acoes.js';
+import * as animacoes from './animacoes.js';
 import { iniciarAvisos, mostrarFaixa, toast } from './avisos.js';
 import { iniciarBarra } from './barra.js';
 import * as busca from './busca.js';
@@ -21,6 +22,7 @@ import * as estado from './estado.js';
 import { iniciarFundo } from './fundo.js';
 import * as hierarquia from './hierarquia.js';
 import { iniciarInteracao } from './interacao.js';
+import * as janelaAnimacao from './janela-animacao.js';
 import { dadosVazios, ErroVersaoFutura, migrar, normalizar, VERSAO_ATUAL } from './modelo.js';
 import { iniciarPainel } from './painel.js';
 import * as persistencia from './persistencia.js';
@@ -49,13 +51,17 @@ async function iniciarApp() {
   iniciarInteracao(palco);
   iniciarPainel(document.getElementById('painel'));
   editorConexao.iniciarEditorConexao(document.getElementById('editor-conexao'));
+  janelaAnimacao.iniciarJanelaAnimacao(document.getElementById('janela-animacao'));
   busca.iniciarBusca(document.getElementById('campo-busca'), document.getElementById('contador-busca'));
   iniciarBarra();
   persistencia.iniciarPersistencia();
   estado.definirAoAlterar(persistencia.marcarAlterado);
+  animacoes.iniciarAnimacoes(); // lê animacoes/manifesto.json sem esperar (o mapa não depende dele)
 
   // Ferramentas para investigar problemas pelo console do navegador (F12).
-  window.mapaDepuracao = { estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, medirPanZoom };
+  window.mapaDepuracao = {
+    estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, medirPanZoom,
+  };
 
   // 2 e 3. Modo e dados
   let dados;

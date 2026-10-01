@@ -31,7 +31,10 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 - [x] Fase 3: hierarquia (card pai no painel, tamanhos por nível, recolher/expandir
   com "+N", linhas pai → filho, conexões redirecionadas e agrupadas, arrastar pai
   com filhos / Alt só o pai) e busca (Ctrl+F, Enter/Shift+Enter, expansão temporária)
-- [ ] Fase 4: animações (manifesto, iframe sandbox, `_modelo.html`, demonstração, `CONTRATO.md`)
+- [x] Fase 4: animações (manifesto relido ao voltar à janela, campo "Animação" no
+  painel, janela grande com `<iframe sandbox="allow-scripts">` criado ao abrir e
+  removido ao fechar, Esc por mensagem, `_modelo.html`, demonstração,
+  `CONTRATO.md`, cabeçalho de isolamento no servidor)
 - [ ] Fase 5: efeitos visuais, botão de desempenho, README e CLAUDE.md finais, GitHub Pages
 
 ## Arquitetura
@@ -49,7 +52,8 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
      - os textos das conexões (HTML);
      - os cards (HTML);
   3. `#rotulos-zonas`: nomes presos ao topo;
-  4. interface: barra, painel, faixas, toasts, `<dialog>`.
+  4. interface: barra, painel, faixas, toasts, `<dialog id="dialogo">`
+     (confirmações) e `<dialog id="janela-animacao">` (o iframe da animação).
 
 | Arquivo | Responsabilidade |
 |---|---|
@@ -66,12 +70,14 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
 | `js/editor-conexao.js` | Janelinha presa ao meio da conexão: texto, inverter, com/sem seta, excluir (ou só leitura) |
 | `js/foco.js` | `focoAtual()`: card selecionado + vizinhos (pelas pontas visíveis) + pai e filhos (`familia`), ou a conexão aberta no editor. Fica suspenso durante a busca |
 | `js/interacao.js` | Ponteiro: pan, arrastar card, arrastar alça (nova conexão), clique, duplo clique, pinça, mapa andando sozinho perto da borda |
-| `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, conexões do card |
-| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
-| `js/barra.js` | Barra de ferramentas, indicador de salvamento, menu de opções, atalhos |
+| `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, campo "Animação" (lista do manifesto; a escolha atual continua na lista mesmo fora dele) ou botão "Abrir a animação" na leitura, conexões do card |
+| `js/animacoes.js` | Manifesto (`animacoes/manifesto.json`): leitura ao iniciar e quando a janela volta ao foco, `validarManifesto` (função pura, avisos em português), `arquivoDeAnimacaoValido` (regra do nome), `infoDaAnimacao`, `aoMudarManifesto` |
+| `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
+| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `definirAnimacao`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
+| `js/barra.js` | Barra de ferramentas, indicador de salvamento, menu de opções, atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
-| `js/util.js` | Auxiliares: `el()`, `icone()`, ids, datas, localStorage seguro |
+| `js/util.js` | Auxiliares: `el()`, `icone()`, ids, datas, localStorage seguro, `localizarErroJson` (linha/coluna de um erro de JSON) |
 
 **Fluxo de uma alteração:**
 
@@ -157,6 +163,10 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 **Proteções:**
 
 - escuta só em 127.0.0.1;
+- envia tudo o que está em `/animacoes/` com
+  `Content-Security-Policy: sandbox allow-scripts`. Assim, uma animação aberta
+  direto numa aba também tem origem opaca: não lê o localStorage do app e não
+  grava, porque o `Origin: null` é recusado;
 - não serve pastas ocultas, `data/backups` nem `.tmp`;
 - envia `Cache-Control: no-store`;
 - fixa os tipos MIME (no Windows, `.js` pode vir como `text/plain`);
@@ -190,7 +200,16 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
   cópia.
 - **Desempenho:** `?teste=150` na URL. No console, `await mapaDepuracao.medirPanZoom()`.
 - **Depuração:** `window.mapaDepuracao` expõe `estado`, `camera`,
-  `persistencia` e `acoes`.
+  `persistencia`, `acoes`, `hierarquia`, `busca`, `animacoes` e
+  `janelaAnimacao`.
+- **Navegador de verdade (Edge sem janela):** o navegador embutido do Claude não
+  carrega iframes com sandbox (veja "Armadilhas"). Para testar animações e
+  medir quadros por segundo reais, controle o Edge pelo protocolo de depuração
+  (WebSocket do Node 22+), sempre com perfil temporário:
+  `msedge --headless --remote-debugging-port=9333 --user-data-dir=<pasta temporária>`.
+  - Acrescente `--enable-gpu --use-angle=d3d11` para usar a placa de vídeo.
+  - O iframe da animação roda em outro processo: para avaliar código dentro
+    dele, use `Target.setAutoAttach` com `flatten: true`.
 - **Lógica sem navegador:** `modelo`, `estado`, `hierarquia`, `foco`, `acoes`
   (exceto o que abre janelas ou avisos) e `busca.filtrarCards` rodam no Node
   (`node --input-type=module`). Use como base uma cópia fixa dos dados de exemplo
@@ -209,6 +228,17 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
   linhas é o atributo `stroke-width` do `<svg>`, que as linhas herdam; as setas
   usam `markerUnits="strokeWidth"`. Os textos em destaque recebem `scale` inline
   (só eles). As alças têm tamanhos fixos por faixa de zoom (`data-detalhe`).
+- **Desempenho do zoom com muitas conexões** (medido na Fase 4, no Edge com
+  placa de vídeo, 150 cards e 300 conexões):
+  - mover o mapa roda a cerca de 144 qps;
+  - o zoom contínuo (pinça) cai para 33 a 53 qps, com quadros de até 250 ms;
+  - o gargalo é a repintura (raster) do `<svg>` das conexões a cada mudança de
+    escala, e `will-change: transform` não evita isso;
+  - `shape-rendering: optimizeSpeed` acelera, mas deixa as linhas finas com cara
+    de tracejadas, o que confunde com as redirecionadas;
+  - um protótipo em canvas, com as curvas num único `Path2D`, deixou o zoom a
+    cerca de 90 qps, mas mover caiu para 77 a 100 qps;
+  - ainda não há decisão (proposta para a Fase 5).
 - **Alças:** ficam com `opacity: 0`, e não `visibility: hidden`. Um elemento
   oculto não recebe o clique, e um gesto rápido acabaria arrastando o card em
   vez de criar a conexão.
@@ -220,6 +250,10 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
   - a câmera (estado) pode ficar à frente do `transform` aplicado na tela.
     Para testar a lógica sem quadros, chame `renderizarAgora()` de
     `js/cards.js` direto.
+- **Navegador embutido e iframes com sandbox:** ele bloqueia qualquer iframe com
+  `sandbox` que carregue um endereço (`net::ERR_BLOCKED_BY_CLIENT`, até para o
+  `README.md`). É uma regra dele, não do app. Teste as animações no Edge sem
+  janela (veja "Como testar").
 - **Commits no PowerShell 5.1:** uma mensagem com aspas duplas quebra o
   argumento. Grave a mensagem num arquivo e use `git commit -F arquivo`.
 - **`data/estudos.json`:** são os dados da pessoa usuária. Nunca entram nos
@@ -234,4 +268,36 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
 
 ## Contrato das animações
 
-Definido na Fase 4 (`animacoes/CONTRATO.md`).
+As regras completas estão em `animacoes/CONTRATO.md`, o texto que a pessoa
+usuária cola nas conversas ao pedir animações novas. Se o comportamento da
+janela mudar, atualize o contrato junto. Resumo técnico:
+
+- **Arquivos:** cada animação é um HTML autossuficiente em `animacoes/`.
+  `_modelo.html` é o esqueleto comentado; `demonstracao.html` é o exemplo (pontos
+  em onda, sem física).
+- **Manifesto:** `animacoes/manifesto.json`, no formato
+  `{ "animacoes": [{ "arquivo", "titulo", "descricao" }] }` (também aceita só a
+  lista). Outras chaves, como `"leia-me"`, são ignoradas.
+  - `validarManifesto()` deixa de fora os itens inválidos, com um aviso em
+    português que o painel mostra.
+  - Um erro de JSON aparece com linha e coluna.
+  - O manifesto é relido no evento `focus` da janela. Sem resposta do servidor,
+    a lista anterior é mantida.
+- **Nome do arquivo:** `^[a-z0-9][a-z0-9_-]*\.html$` (`arquivoDeAnimacaoValido`).
+  - A regra vale para o manifesto e também para `card.animacao` na hora de
+    abrir, porque o JSON pode ter sido editado à mão.
+  - Nenhum nome vira endereço sem essa conferência.
+  - `normalizar()` não mexe em `card.animacao`.
+- **Janela:** `<dialog id="janela-animacao">` com `showModal()`.
+  - O iframe tem `sandbox="allow-scripts"` (atributo definido antes do `src`) e
+    `referrerpolicy="no-referrer"`. Ele é criado ao abrir e removido ao fechar.
+  - Antes de criá-lo, um `HEAD` confere se o arquivo existe. Um 404 vira uma
+    mensagem explicativa no lugar do iframe.
+  - O foco fica no `<dialog>` (`tabindex="-1"`), não no primeiro botão.
+  - O Esc na janela usa `stopPropagation`, para não fechar o painel junto.
+- **Mensagem aceita:** só `{ tipo: 'fechar-animacao' }` (o Esc com o foco dentro
+  da animação), e só se `evento.source` for o iframe aberto.
+- **Sandbox:** a animação não acessa `localStorage` nem `parent` (dá
+  `SecurityError`). Também não abre `alert`, pop-ups ou tela cheia. O contrato
+  explica isso a quem escreve as animações.
+- **Nunca** desenhe animações dentro dos cards no mapa.

@@ -1,0 +1,187 @@
+<!doctype html>
+<!--
+  =============================================================================
+  demonstracao.html: animação de EXEMPLO do Mapa de Estudos Sol–Terra.
+
+  Serve só para testar o sistema de animações (abrir, redimensionar, fechar).
+  Os pontos em onda não representam nenhum fenômeno físico.
+  Foi feita a partir de _modelo.html; as seções têm a mesma numeração.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>[exemplo] Demonstração</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #e9e9e9;
+      font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* A sombra preta mantém os textos legíveis por cima do desenho. */
+    .legenda, .medida { text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000; }
+    .legenda { position: fixed; left: 16px; top: 12px; right: 16px; pointer-events: none; }
+    .legenda h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .legenda p { margin: 2px 0 0; font-size: 12.5px; color: #8a8a8a; }
+    .medida { position: fixed; right: 16px; top: 12px; font-size: 12px; color: #6e6e6e; pointer-events: none; }
+
+    .controles {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: calc(100% - 24px);
+      padding: 8px 12px;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      background: rgba(12, 12, 12, 0.85);
+    }
+    button {
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      background: transparent;
+      color: #e9e9e9;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { background: #1b1b1b; }
+    label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #a6a6a6; }
+    input[type="range"] { width: 110px; accent-color: #e9e9e9; }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="legenda">
+    <h1>[exemplo] Demonstração</h1>
+    <p>Teste técnico do sistema de animações. Não representa nenhum fenômeno físico.</p>
+    <p>Esc fecha a janela. Depois de clicar na animação, Espaço pausa.</p>
+  </div>
+  <div class="medida" id="medida"></div>
+
+  <div class="controles">
+    <button id="bt-pausar" type="button">Pausar</button>
+    <button id="bt-recomecar" type="button">Recomeçar</button>
+    <label>Velocidade <input id="velocidade" type="range" min="0.25" max="3" step="0.25" value="1"></label>
+    <label>Altura da onda <input id="amplitude" type="range" min="0" max="2" step="0.1" value="1"></label>
+  </div>
+
+  <script>
+    'use strict';
+
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do modelo).
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // 2. Canvas nítido e do tamanho da área.
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const medida = document.getElementById('medida');
+    let largura = 0;
+    let altura = 0;
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      // Mostra o tamanho da área: ao redimensionar a janela, o número muda e
+      // a grade de pontos se refaz (a animação se ajusta sozinha).
+      medida.textContent = `área: ${largura} × ${altura} px`;
+      desenhar();
+    }
+    window.addEventListener('resize', ajustarTamanho);
+
+    // 3. Estado e controles.
+    let tempo = 0;
+    let pausado = false;
+    let velocidade = 1;
+    let amplitude = 1;
+
+    const botaoPausar = document.getElementById('bt-pausar');
+    function alternarPausa() {
+      pausado = !pausado;
+      botaoPausar.textContent = pausado ? 'Continuar' : 'Pausar';
+    }
+    botaoPausar.addEventListener('click', alternarPausa);
+    document.getElementById('bt-recomecar').addEventListener('click', () => {
+      tempo = 0;
+      desenhar();
+    });
+    document.getElementById('velocidade').addEventListener('input', (evento) => {
+      velocidade = Number(evento.target.value);
+    });
+    document.getElementById('amplitude').addEventListener('input', (evento) => {
+      amplitude = Number(evento.target.value);
+      if (pausado) desenhar();
+    });
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === ' ' && evento.target === document.body) {
+        evento.preventDefault();
+        alternarPausa();
+      }
+    });
+
+    // 4. O desenho: uma grade de pontos que sobe e desce como uma onda que
+    //    anda para a direita. O espaçamento depende do tamanho da área, e
+    //    sempre cabem três "cristas" na largura.
+    function desenhar() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+
+      const menor = Math.min(largura, altura);
+      const passo = Math.max(18, Math.min(42, menor / 18));   // distância entre pontos
+      const comprimento = largura / 3;                          // três cristas na largura
+      const deslocamentoMaximo = passo * 0.8 * amplitude;
+      const raioBase = Math.max(1.5, passo * 0.1);
+
+      for (let y = passo; y < altura - passo * 0.5; y += passo) {
+        for (let x = passo * 0.5; x < largura; x += passo) {
+          // Fase da onda neste ponto: muda com x, um pouco com y e com o tempo.
+          const fase = 2 * Math.PI * (x / comprimento - tempo * 0.35) + y * 0.004;
+          const onda = Math.sin(fase);                  // entre -1 e 1
+          const brilho = 0.25 + 0.75 * (0.5 + 0.5 * onda);
+          ctx.fillStyle = `rgba(233, 233, 233, ${brilho.toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(x, y + onda * deslocamentoMaximo, raioBase * (0.7 + 0.6 * brilho), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // 5. Laço da animação.
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      if (!pausado) {
+        tempo += intervalo * velocidade;
+        desenhar();
+      }
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>

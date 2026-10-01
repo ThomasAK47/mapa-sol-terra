@@ -161,6 +161,7 @@
         <div class="so-edicao"><dt>Arrastar a bolinha ○ da borda</dt><dd>nova conexão</dd></div>
         <div><dt>Clique no texto da conexão</dt><dd class="so-edicao">editar</dd><dd class="so-leitura">ler</dd></div>
         <div><dt>Clique no +N / − do card</dt><dd>expandir / recolher filhos</dd></div>
+        <div><dt>Clique no ícone ▷ do card</dt><dd>abrir a animação</dd></div>
         <div><dt>Ctrl+F · Enter</dt><dd>buscar · próximo resultado</dd></div>
         <div class="so-edicao"><dt>Ctrl+Z · Ctrl+Shift+Z</dt><dd>desfazer · refazer</dd></div>
         <div class="so-edicao"><dt>Delete</dt><dd>excluir o card selecionado</dd></div>
@@ -181,6 +182,10 @@
   <!-- Avisos: faixas persistentes no topo e mensagens rápidas embaixo. -->
   <div id="faixas"></div>
   <div id="toasts" aria-live="polite"></div>
+
+  <!-- Janela grande onde roda uma animação de animacoes/ (montada por js/janela-animacao.js).
+       O iframe da animação só existe enquanto esta janela está aberta. -->
+  <dialog id="janela-animacao" tabindex="-1" aria-labelledby="janela-animacao-titulo"></dialog>
 
   <!-- Janela de confirmação/escolha (montada por js/avisos.js). -->
   <dialog id="dialogo"></dialog>

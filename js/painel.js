@@ -5,19 +5,21 @@
 //   • Modo somente leitura: só o conteúdo, sem campos.
 // O painel também mostra a família do card (card pai e filhos, com o botão
 // de recolher/expandir) e lista as conexões; um clique abre cada uma.
-// (O campo de animação chega na Fase 4.)
+// O campo "Animação" oferece as animações de animacoes/manifesto.json.
 // =============================================================================
 
 import {
-  abrirLinkDocs, alternarRecolhido, centralizarCard, definirPai, descartarSeVazio, excluirCard,
-  expandirAte, moverCardParaZona,
+  abrirLinkDocs, alternarRecolhido, centralizarCard, definirAnimacao, definirPai, descartarSeVazio,
+  excluirCard, expandirAte, moverCardParaZona,
 } from './acoes.js';
+import { aoMudarManifesto, infoDaAnimacao, manifestoAtual } from './animacoes.js';
 import { areaUtil, definirMargemDireita, mundoParaTela } from './camera.js';
 import { abrirEditorConexao } from './editor-conexao.js';
 import {
   alterar, assinar, buscarCard, encerrarAgrupamento, geometria, obterDados, podeEditar, selecionar,
 } from './estado.js';
 import { descendentes, estaRecolhido, hierarquia } from './hierarquia.js';
+import { abrirAnimacaoDoCard } from './janela-animacao.js';
 import { posicaoAbsoluta } from './modelo.js';
 import { agoraISO, el, formatarDataHora, icone, linkSeguro, semAcentos } from './util.js';
 
@@ -33,6 +35,10 @@ export function iniciarPainel(elemento) {
   assinar((mudanca) => {
     if (!idAberto || mudanca.tipo === 'gesto' || mudanca.tipo === 'selecao') return;
     sincronizar();
+  });
+  // A lista de animações mudou (manifesto editado): atualiza o campo.
+  aoMudarManifesto(() => {
+    if (idAberto) sincronizar();
   });
 }
 
@@ -122,6 +128,7 @@ function sincronizar() {
     campos.link.value = link;
     atualizarDicaDoLink(link, campos.dicaLink, campos.abrirLink);
   }
+  preencherCampoAnimacao(campos.animacao, card);
   preencherConexoes(campos.conexoes, card.id);
   preencherDatas(campos.datas, card);
 }
@@ -190,6 +197,9 @@ function construirEdicao(card) {
     atualizarDicaDoLink(link.value, dicaLink, abrirLink);
   });
 
+  const animacao = construirCampoAnimacao(id);
+  preencherCampoAnimacao(animacao, card);
+
   const conexoes = el('div', { class: 'campo' });
   preencherConexoes(conexoes, id);
 
@@ -197,7 +207,7 @@ function construirEdicao(card) {
   preencherDatas(datas, card);
 
   campos = {
-    titulo, descricao, contador, zona, pai, filhos, tags, link, dicaLink, abrirLink, conexoes, datas,
+    titulo, descricao, contador, zona, pai, filhos, tags, link, dicaLink, abrirLink, animacao, conexoes, datas,
     assinaturaZonas: assinaturaDasZonas(),
   };
 
@@ -218,6 +228,7 @@ function construirEdicao(card) {
         el('div', { class: 'linha' }, link, abrirLink),
         dicaLink,
       ),
+      animacao.caixa,
       conexoes,
       datas,
     ),
@@ -264,6 +275,69 @@ function atualizarDicaDoLink(valor, dica, botaoAbrir) {
   const valido = Boolean(linkSeguro(texto));
   dica.textContent = texto && !valido ? 'O link precisa começar com https://' : '';
   botaoAbrir.disabled = !valido;
+}
+
+// --- Animação ---------------------------------------------------------------------
+
+/** Campo "Animação": a lista do manifesto e o botão para abrir. */
+function construirCampoAnimacao(id) {
+  const seletor = el('select', { id: 'painel-animacao', class: 'entrada' });
+  seletor.addEventListener('change', () => definirAnimacao(id, seletor.value || null));
+  const abrir = el('button', {
+    class: 'botao botao-contorno botao-pequeno', type: 'button', title: 'Abrir a animação',
+    onclick: () => abrirAnimacaoDoCard(id),
+  }, icone('animacao'), 'Abrir');
+  const dica = el('div', { class: 'dica' });
+  const avisos = el('div', { class: 'avisos-manifesto' });
+  const caixa = el('div', { class: 'campo' },
+    el('label', { class: 'campo-rotulo', for: 'painel-animacao' }, 'Animação'),
+    el('div', { class: 'linha' }, seletor, abrir),
+    dica,
+    avisos,
+  );
+  return { caixa, seletor, abrir, dica, avisos, assinatura: null };
+}
+
+/**
+ * Preenche o campo com as animações do manifesto. A animação atual do card
+ * continua na lista mesmo que tenha saído do manifesto (nada some sem aviso).
+ */
+function preencherCampoAnimacao(campo, card) {
+  const manifesto = manifestoAtual();
+  const atual = card.animacao ?? '';
+  // Só refaz a lista quando algo mudou (a cada tecla digitada no painel, esta
+  // função é chamada de novo).
+  const assinatura = `${atual}\u0001${manifesto ? JSON.stringify([manifesto.lista, manifesto.avisos, manifesto.erro]) : ''}`;
+  if (assinatura === campo.assinatura) return;
+  campo.assinatura = assinatura;
+
+  const lista = manifesto?.lista ?? [];
+  const noManifesto = Boolean(atual && manifesto?.porArquivo.has(atual));
+  const listaConfiavel = Boolean(manifesto && !manifesto.erro);
+  const opcoes = [el('option', { value: '' }, '(nenhuma)')];
+  for (const item of lista) {
+    opcoes.push(el('option', { value: item.arquivo, title: item.descricao || null }, item.titulo));
+  }
+  if (atual && !noManifesto) {
+    opcoes.push(el('option', { value: atual }, listaConfiavel ? `${atual} (fora do manifesto)` : atual));
+  }
+  campo.seletor.replaceChildren(...opcoes);
+  campo.seletor.value = atual;
+  campo.abrir.disabled = !atual;
+
+  campo.dica.textContent = noManifesto
+    ? manifesto.porArquivo.get(atual).descricao
+    : atual && listaConfiavel ? 'Esta animação não está em animacoes/manifesto.json.' : '';
+  campo.dica.hidden = !campo.dica.textContent;
+
+  // Problemas do manifesto (ex.: erro de formatação), para a pessoa corrigir.
+  const problemas = !manifesto ? ['Carregando a lista de animações…']
+    : manifesto.erro ? [manifesto.erro]
+    : lista.length === 0 ? ['Nenhuma animação no manifesto ainda (veja animacoes/CONTRATO.md).']
+    : [];
+  if (manifesto) problemas.push(...manifesto.avisos);
+  campo.avisos.replaceChildren(...problemas.map((texto) => el('div', { class: 'dica' }, texto)));
+  campo.avisos.hidden = problemas.length === 0;
 }
 
 // --- Família (card pai e cards filhos) -----------------------------------------------
@@ -462,6 +536,7 @@ function construirLeitura(card) {
         el('a', { class: 'botao botao-contorno', href: link, target: '_blank', rel: 'noopener noreferrer' },
           icone('documento'), 'Abrir no Google Docs', icone('externo')),
       ),
+      card.animacao && animacaoDaLeitura(card),
       card.pai && buscarCard(card.pai) && el('div', { class: 'campo' },
         el('span', { class: 'campo-rotulo' }, 'Card pai'),
         el('div', { class: 'lista-familia' }, botaoDeCard(card.pai)),
@@ -471,6 +546,18 @@ function construirLeitura(card) {
       el('div', { class: 'painel-meta' }, `Atualizado em ${formatarDataHora(card.atualizadoEm)}`),
     ),
   ];
+}
+
+/** Botão "Abrir a animação", com o título e a descrição do manifesto. */
+function animacaoDaLeitura(card) {
+  const info = infoDaAnimacao(card.animacao);
+  return el('div', { class: 'campo' },
+    el('div', {},
+      el('button', { class: 'botao botao-contorno', type: 'button', onclick: () => abrirAnimacaoDoCard(card.id) },
+        icone('animacao'), 'Abrir a animação'),
+    ),
+    info && el('div', { class: 'dica' }, info.descricao ? `${info.titulo}: ${info.descricao}` : info.titulo),
+  );
 }
 
 function filhosDaLeitura(id) {

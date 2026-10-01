@@ -82,6 +82,7 @@ const ICONES = {
   busca: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
   alerta: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4M12 17.5v.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/>',
+  recarregar: '<path d="M20 4v6h-6"/><path d="M19.2 15a8 8 0 1 1-1.8-8.4L20 10"/>',
 };
 
 /** Cria um ícone SVG pelo nome (veja a lista ICONES acima). */
@@ -126,6 +127,23 @@ export function digitandoEmCampo(alvo = document.activeElement) {
   if (alvo.tagName === 'TEXTAREA' || alvo.tagName === 'SELECT') return true;
   if (alvo.tagName !== 'INPUT') return false;
   return !['radio', 'checkbox', 'button', 'submit', 'file', 'range', 'color'].includes(alvo.type);
+}
+
+/**
+ * Descobre linha e coluna de um erro de JSON.parse (as mensagens variam por
+ * navegador). Devolve { linha, coluna, mensagem }; linha/coluna podem ser null.
+ */
+export function localizarErroJson(texto, erro) {
+  const mensagem = String(erro?.message ?? erro);
+  let encontrado = mensagem.match(/line (\d+) column (\d+)/i);
+  if (encontrado) return { linha: Number(encontrado[1]), coluna: Number(encontrado[2]), mensagem };
+  encontrado = mensagem.match(/position (\d+)/i);
+  if (encontrado) {
+    const posicao = Number(encontrado[1]);
+    const antes = texto.slice(0, posicao);
+    return { linha: antes.split('\n').length, coluna: posicao - antes.lastIndexOf('\n'), mensagem };
+  }
+  return { linha: null, coluna: null, mensagem };
 }
 
 /** Devolve o link só se for http(s); qualquer outra coisa vira null. */

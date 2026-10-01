@@ -1,0 +1,232 @@
+<!doctype html>
+<!--
+  =============================================================================
+  _modelo.html: MODELO para criar uma animação do Mapa de Estudos Sol–Terra.
+
+  Como usar:
+    1. Copie este arquivo com outro nome: letras minúsculas, sem acento e sem
+       espaço (ex.: "minha-animacao.html"). Arquivos que começam com "_" não
+       entram no mapa; por isso este modelo não aparece na lista.
+    2. Troque o <title>, a legenda e a função desenhar() (seção 4).
+    3. Registre o arquivo em animacoes/manifesto.json.
+  As regras completas estão em animacoes/CONTRATO.md.
+
+  Onde a animação roda: numa janela grande do mapa, dentro de um
+  <iframe sandbox="allow-scripts">. Por isso:
+    • tudo fica neste arquivo (HTML, CSS e JavaScript); bibliotecas, só por CDN;
+    • não use localStorage, sessionStorage, cookies, alert(), window.open(),
+      links que abrem abas, formulários com envio nem tela cheia: o navegador
+      bloqueia tudo isso;
+    • o tamanho da área muda com a janela, e a animação se ajusta sozinha.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Título da animação</title>
+  <style>
+    /* A animação ocupa a área inteira, com fundo preto. */
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #e9e9e9;
+      font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    /* O canvas cobre tudo; o tamanho em pixels é ajustado no script. */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* Título e nota no canto superior esquerdo. A sombra preta mantém os
+       textos legíveis por cima do desenho. */
+    .legenda { position: fixed; left: 16px; top: 12px; right: 16px; pointer-events: none;
+               text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000; }
+    .legenda h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .legenda p { margin: 2px 0 0; font-size: 12.5px; color: #8a8a8a; }
+
+    /* Controles embaixo, no centro. */
+    .controles {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: calc(100% - 24px);
+      padding: 8px 12px;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      background: rgba(12, 12, 12, 0.85);
+    }
+    button {
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      background: transparent;
+      color: #e9e9e9;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { background: #1b1b1b; }
+    label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #a6a6a6; }
+    input[type="range"] { width: 120px; accent-color: #e9e9e9; }
+
+    /* Aviso de problema (ex.: uma biblioteca da internet não carregou). */
+    #aviso { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; background: #000; }
+    #aviso[hidden] { display: none; }
+    #aviso p { max-width: 480px; margin: 0; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="legenda">
+    <h1>Título da animação</h1>
+    <p>Uma frase sobre o que a animação mostra (e o que está fora de escala).</p>
+  </div>
+
+  <div class="controles">
+    <button id="bt-pausar" type="button">Pausar</button>
+    <button id="bt-recomecar" type="button">Recomeçar</button>
+    <label>Velocidade <input id="velocidade" type="range" min="0.25" max="3" step="0.25" value="1"></label>
+  </div>
+
+  <div id="aviso" hidden><p></p></div>
+
+  <!--
+    Biblioteca por CDN (opcional). Use sempre uma versão fixa ("@1.2.3") e
+    coloque a tag AQUI, antes do script principal. Exemplo:
+      <script src="https://cdn.jsdelivr.net/npm/nome-da-biblioteca@1.2.3/dist/arquivo.min.js"></script>
+    No script principal, confira se ela chegou (sem internet, não chega):
+      if (typeof NomeDaBiblioteca === 'undefined') {
+        mostrarAviso('Esta animação precisa de internet para carregar uma biblioteca. ' +
+                     'Verifique a conexão e clique em "Recomeçar", no alto da janela.');
+      }
+  -->
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa. OBRIGATÓRIO: mantenha este trecho.
+    //    Com o foco dentro da animação, o Esc chega aqui, e não ao mapa. Esta
+    //    mensagem pede ao mapa para fechar a janela. É a única comunicação
+    //    permitida com o app.
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Canvas nítido e do tamanho da área.
+    //    "largura" e "altura" são medidas da tela (pixels CSS). O desenho usa
+    //    essas medidas, e o ajuste para telas de alta resolução é automático.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    let largura = 0;
+    let altura = 0;
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      desenhar(); // redesenha na hora, mesmo pausado
+    }
+    window.addEventListener('resize', ajustarTamanho);
+
+    // -------------------------------------------------------------------------
+    // 3. Estado e controles.
+    // -------------------------------------------------------------------------
+    let tempo = 0;        // tempo da animação, em segundos (não anda na pausa)
+    let pausado = false;
+    let velocidade = 1;
+
+    const botaoPausar = document.getElementById('bt-pausar');
+    function alternarPausa() {
+      pausado = !pausado;
+      botaoPausar.textContent = pausado ? 'Continuar' : 'Pausar';
+    }
+    botaoPausar.addEventListener('click', alternarPausa);
+    document.getElementById('bt-recomecar').addEventListener('click', () => {
+      tempo = 0;
+      desenhar();
+    });
+    document.getElementById('velocidade').addEventListener('input', (evento) => {
+      velocidade = Number(evento.target.value);
+    });
+    // Teclado é opcional: só funciona depois de clicar na animação. (Com o
+    // foco num botão, o Espaço já aperta o botão; por isso a condição.)
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === ' ' && evento.target === document.body) {
+        evento.preventDefault();
+        alternarPausa();
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // 4. O DESENHO: substitua o conteúdo desta função.
+    //    Ela desenha o quadro do instante "tempo" e precisa funcionar em
+    //    qualquer tamanho de área: use largura e altura, nunca medidas fixas.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+
+      // Exemplo: um ponto que atravessa a área da esquerda para a direita.
+      const menor = Math.min(largura, altura);
+      const margem = menor * 0.1;
+      const x = margem + ((tempo * 0.15) % 1) * (largura - 2 * margem);
+      const y = altura / 2;
+      ctx.fillStyle = '#e9e9e9';
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(4, menor * 0.015), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#6e6e6e';
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Substitua este desenho pela animação', largura / 2, y + 40);
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Laço da animação: avança o tempo e desenha (cerca de 60 vezes por
+    //    segundo). O passo é limitado para a animação não "pular" quando a
+    //    aba volta a aparecer.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const passo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      if (!pausado) {
+        tempo += passo * velocidade;
+        desenhar();
+      }
+      requestAnimationFrame(quadro);
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Aviso de problema na tela, em vez de uma área vazia.
+    // -------------------------------------------------------------------------
+    function mostrarAviso(texto) {
+      const aviso = document.getElementById('aviso');
+      aviso.querySelector('p').textContent = texto;
+      aviso.hidden = false;
+    }
+
+    // Início.
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>
