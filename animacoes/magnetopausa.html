@@ -1,0 +1,1912 @@
+<!doctype html>
+<!--
+  =============================================================================
+  magnetopausa.html: animação do Mapa de Estudos Sol–Terra.
+
+  O que mostra: onde fica a magnetopausa, a "parede" em que a pressão do vento
+  solar se iguala à pressão magnética do campo da Terra.
+    • De longe: a magnetopausa inteira em volta da Terra. A forma vem da
+      mesma conta de equilíbrio, repetida em cada ponto da parede.
+    • De perto: um pedaço da parede, com a conta feita em cinco passos. Ao
+      lado, em cada passo: a fórmula, a conta com os números e o resultado.
+
+  A física segue a descrição escrita por quem mantém o mapa:
+    partículas que batem por segundo, por m²:      N·v·cos ψ
+    momento entregue por cada uma:                 2·m·v·cos ψ
+    pressão do vento:                              2·N·m·v²·cos² ψ
+    equilíbrio com a pressão magnética:            2·N·m·v²·cos² ψ = B²/2μ₀
+
+  Para chegar a uma distância, a animação precisou assumir três coisas, que
+  estão na seção 2 do script e aparecem na tela:
+    • m é a massa do próton;
+    • o campo da Terra cai com a distância como um dipolo: B = B₀·(R_T/r)³;
+    • B₀ = 31 000 nT (campo na superfície, no equador).
+  Essas suposições ainda vão ser conferidas (com o professor). Para trocar um
+  valor, basta mudar a constante na seção 2: MASSA, CAMPO_NA_SUPERFICIE ou
+  FATOR_DO_CAMPO (o campo junto à parede, em relação ao dipolo puro).
+
+  Feita a partir de animacoes/_modelo.html, seguindo animacoes/CONTRATO.md.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magnetopausa: equilíbrio de pressões</title>
+  <style>
+    /* Cores: branco e cinzas, mais duas cores com significado:
+       laranja = vento solar; azul = campo magnético da Terra. */
+    :root {
+      --vento: #ffb347;
+      --campo: #86b9ff;
+      --texto: #ececec;
+      --texto-2: #a9a9a9;
+      --texto-3: #747474;
+      --borda: #2b2b2b;
+      --borda-forte: #3d3d3d;
+      --fonte-mat: Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+      --largura-painel: clamp(300px, 34vw, 420px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--texto);
+      font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; color: inherit; }
+    sub, sup { line-height: 0; }
+    [hidden] { display: none !important; }
+
+    /* O desenho ocupa a área inteira. Por cima dele ficam o título, o painel
+       de explicação (à direita) e a barra de controles (embaixo do desenho). */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .topo {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      max-width: calc(100% - var(--largura-painel) - 52px);
+      pointer-events: none;
+      text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000;
+    }
+    .topo h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .topo p { margin: 2px 0 0; font-size: 12.5px; color: var(--texto-2); }
+    .curto { display: none; }          /* versão curta de um texto, para telas estreitas (troca com .longo) */
+    .vento { color: var(--vento); }
+    .campo { color: var(--campo); }
+
+    /* ---- Painel de explicação ---- */
+    #painel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      bottom: 12px;
+      width: var(--largura-painel);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+      overflow: hidden;
+    }
+    .visoes {
+      flex: none;
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+    .visoes button {
+      flex: 1;
+      height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .visoes button:hover { color: var(--texto); }
+    .visoes button.ativo { background: #ededed; color: #000; }
+    .conteudo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+    /* Visão de longe: resumo. */
+    #resumo h2 { margin: 2px 0 6px; font-size: 15px; font-weight: 600; }
+    #resumo p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    #resumo p b { color: var(--texto); font-weight: 600; }
+    .dica { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    .leituras { margin: 0; border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .leituras div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; }
+    .leituras div + div { border-top: 1px solid var(--borda); }
+    .leituras dt { font-size: 12px; color: var(--texto-2); }
+    .leituras dd { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* Visão de perto: os cinco passos da conta. */
+    #passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .passo { border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .passo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .passo-titulo:hover { color: var(--texto); }
+    .numero {
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      font-size: 11.5px;
+    }
+    .passo.ativo { border-color: #5a5a5a; background: #131313; }
+    .passo.ativo .passo-titulo { color: #fff; cursor: default; }
+    .passo.ativo .numero { background: #ededed; border-color: #ededed; color: #000; }
+    .passo-corpo { display: none; padding: 0 12px 12px; }
+    .passo.ativo .passo-corpo { display: block; }
+
+    /* Fórmulas: letras em itálico, como num livro. */
+    .formula { font-family: var(--fonte-mat); font-size: 19px; line-height: 1.55; white-space: nowrap; }
+    .formula.pequena { font-size: 16px; }
+    .formula.central { text-align: center; padding: 4px 0 12px; font-size: 20px; }
+    .formula small { font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--texto-3); margin-right: 8px; }
+    .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.12em; line-height: 1.15; }
+    .fr > span:first-child { padding: 0 0.22em 0.04em; border-bottom: 1px solid currentColor; }
+    .fr > span:last-child { padding: 0.04em 0.22em 0; }
+    /* Ao abrir um passo, a fórmula "se escreve" da esquerda para a direita;
+       logo depois aparecem a conta com os números e o resultado. */
+    @keyframes escrever { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6px 0 0); } }
+    @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .passo.ativo .formula { animation: escrever 0.9s ease-out both; }
+    .passo.ativo .conta { animation: surgir 0.4s ease-out 0.6s both; }
+    .passo.ativo .valor { animation: surgir 0.4s ease-out 0.85s both; }
+    .conta { margin-top: 5px; font-size: 12.5px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+    .valor { margin-top: 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .barras + .valor { margin-top: 8px; }
+    .conta sup, .valor sup, .legenda sup { font-size: 0.72em; }
+    .explicacao { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto-2); }
+    /* O que é cada letra, com o valor de agora. */
+    .legenda { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 9px; font-size: 12px; line-height: 1.45; color: var(--texto-2); }
+    .legenda dt { font-family: var(--fonte-mat); font-style: italic; font-size: 14px; line-height: 1.25; color: var(--texto); white-space: nowrap; }
+    .legenda dt sub { font-style: normal; }
+    .legenda dt.unidade { font-family: inherit; font-style: normal; font-size: 12px; line-height: 1.45; }
+    .legenda dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+    /* Passo 5: as duas pressões lado a lado. */
+    .barras { margin-top: 10px; display: grid; gap: 6px; }
+    .barra { display: grid; grid-template-columns: 46px 1fr 62px; align-items: center; gap: 8px; font-size: 12px; }
+    .barra .trilho { height: 8px; border-radius: 4px; background: #1d1d1d; overflow: hidden; }
+    .barra .nivel { display: block; height: 100%; border-radius: 4px; }
+    .barra .nivel.vento { background: var(--vento); }
+    .barra .nivel.campo { background: var(--campo); }
+    .barra .num { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; }
+
+    /* Rodapé do painel: o convite para ver de perto, ou a troca de passo. */
+    .rodape, .navegacao { flex: none; }
+    .navegacao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .navegacao .botao { padding: 0 8px; gap: 2px; }
+    #contador-de-passos { font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+    .pontos { display: none; gap: 6px; }
+    .pontos button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pontos button:hover { color: #fff; border-color: #6a6a6a; }
+    .pontos button.ativo { background: #ededed; border-color: #ededed; color: #000; cursor: default; }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .botao:hover { background: #1b1b1b; }
+    .botao:disabled { opacity: 0.35; cursor: default; background: transparent; }
+    .botao svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .botao.principal { background: #ededed; border-color: #ededed; color: #000; font-weight: 600; }
+    .botao.principal:hover { background: #fff; }
+    .botao.principal:disabled { background: #ededed; }
+    .botao.largo { width: 100%; height: 36px; }
+    .nota { flex: none; margin: 0; font-size: 11px; line-height: 1.45; color: var(--texto-3); }
+
+    /* ---- Controles: uma barra embaixo do desenho, à esquerda do painel ---- */
+    .controles {
+      position: fixed;
+      left: 12px;
+      right: calc(var(--largura-painel) + 32px);
+      bottom: 12px;
+      max-width: 780px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      align-items: center;
+      gap: 8px 20px;
+      padding: 9px 14px 10px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+    }
+    .controle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; font-size: 12.5px; color: var(--texto-2); }
+    .controle .nome { white-space: nowrap; overflow: hidden; }
+    .controle .nome i { font-family: var(--fonte-mat); font-size: 15px; color: var(--texto); margin-right: 5px; }
+    .controle .nome small { font-size: 12px; }
+    .controle output { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .controle input { grid-column: 1 / -1; }
+    input[type="range"] { width: 100%; min-width: 0; height: 16px; margin: 0; accent-color: #ededed; cursor: pointer; }
+    .botoes { display: flex; gap: 8px; }
+    #bt-pausar { min-width: 84px; }
+
+    /* Só uma das duas partes do conteúdo aparece de cada vez. */
+    body:not(.perto) .so-perto { display: none !important; }
+    body.perto .so-longe { display: none !important; }
+
+    /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 5 para trocar ---- */
+    @media (max-height: 700px) {
+      .passo:not(.ativo) { display: none; }
+      .pontos { display: flex; }
+      #contador-de-passos { display: none; }
+    }
+    @media (max-height: 540px) {
+      .dica { display: none; }
+    }
+    @media (max-height: 520px) {
+      .nota { display: none; }
+    }
+    @media (max-height: 460px) {
+      #painel { top: 8px; bottom: 8px; padding: 12px; gap: 10px; }
+      .controles { bottom: 8px; }
+    }
+    /* ---- Janelas mais estreitas: a barra de controles e o painel encolhem ---- */
+    @media (max-width: 1180px) {
+      .controle .nome small { display: none; }
+    }
+    @media (max-width: 1060px) {
+      .navegacao .rotulo { display: none; }
+      .navegacao .botao { width: 34px; padding: 0; }
+    }
+    @media (max-width: 1000px) and (max-height: 700px) {
+      .dica { display: none; }
+    }
+    @media (max-width: 1000px) and (max-height: 640px) {
+      .nota { display: none; }
+    }
+    @media (max-width: 920px) {
+      .controles { gap: 8px 14px; }
+      #bt-tipico { display: none; }
+      #bt-pausar { min-width: 76px; }
+    }
+    @media (max-width: 860px) {
+      .longo { display: none; }
+      .curto { display: inline; }
+    }
+
+    /* ---- Telas estreitas (ou muito baixas): tudo num painel compacto, embaixo ---- */
+    @media (max-width: 760px), (max-height: 380px) {
+      :root { --largura-painel: 0px; }
+      .topo { left: 12px; top: 8px; max-width: calc(100% - 24px); }
+      .topo h1 { font-size: 13px; }
+      .topo p { font-size: 11.5px; }
+      #painel {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 62%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .visoes { grid-column: 1; grid-row: 1; }
+      body:not(.perto) .visoes { grid-column: 1 / -1; }
+      .navegacao { grid-column: 2; grid-row: 1; }
+      .navegacao .botao { width: 32px; padding: 0; }
+      .navegacao .rotulo, .pontos, #contador-de-passos { display: none; }
+      .conteudo { grid-column: 1 / -1; grid-row: 2; }
+      .controles {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 3;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 8px 10px;
+        align-items: end;
+      }
+      .passo:not(.ativo) { display: none; }
+      .passo, .passo.ativo { border: 0; background: transparent; }
+      .passo-titulo { padding: 0 0 2px; }
+      .passo-corpo { padding: 0; }
+      .numero { display: none; }
+      .formula { font-size: 16px; }
+      .formula.central { padding: 0 0 6px; font-size: 16px; text-align: left; }
+      .explicacao, .legenda, .conta, .barras, .nota, .rodape, #resumo h2, #resumo p { display: none; }
+      .valor, .barras + .valor { margin-top: 2px; }
+      .leituras { margin: 0; }
+      .leituras div { padding: 5px 8px; }
+      .leituras dd { font-size: 12.5px; }
+      .controle { font-size: 11.5px; gap: 0 4px; }
+      .controle .nome small { display: none; }
+      #bt-tipico { display: none; }
+      #bt-pausar { min-width: 0; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .topo p, .passo-titulo, .formula.central, .leituras div:first-child { display: none; }
+      .leituras div:nth-child(2) { border-top: 0; }
+      .valor { font-size: 12px; }
+    }
+    @media (max-width: 420px) {
+      .passo .formula small { display: none; }
+      .formula { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .passo.ativo .formula, .passo.ativo .conta, .passo.ativo .valor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="topo">
+    <h1>Magnetopausa<span class="longo">: onde o vento solar e o campo da Terra se equilibram</span></h1>
+    <p id="subtitulo"></p>
+  </div>
+
+  <aside id="painel" aria-label="Explicação e controles">
+    <div class="visoes" role="group" aria-label="Visão">
+      <button id="bt-longe" type="button" class="ativo" aria-pressed="true">De longe</button>
+      <button id="bt-perto" type="button" aria-pressed="false">De perto</button>
+    </div>
+
+    <div class="conteudo">
+      <!-- Visão de longe -->
+      <section id="resumo" class="so-longe">
+        <h2>A parede vista de longe</h2>
+        <p>O <span class="vento">vento solar</span> vem do Sol, que fica à esquerda. A linha branca é a
+          <b>magnetopausa</b>: a "parede" onde a pressão do vento se iguala à pressão do
+          <span class="campo">campo magnético da Terra</span>.</p>
+        <div class="formula central">
+          <span class="vento">2·<i>N</i>·<i>m</i>·<i>v</i><sup>2</sup>·cos<sup>2</sup> <i>ψ</i></span> =
+          <span class="campo"><span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span></span>
+        </div>
+        <dl class="leituras">
+          <div><dt>Pressão do vento de frente para o Sol</dt><dd id="l-pressao"></dd></div>
+          <div><dt>Distância da parede de frente para o Sol</dt><dd id="l-distancia"></dd></div>
+          <div><dt id="l-ponto-nome"></dt><dd id="l-ponto"></dd></div>
+        </dl>
+      </section>
+
+      <!-- Visão de perto: a conta em cinco passos. Em cada um: a fórmula, a conta
+           com os números de agora, o resultado e o que é cada letra. -->
+      <ol id="passos" class="so-perto">
+        <li class="passo" data-passo="0">
+          <button class="passo-titulo" type="button"><span class="numero">1</span>Partículas que batem na parede</button>
+          <div class="passo-corpo">
+            <div class="formula vento"><i>N</i>·<i>v</i>·cos <i>ψ</i></div>
+            <div class="conta" id="conta-0"></div>
+            <div class="valor" id="valor-0"></div>
+            <p class="explicacao">É o número de partículas que batem, por segundo, em cada m² da magnetopausa.</p>
+            <dl class="legenda">
+              <dt>N</dt><dd id="leg-n"></dd>
+              <dt>v</dt><dd id="leg-v"></dd>
+              <dt>ψ</dt><dd id="leg-psi"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="1">
+          <button class="passo-titulo" type="button"><span class="numero">2</span>Momento que cada partícula entrega</button>
+          <div class="passo-corpo">
+            <div class="formula pequena vento" id="formula-1"></div>
+            <div class="conta" id="conta-1"></div>
+            <div class="valor" id="valor-1"></div>
+            <p class="explicacao" id="explicacao-1"></p>
+            <dl class="legenda">
+              <dt>m</dt><dd id="leg-m"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="2">
+          <button class="passo-titulo" type="button"><span class="numero">3</span>Pressão do vento solar</button>
+          <div class="passo-corpo">
+            <div class="formula pequena vento">(<i>N</i>·<i>v</i>·cos <i>ψ</i>) × (2·<i>m</i>·<i>v</i>·cos <i>ψ</i>)<br>
+              = 2·<i>N</i>·<i>m</i>·<i>v</i><sup>2</sup>·cos<sup>2</sup> <i>ψ</i></div>
+            <div class="conta" id="conta-2"></div>
+            <div class="valor" id="valor-2"></div>
+            <p class="explicacao">Partículas por segundo vezes o momento de cada uma: é o momento transferido, por segundo,
+              a cada m² da magnetopausa. Isso é uma pressão.</p>
+            <dl class="legenda">
+              <dt class="unidade">nPa</dt><dd>nanopascal: 1 nPa = 10<sup>−9</sup> Pa (pascal, a unidade de pressão)</dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="3">
+          <button class="passo-titulo" type="button"><span class="numero">4</span>Pressão magnética do campo da Terra</button>
+          <div class="passo-corpo">
+            <div class="formula campo"><span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span></div>
+            <div class="conta" id="conta-3"></div>
+            <div class="valor" id="valor-3"></div>
+            <p class="explicacao">Do outro lado da parede, o campo magnético da Terra empurra de volta. Quanto mais perto
+              da Terra, mais forte é o campo.</p>
+            <dl class="legenda">
+              <dt>B</dt><dd id="leg-b"></dd>
+              <dt>μ<sub>0</sub></dt><dd id="leg-mu"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="4">
+          <button class="passo-titulo" type="button"><span class="numero">5</span>Equilíbrio: onde fica a parede</button>
+          <div class="passo-corpo">
+            <div class="formula pequena">
+              <span class="vento">2·<i>N</i>·<i>m</i>·<i>v</i><sup>2</sup>·cos<sup>2</sup> <i>ψ</i></span> =
+              <span class="campo"><span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span></span>
+            </div>
+            <div class="barras">
+              <div class="barra"><span class="vento">vento</span><span class="trilho"><span class="nivel vento" id="barra-vento"></span></span><span class="num" id="num-vento"></span></div>
+              <div class="barra"><span class="campo">campo</span><span class="trilho"><span class="nivel campo" id="barra-campo"></span></span><span class="num" id="num-campo"></span></div>
+            </div>
+            <div class="valor" id="valor-4"></div>
+            <p class="explicacao">As duas pressões só se igualam numa distância, porque o campo cai depressa ao se afastar
+              da Terra: <i>B</i> = <i>B</i><sub>0</sub>·(<i>R</i><sub>T</sub>/<i>r</i>)<sup>3</sup>. Mude <i>N</i> ou <i>v</i>
+              e veja a parede procurar o novo lugar.</p>
+            <dl class="legenda">
+              <dt>B<sub>0</sub></dt><dd id="leg-b0"></dd>
+              <dt>R<sub>T</sub>, r</dt><dd>raio da Terra e distância até o centro dela</dd>
+            </dl>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="rodape so-longe">
+      <p class="dica">Mude <i>N</i> e <i>v</i>, embaixo do desenho, e veja a parede se mover. Arraste o ponto sobre a
+        linha branca para escolher onde olhar de perto.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+    </div>
+    <div class="navegacao so-perto">
+      <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span class="rotulo">Anterior</span></button>
+      <span id="contador-de-passos"></span>
+      <div class="pontos" role="group" aria-label="Ir para o passo">
+        <button type="button" data-passo="0" title="Passo 1: partículas que batem na parede">1</button>
+        <button type="button" data-passo="1" title="Passo 2: momento que cada partícula entrega">2</button>
+        <button type="button" data-passo="2" title="Passo 3: pressão do vento solar">3</button>
+        <button type="button" data-passo="3" title="Passo 4: pressão magnética do campo da Terra">4</button>
+        <button type="button" data-passo="4" title="Passo 5: equilíbrio">5</button>
+      </div>
+      <button id="bt-proximo" type="button" class="botao principal" title="Próximo passo" aria-label="Próximo passo">
+        <span class="rotulo">Próximo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
+    <div class="controles" role="group" aria-label="Controles">
+      <label class="controle"><span class="nome"><i>N</i><small>densidade</small></span><output id="o-n"></output>
+        <input id="c-n" type="range" min="1" max="30" step="0.5" value="5"></label>
+      <label class="controle"><span class="nome"><i>v</i><small>velocidade</small></span><output id="o-v"></output>
+        <input id="c-v" type="range" min="250" max="800" step="10" value="400"></label>
+      <label class="controle"><span class="nome"><i>ψ</i><small>ponto na parede</small></span><output id="o-psi"></output>
+        <input id="c-psi" type="range" min="0" max="80" step="1" value="0"></label>
+      <div class="botoes">
+        <button id="bt-pausar" type="button" class="botao">Pausar</button>
+        <button id="bt-tipico" type="button" class="botao" title="N = 5 por cm³ e v = 400 km/s">Valores típicos</button>
+      </div>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </aside>
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do contrato).
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Valores e contas. Tudo o que é física está aqui, em unidades do SI.
+    // -------------------------------------------------------------------------
+    const MU0 = 4e-7 * Math.PI;             // μ₀, permeabilidade do vácuo (T·m/A)
+    const MASSA = 1.6726e-27;               // m: massa do próton (kg)
+    const CAMPO_NA_SUPERFICIE = 3.1e-5;     // B₀: campo da Terra na superfície, no equador (T)
+    // Multiplica o campo de dipolo junto à parede. Com 1, vale o dipolo puro,
+    // como na descrição. (Há livros que usam 2, pela compressão do campo.)
+    const FATOR_DO_CAMPO = 1;
+    const TIPICO = { N: 5, v: 400 };        // N em partículas por cm³; v em km/s
+
+    /** Pressão do vento solar na parede: 2·N·m·v²·cos² ψ (em pascal). */
+    function pressaoDoVento(N, v, psi) {
+      const c = Math.cos(psi);
+      return 2 * (N * 1e6) * MASSA * (v * 1e3) ** 2 * c * c;
+    }
+    /** Campo da Terra a "r" raios da Terra do centro: B = B₀·(R_T/r)³ (em tesla). */
+    function campoNaDistancia(r) {
+      return (FATOR_DO_CAMPO * CAMPO_NA_SUPERFICIE) / r ** 3;
+    }
+    /** Pressão magnética: B²/2μ₀ (em pascal). */
+    function pressaoMagnetica(B) {
+      return (B * B) / (2 * MU0);
+    }
+    /** Distância (em raios da Terra) em que as duas pressões se igualam, de frente para o Sol (ψ = 0). */
+    function distanciaDeFrente(N, v) {
+      return Math.pow(pressaoMagnetica(FATOR_DO_CAMPO * CAMPO_NA_SUPERFICIE) / pressaoDoVento(N, v, 0), 1 / 6);
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. A forma da magnetopausa.
+    //    Em cada ponto da parede vale o mesmo equilíbrio. Dividindo pelo valor
+    //    de frente para o Sol, sobra  cos ψ = (r₀/r)³ : quanto mais longe da
+    //    Terra o ponto está, mais inclinada a parede precisa estar em relação
+    //    ao vento. Seguindo essa regra passo a passo, a partir do "nariz",
+    //    sai a curva inteira. Em unidades de r₀ ela é sempre a mesma, então é
+    //    calculada uma vez só. (x aponta para longe do Sol; a Terra fica em 0.)
+    // -------------------------------------------------------------------------
+    const CURVA = (() => {
+      const l = [], x = [], y = [], psi = [];
+      const direcao = (px, py) => {
+        const c = Math.min(1, Math.hypot(px, py) ** -3);       // cos ψ
+        return [Math.sqrt(Math.max(0, 1 - c * c)), c];          // (sen ψ, cos ψ) = direção da parede
+      };
+      const passo = 0.001;
+      let X = -1, Y = 0, L = 0, proximo = 0;
+      while (L <= 30) {
+        if (L >= proximo - 1e-9) {
+          l.push(L); x.push(X); y.push(Y);
+          psi.push(Math.acos(Math.min(1, Math.hypot(X, Y) ** -3)));
+          proximo += L < 6 ? 0.02 : 0.4;                        // pontos mais juntos perto do nariz
+        }
+        const [a1, b1] = direcao(X, Y);
+        const [a2, b2] = direcao(X + (a1 * passo) / 2, Y + (b1 * passo) / 2);
+        X += a2 * passo; Y += b2 * passo; L += passo;
+      }
+      return { l, x, y, psi, n: l.length };
+    })();
+    const L_MAXIMO = (() => {                                    // até onde o ponto escolhido pode ir (ψ = 80°)
+      for (let i = 0; i < CURVA.n; i++) if (CURVA.psi[i] >= (80 * Math.PI) / 180) return CURVA.l[i];
+      return 3;
+    })();
+
+    /** Posição do último item de "lista" (crescente) que não passa de "valor". */
+    function indiceAbaixo(lista, valor) {
+      let a = 0, b = lista.length - 1;
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (lista[meio] <= valor) a = meio; else b = meio;
+      }
+      return a;
+    }
+    const entre = (a, b, t) => a + (b - a) * t;
+    const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+
+    /** Ponto da curva (metade de cima) a uma distância "L" do nariz, medida ao longo dela. Em unidades de r₀. */
+    function pontoDaCurva(L) {
+      const valor = limitar(L, 0, CURVA.l[CURVA.n - 1]);
+      const i = indiceAbaixo(CURVA.l, valor);
+      const t = (valor - CURVA.l[i]) / (CURVA.l[i + 1] - CURVA.l[i] || 1);
+      return { x: entre(CURVA.x[i], CURVA.x[i + 1], t), y: entre(CURVA.y[i], CURVA.y[i + 1], t), psi: entre(CURVA.psi[i], CURVA.psi[i + 1], t) };
+    }
+    /** Distância ao longo da curva em que a parede tem o ângulo "psi". */
+    function lDoAngulo(psi) {
+      const i = indiceAbaixo(CURVA.psi, psi);
+      const t = (psi - CURVA.psi[i]) / (CURVA.psi[i + 1] - CURVA.psi[i] || 1);
+      return entre(CURVA.l[i], CURVA.l[i + 1], limitar(t, 0, 1));
+    }
+    /** Onde a parede está na altura "y" (em r₀): devolve { x, psi } ou null (acima da cauda, o vento passa direto). */
+    function paredeNaAltura(y) {
+      if (y >= CURVA.y[CURVA.n - 1]) return null;
+      const i = indiceAbaixo(CURVA.y, y);
+      const t = (y - CURVA.y[i]) / (CURVA.y[i + 1] - CURVA.y[i] || 1);
+      return { x: entre(CURVA.x[i], CURVA.x[i + 1], t), psi: entre(CURVA.psi[i], CURVA.psi[i + 1], t) };
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. Estado da animação.
+    // -------------------------------------------------------------------------
+    const estado = {
+      N: TIPICO.N, v: TIPICO.v,
+      l: 0, lado: 1,            // ponto escolhido: distância ao longo da parede (em r₀) e lado (1 = cima, −1 = baixo)
+      r0: 0, r0NaTela: 0,       // distância de frente: a de equilíbrio e a desenhada (que vai atrás dela, suavemente)
+      perto: false, z: 0,       // visão escolhida e andamento do zoom (0 = de longe, 1 = de perto)
+      passo: 0, tempoDoPasso: 0,
+      pausado: false,
+    };
+    estado.r0 = estado.r0NaTela = distanciaDeFrente(estado.N, estado.v);
+
+    /** O ponto escolhido, em raios da Terra, com o ângulo da parede ali. */
+    function pontoEscolhido() {
+      const p = pontoDaCurva(estado.l);
+      // A distância até a Terra sai da própria regra da curva, cos ψ = (r₀/r)³. Assim, no equilíbrio,
+      // as duas pressões ficam exatamente iguais (a posição desenhada vem da curva guardada, que é aproximada).
+      const r = estado.r0NaTela / Math.cbrt(Math.cos(p.psi));
+      return { X: p.x * estado.r0NaTela, Y: p.y * estado.r0NaTela * estado.lado, psi: p.psi, r };
+    }
+    /** Os números da conta no ponto escolhido. */
+    function contas() {
+      const p = pontoEscolhido();
+      const B = campoNaDistancia(p.r);
+      const cos = Math.cos(p.psi);
+      return {
+        psi: p.psi, cos, r: p.r, B,
+        fluxo: estado.N * 1e6 * estado.v * 1e3 * cos,                      // N·v·cos ψ
+        momento: 2 * MASSA * estado.v * 1e3 * cos,                         // 2·m·v·cos ψ
+        vento: pressaoDoVento(estado.N, estado.v, p.psi),                  // 2·N·m·v²·cos² ψ
+        campo: pressaoMagnetica(B),                                        // B²/2μ₀
+      };
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Tela, tamanho e áreas.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const painel = document.getElementById('painel');
+    const controles = document.querySelector('.controles');
+    let largura = 0, altura = 0;
+    // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
+    // "fundo" é até onde o desenho aparece (ele continua por trás da barra de controles).
+    let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100 };
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      medirCena();
+      desenhar();
+    }
+    function medirCena() {
+      ESPACO_DO_TITULO = Math.round(document.querySelector('.topo').getBoundingClientRect().bottom) + 4;
+      const p = painel.getBoundingClientRect();
+      if (p.left > largura * 0.3) {
+        // Painel ao lado: a barra de controles fica embaixo do desenho.
+        const barra = controles.getBoundingClientRect();
+        const livre = barra.height > 0 && barra.top > altura * 0.4 ? barra.top - 6 : altura;
+        cena = { x: 0, y: 0, w: Math.max(120, p.left - 8), h: Math.max(90, livre), fundo: altura };
+      } else {
+        // Painel embaixo (telas estreitas): os controles ficam dentro dele.
+        const h = Math.max(90, p.top - 4);
+        cena = { x: 0, y: 0, w: largura, h, fundo: h };
+      }
+    }
+    window.addEventListener('resize', ajustarTamanho);
+    const aoMudarDeTamanho = new ResizeObserver(() => { medirCena(); });
+    aoMudarDeTamanho.observe(painel);
+    aoMudarDeTamanho.observe(controles);
+
+    let ESPACO_DO_TITULO = 46;                   // altura ocupada pelo título, medida em medirCena()
+    const AMPLIACAO = 70;                        // quantas vezes o zoom aumenta até a visão de perto
+
+    /** Visão de longe: escala (pixels por raio da Terra) e posição da Terra na tela. */
+    function cameraDeLonge() {
+      const S = Math.max(1.5, Math.min(cena.w / 37, (cena.h - ESPACO_DO_TITULO - 8) / 43));
+      return { S, ox: cena.x + cena.w / 2 + 2 * S, oy: cena.y + ESPACO_DO_TITULO + (cena.h - ESPACO_DO_TITULO) / 2 };
+    }
+    /** Visão de perto: ponto da tela por onde a parede passa. */
+    function centroDePerto() {
+      return { x: cena.x + cena.w * 0.5, y: cena.y + ESPACO_DO_TITULO + (cena.h - ESPACO_DO_TITULO) * 0.5 };
+    }
+    const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+    const suaveEntre = (a, b, t) => suave((t - a) / (b - a));
+
+    // A projeção do quadro atual: o ponto (PX, PY) do mundo cai em (cx, cy) da
+    // tela, com escala S. Durante o zoom, ela vai da visão de longe até o ponto
+    // escolhido bem ampliado.
+    let projecao = { S: 1, cx: 0, cy: 0, PX: 0, PY: 0 };
+    function atualizarProjecao() {
+      const camera = cameraDeLonge();
+      const P = pontoEscolhido();
+      const e = suave(estado.z);
+      const longe = { x: camera.ox + P.X * camera.S, y: camera.oy - P.Y * camera.S };
+      const alvo = centroDePerto();
+      projecao = { S: camera.S * Math.pow(AMPLIACAO, e), cx: entre(longe.x, alvo.x, e), cy: entre(longe.y, alvo.y, e), PX: P.X, PY: P.Y };
+    }
+    const telaX = (X) => projecao.cx + (X - projecao.PX) * projecao.S;
+    const telaY = (Y) => projecao.cy - (Y - projecao.PY) * projecao.S;
+
+    // -------------------------------------------------------------------------
+    // 6. Ferramentas de desenho.
+    // -------------------------------------------------------------------------
+    const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+    const FONTE_MAT = "Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif";
+    const COR_VENTO = '255, 179, 71';
+    const COR_CAMPO = '134, 185, 255';
+
+    /** Fundo escuro arredondado atrás de um rótulo, para ele não se misturar com o que passa por trás. */
+    function desenharPlaca(x, y, larguraDoTexto, tamanho, alinhar) {
+      const w = larguraDoTexto + 16, h = tamanho + 10;
+      const esquerda = alinhar === 'center' ? x - w / 2 : alinhar === 'right' ? x - w + 8 : x - 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda, y - h / 2, w, h, h / 2); else ctx.rect(esquerda, y - h / 2, w, h);
+      ctx.fill();
+    }
+    /** Texto com contorno preto, legível por cima do desenho. Com "placa", ganha também um fundo escuro. */
+    function escrever(texto, x, y, { tamanho = 12, cor = '#ececec', alinhar = 'left', peso = 500, base = 'middle', placa = false } = {}) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      if (placa) desenharPlaca(x, y, ctx.measureText(texto).width, tamanho, alinhar);
+      ctx.textAlign = alinhar;
+      ctx.textBaseline = base;
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.strokeText(texto, x, y);
+      ctx.fillStyle = cor;
+      ctx.fillText(texto, x, y);
+    }
+    /** Pedaços de uma fórmula, cada um com a sua fonte: letras em itálico; números, "cos" e sinais em pé. */
+    function partesDaFormula(texto, tamanho) {
+      const partes = texto.split(/(cos|sen|[^A-Za-zψμ]+)/).filter(Boolean).map((parte) => ({
+        texto: parte,
+        fonte: `${/^[A-Za-zψμ]+$/.test(parte) && parte !== 'cos' && parte !== 'sen' ? 'italic ' : ''}${tamanho}px ${FONTE_MAT}`,
+        largura: 0,
+      }));
+      let total = 0;
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        parte.largura = ctx.measureText(parte.texto).width;
+        total += parte.largura;
+      }
+      return { partes, total };
+    }
+    /** Fórmula no canvas. Devolve a largura. */
+    function escreverFormula(texto, x, y, { tamanho = 15, cor = '#ffffff', alinhar = 'left', placa = false } = {}) {
+      const { partes, total } = partesDaFormula(texto, tamanho);
+      if (placa) desenharPlaca(x, y, total, tamanho, alinhar);
+      let px = alinhar === 'center' ? x - total / 2 : alinhar === 'right' ? x - total : x;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        ctx.strokeText(parte.texto, px, y);
+        ctx.fillStyle = cor;
+        ctx.fillText(parte.texto, px, y);
+        px += parte.largura;
+      }
+      return total;
+    }
+    /**
+     * Várias linhas, uma embaixo da outra, centralizadas em "x", sobre uma placa escura.
+     * Cada linha: { texto, tamanho, cor, peso, formula }. "y" é o meio da primeira linha.
+     */
+    const ENTRE_LINHAS = 7;
+    const alturaDoBloco = (linhas) => linhas.reduce((soma, linha) => soma + linha.tamanho + ENTRE_LINHAS, -ENTRE_LINHAS);
+    function escreverBloco(linhas, x, y) {
+      let maior = 0;
+      for (const linha of linhas) {
+        if (linha.formula) maior = Math.max(maior, partesDaFormula(linha.texto, linha.tamanho).total);
+        else {
+          ctx.font = `${linha.peso ?? 500} ${linha.tamanho}px ${FONTE}`;
+          maior = Math.max(maior, ctx.measureText(linha.texto).width);
+        }
+      }
+      const topo = y - linhas[0].tamanho / 2;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x - maior / 2 - 11, topo - 7, maior + 22, alturaDoBloco(linhas) + 15, 11);
+      else ctx.rect(x - maior / 2 - 11, topo - 7, maior + 22, alturaDoBloco(linhas) + 15);
+      ctx.fill();
+      let py = topo;
+      for (const linha of linhas) {
+        const meio = py + linha.tamanho / 2;
+        if (linha.formula) escreverFormula(linha.texto, x, meio, { tamanho: linha.tamanho, cor: linha.cor, alinhar: 'center' });
+        else escrever(linha.texto, x, meio, { tamanho: linha.tamanho, cor: linha.cor, alinhar: 'center', peso: linha.peso ?? 500 });
+        py += linha.tamanho + ENTRE_LINHAS;
+      }
+    }
+    /** Seta de (x1, y1) até (x2, y2). */
+    function seta(x1, y1, x2, y2, { cor = '#fff', espessura = 1.6, ponta = 7, tracejada = false } = {}) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const comprimento = Math.hypot(dx, dy);
+      if (comprimento < 1) return;
+      const ux = dx / comprimento, uy = dy / comprimento;
+      ctx.strokeStyle = cor;
+      ctx.fillStyle = cor;
+      ctx.lineWidth = espessura;
+      ctx.lineCap = 'round';
+      ctx.setLineDash(tracejada ? [5, 4] : []);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2 - ux * ponta * 0.8, y2 - uy * ponta * 0.8);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * ponta - uy * ponta * 0.5, y2 - uy * ponta + ux * ponta * 0.5);
+      ctx.lineTo(x2 - ux * ponta + uy * ponta * 0.5, y2 - uy * ponta - ux * ponta * 0.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Números em português.
+    const numero = (valor, casas = 1) => valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    const graus = (rad) => `${Math.round((rad * 180) / Math.PI)}°`;
+    /** "2,00×10¹²" em HTML: três algarismos, para a conta poder ser refeita à mão. */
+    function cientifico(valor) {
+      let expoente = Math.floor(Math.log10(Math.abs(valor)));
+      let mantissa = valor / 10 ** expoente;
+      if (Number(mantissa.toFixed(2)) >= 10) { mantissa /= 10; expoente += 1; }      // 9,999 vira 1,00×10
+      return `${numero(mantissa, 2)}×10<sup>${String(expoente).replace('-', '−')}</sup>`;
+    }
+    /** "31 000": milhares separados por espaço (que não quebra a linha). */
+    const comMilhar = (valor) => Math.round(valor).toLocaleString('pt-BR').replace(/\./g, ' ');
+    const emNanopascal = (pascal) => `${numero(pascal * 1e9, pascal * 1e9 < 10 ? 2 : 1)} nPa`;
+    const emNanotesla = (tesla) => `${numero(tesla * 1e9, 0)} nT`;
+
+    // Estrelas de fundo (posições fixas, em frações da tela).
+    const ESTRELAS = Array.from({ length: 110 }, (_, i) => {
+      const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.12 + 0.3 * ((i * 37) % 10) / 10 };
+    });
+
+    // -------------------------------------------------------------------------
+    // 7. Visão de longe: a magnetopausa inteira.
+    // -------------------------------------------------------------------------
+    const ventoDeLonge = [];    // partículas do vento: { X, Y, vx, vy, bateu, idade } (em raios da Terra)
+
+    function limitesDoMundo(camera) {
+      return {
+        esquerda: (cena.x - 24 - camera.ox) / camera.S,
+        direita: (cena.x + cena.w + 24 - camera.ox) / camera.S,
+        meiaAltura: Math.max(camera.oy - cena.y, cena.fundo - camera.oy) / camera.S + 1,
+      };
+    }
+    function renascerDeLonge(p, mundo, emQualquerLugar) {
+      p.Y = (Math.random() * 2 - 1) * mundo.meiaAltura;
+      p.bateu = false;
+      p.idade = 0;
+      p.X = mundo.esquerda;
+      if (emQualquerLugar) {
+        // No começo, o vento já preenche a tela (do lado de fora da parede).
+        const parede = paredeNaAltura(Math.abs(p.Y) / estado.r0NaTela);
+        const ate = parede ? parede.x * estado.r0NaTela : mundo.direita;
+        p.X = mundo.esquerda + Math.random() * (ate - mundo.esquerda);
+      }
+    }
+    function atualizarVentoDeLonge(dt) {
+      const camera = cameraDeLonge();
+      const mundo = limitesDoMundo(camera);
+      const r0 = estado.r0NaTela;
+      const quantidade = Math.round(14 + 7 * estado.N);           // mais partículas com N maior
+      const rapidez = (0.3 * estado.v) / camera.S;                // velocidade na tela proporcional a v
+      while (ventoDeLonge.length < quantidade) {
+        const p = { X: 0, Y: 0, vx: 0, vy: 0, bateu: false, idade: 0 };
+        renascerDeLonge(p, mundo, true);
+        ventoDeLonge.push(p);
+      }
+      ventoDeLonge.length = quantidade;
+      for (const p of ventoDeLonge) {
+        if (p.bateu) {
+          // Depois de bater, a partícula se afasta e some.
+          p.idade += dt;
+          p.X += p.vx * dt;
+          p.Y += p.vy * dt;
+          if (p.idade > 0.9) renascerDeLonge(p, mundo, false);
+          continue;
+        }
+        p.X += rapidez * dt;
+        const lado = p.Y >= 0 ? 1 : -1;
+        const parede = paredeNaAltura(Math.abs(p.Y) / r0);
+        if (parede && p.X >= parede.x * r0) {
+          // Bateu na parede: volta como numa reflexão (o ângulo de saída é igual ao de chegada).
+          p.X = parede.x * r0;
+          p.vx = -rapidez * Math.cos(2 * parede.psi);
+          p.vy = lado * rapidez * Math.sin(2 * parede.psi);
+          p.bateu = true;
+          p.idade = 0;
+        } else if (p.X > mundo.direita) {
+          renascerDeLonge(p, mundo, false);
+        }
+      }
+    }
+
+    /** O contorno da magnetopausa na projeção atual. */
+    function tracarMagnetopausa() {
+      const r0 = estado.r0NaTela;
+      ctx.beginPath();
+      for (let i = CURVA.n - 1; i >= 0; i--) {
+        const x = telaX(CURVA.x[i] * r0), y = telaY(CURVA.y[i] * r0);
+        if (i === CURVA.n - 1) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      for (let i = 1; i < CURVA.n; i++) ctx.lineTo(telaX(CURVA.x[i] * r0), telaY(-CURVA.y[i] * r0));
+    }
+
+    function desenharDeLonge(alfa) {
+      const r0 = estado.r0NaTela;
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      const P = pontoEscolhido();
+      const longeDoZoom = 1 - suaveEntre(0.03, 0.35, estado.z);     // partes que somem logo no começo do zoom
+
+      // "Almofada" do campo: mais forte perto da Terra, só dentro da parede.
+      ctx.save();
+      tracarMagnetopausa();
+      ctx.closePath();
+      ctx.clip();
+      const brilho = ctx.createRadialGradient(terra.x, terra.y, S * 0.9, terra.x, terra.y, r0 * S * 2.2);
+      brilho.addColorStop(0, `rgba(${COR_CAMPO}, ${0.34 * alfa})`);
+      brilho.addColorStop(0.3, `rgba(${COR_CAMPO}, ${0.13 * alfa})`);
+      brilho.addColorStop(1, `rgba(${COR_CAMPO}, ${0.03 * alfa})`);
+      ctx.fillStyle = brilho;
+      ctx.fillRect(0, 0, largura, altura);
+
+      // Linhas do campo (esquema de dipolo): só as que cabem dentro da parede.
+      ctx.strokeStyle = `rgba(${COR_CAMPO}, ${0.42 * alfa * longeDoZoom})`;
+      ctx.lineWidth = 1;
+      for (const L of [2, 3, 4.2, 5.6]) {
+        if (L > r0 * 0.8) continue;
+        const inicio = Math.asin(Math.sqrt(1 / L));
+        for (const lado of [-1, 1]) {
+          ctx.beginPath();
+          for (let i = 0; i <= 48; i++) {
+            const teta = inicio + ((Math.PI - 2 * inicio) * i) / 48;
+            const r = L * Math.sin(teta) ** 2;
+            const x = telaX(lado * r * Math.sin(teta)), y = telaY(r * Math.cos(teta));
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+
+      // Linha Sol–Terra e a distância do nariz.
+      ctx.globalAlpha = alfa * longeDoZoom;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.moveTo(cena.x, terra.y);
+      ctx.lineTo(terra.x, terra.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // A medida fica do lado oposto ao do ponto marcado (embaixo, se ele estiver em cima ou no nariz);
+      // os nomes "Terra" e "campo da Terra" ficam do outro lado.
+      const nariz = telaX(-r0);
+      const ladoDaMedida = estado.lado < 0 && P.psi > 0.02 ? -1 : 1;
+      const yMedida = terra.y + ladoDaMedida * Math.max(20, S * 1.6);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.beginPath();
+      ctx.moveTo(nariz, yMedida); ctx.lineTo(terra.x, yMedida);
+      ctx.moveTo(nariz, yMedida - 4); ctx.lineTo(nariz, yMedida + 4);
+      ctx.moveTo(terra.x, yMedida - 4); ctx.lineTo(terra.x, yMedida + 4);
+      ctx.stroke();
+      // O texto fica no meio da medida; se for mais largo que ela, começa no nariz (para não cruzar a parede).
+      const textoDaMedida = `${numero(r0)} raios da Terra`;
+      ctx.font = `500 12px ${FONTE}`;
+      const cabeNaMedida = ctx.measureText(textoDaMedida).width + 12 <= terra.x - nariz;
+      const yDoTexto = yMedida + ladoDaMedida * 19;
+      const paredeAli = paredeNaAltura((Math.abs(yDoTexto - terra.y) + 8) / (S * r0));      // onde a parede passa na altura do texto
+      const comecoDoTexto = (paredeAli ? telaX(paredeAli.x * r0) : nariz) + 9;
+      escrever(textoDaMedida, cabeNaMedida ? (nariz + terra.x) / 2 : comecoDoTexto, yDoTexto, { tamanho: 12, alinhar: cabeNaMedida ? 'center' : 'left' });
+
+      // Terra: lado do dia (voltado para o Sol) claro.
+      const raioDaTerra = Math.max(3, S);
+      const luz = ctx.createLinearGradient(terra.x - raioDaTerra, 0, terra.x + raioDaTerra, 0);
+      luz.addColorStop(0, '#f0f0f0'); luz.addColorStop(0.42, '#bababa'); luz.addColorStop(0.6, '#4a4a4a'); luz.addColorStop(1, '#232323');
+      ctx.globalAlpha = alfa;
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(terra.x, terra.y, raioDaTerra, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = alfa * longeDoZoom;
+      escrever('Terra', terra.x, terra.y - ladoDaMedida * (raioDaTerra + 9), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+
+      // Vento solar: riscos laranja que vêm da esquerda e voltam ao bater na parede.
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 1.3;
+      const rastro = 5 + 0.016 * estado.v;
+      for (const p of ventoDeLonge) {
+        const x = telaX(p.X), y = telaY(p.Y);
+        let dx = 1, dy = 0, forca = 0.7;
+        if (p.bateu) {
+          const rapidez = Math.hypot(p.vx, p.vy) || 1;
+          dx = p.vx / rapidez; dy = -p.vy / rapidez;
+          forca = 0.75 * (1 - p.idade / 0.9);
+        }
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${forca})`;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - dx * rastro, y - dy * rastro);
+        ctx.stroke();
+        if (p.bateu && p.idade < 0.25) {          // clarao do impacto
+          ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * (1 - p.idade / 0.25)})`;
+          ctx.beginPath();
+          ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // A magnetopausa.
+      ctx.globalAlpha = alfa;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+      ctx.lineWidth = 6;
+      ctx.lineJoin = 'round';
+      tracarMagnetopausa();
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.7;
+      tracarMagnetopausa();
+      ctx.stroke();
+
+      // Rótulos.
+      ctx.globalAlpha = alfa * longeDoZoom;
+      const noAlto = cena.y + ESPACO_DO_TITULO + 22;
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      if (alturaLivre > 150) {                                      // em telas muito baixas, a legenda não cabe
+        seta(cena.x + 18, noAlto, cena.x + 60, noAlto, { cor: `rgb(${COR_VENTO})`, espessura: 1.5, ponta: 6 });
+        escrever('vento solar', cena.x + 68, noAlto, { tamanho: 12.5, cor: `rgb(${COR_VENTO})`, peso: 600 });
+        if (alturaLivre > 200) escrever('o Sol fica bem longe, à esquerda', cena.x + 18, noAlto + 17, { tamanho: 11, cor: '#747474' });
+      }
+      if (r0 * S > 46) {
+        escrever('campo da Terra', telaX(r0 * 0.85), telaY(ladoDaMedida * r0 * 0.78), { tamanho: 12.5, cor: `rgb(${COR_CAMPO})`, alinhar: 'center', peso: 600 });
+      }
+      // "magnetopausa", acompanhando a curva no flanco de cima (ou no de baixo, se o ponto marcado estiver ali).
+      const q = pontoDaCurva(2.3);
+      const flanco = estado.lado > 0 && estado.l > 1.2 ? -1 : 1;
+      ctx.save();
+      ctx.translate(telaX(q.x * r0), telaY(flanco * q.y * r0));
+      ctx.rotate(-flanco * (Math.PI / 2 - q.psi));
+      escrever('magnetopausa', 0, -flanco * 16, { tamanho: 12.5, alinhar: 'center', peso: 600 });
+      ctx.restore();
+
+      // O ponto escolhido: de onde o vento chega, a perpendicular à parede e o ângulo ψ entre os dois.
+      const px = telaX(P.X), py = telaY(P.Y);
+      const nx = -Math.cos(P.psi), ny = -estado.lado * Math.sin(P.psi);        // perpendicular, para o lado do vento
+      ctx.globalAlpha = alfa * longeDoZoom;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px, py); ctx.lineTo(px + nx * 46, py + ny * 46);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      seta(px - 52, py, px - 9, py, { cor: `rgb(${COR_VENTO})`, espessura: 1.5, ponta: 6 });
+      if (P.psi > 0.06) {
+        const a1 = Math.PI, a2 = Math.atan2(ny, nx);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.beginPath();
+        ctx.arc(px, py, 26, Math.min(a1, a2 < 0 ? a2 + Math.PI * 2 : a2), Math.max(a1, a2 < 0 ? a2 + Math.PI * 2 : a2));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = alfa;
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.25 + 0.3 * pulso})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(px, py, 10 + 3 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = alfa * longeDoZoom;
+      escreverFormula(`ψ = ${graus(P.psi)}`, px + nx * 20 - 26, py + ny * 20 + (estado.lado > 0 ? -22 : 22), { tamanho: 15, alinhar: 'right' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. Visão de perto: um pedaço da parede.
+    // -------------------------------------------------------------------------
+    const ventoDePerto = [];    // partículas: { x, y, vx, vy, bateu, idade } (em pixels da tela)
+    const claroes = [];         // impactos recentes: { x, y, idade }
+    let nascimentos = 0;        // fração de partícula acumulada entre um quadro e outro
+
+    /** A parede de perto: por onde passa (C), a perpendicular para o lado do vento (n) e a direção dela (w). */
+    function geometriaDePerto() {
+      const c = contas();
+      const centro = centroDePerto();
+      const n = { x: -Math.cos(c.psi), y: -estado.lado * Math.sin(c.psi) };
+      const w = { x: -n.y, y: n.x };
+      // Se as pressões não estão iguais, a parede cede um pouco para o lado mais fraco.
+      const cede = limitar(16 * Math.log(c.vento / c.campo), -36, 36);
+      return { C: { x: centro.x - n.x * cede, y: centro.y - n.y * cede }, n, w, psi: c.psi, contas: c };
+    }
+
+    function atualizarVentoDePerto(dt, g) {
+      const rapidez = 0.42 * estado.v;                            // pixels por segundo, proporcional a v
+      const densidade = 2.4e-5 * estado.N;                        // partículas por pixel², proporcional a N
+      const ladoDoVento = (x, y) => (x - g.C.x) * g.n.x + (y - g.C.y) * g.n.y;
+      const faixa = cena.fundo - cena.y + 80;                     // altura por onde o vento entra, com folga
+      nascimentos += densidade * rapidez * faixa * dt;
+      while (nascimentos >= 1) {
+        nascimentos -= 1;
+        const x = cena.x - 12, y = cena.y - 40 + Math.random() * faixa;
+        if (ventoDePerto.length < 420 && ladoDoVento(x, y) > 6) ventoDePerto.push({ x, y, vx: rapidez, vy: 0, bateu: false, idade: 0 });
+      }
+      for (let i = ventoDePerto.length - 1; i >= 0; i--) {
+        const p = ventoDePerto[i];
+        if (!p.bateu) p.vx = rapidez;                              // acompanha o controle de velocidade
+        else p.idade += dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        const d = ladoDoVento(p.x, p.y);
+        if (!p.bateu && d <= 0) {
+          // Passou da parede neste quadro: volta até ela e inverte a parte perpendicular da velocidade.
+          const vn = p.vx * g.n.x + p.vy * g.n.y;
+          const volta = vn !== 0 ? d / vn : 0;
+          p.x -= p.vx * volta;
+          p.y -= p.vy * volta;
+          p.vx -= 2 * vn * g.n.x;
+          p.vy -= 2 * vn * g.n.y;
+          p.bateu = true;
+          p.idade = 0;
+          if (claroes.length < 60) claroes.push({ x: p.x, y: p.y, idade: 0 });
+        }
+        const fora = p.x < cena.x - 60 || p.x > cena.x + cena.w + 60 || p.y < cena.y - 60 || p.y > cena.fundo + 60;
+        if (fora || p.idade > 2.4 || (p.bateu && d < -3)) ventoDePerto.splice(i, 1);
+      }
+      for (let i = claroes.length - 1; i >= 0; i--) {
+        claroes[i].idade += dt;
+        if (claroes[i].idade > 0.4) claroes.splice(i, 1);
+      }
+    }
+    /** No começo (e ao voltar para esta visão), o vento já preenche o lado dele. */
+    function preencherVentoDePerto(g) {
+      ventoDePerto.length = 0;
+      claroes.length = 0;
+      const rapidez = 0.42 * estado.v;
+      const faixa = cena.fundo - cena.y + 80;
+      const quantidade = Math.min(380, Math.round(2.4e-5 * estado.N * cena.w * faixa * 0.6));
+      for (let i = 0; i < quantidade; i++) {
+        const x = cena.x + Math.random() * cena.w, y = cena.y - 40 + Math.random() * faixa;
+        if ((x - g.C.x) * g.n.x + (y - g.C.y) * g.n.y > 6) ventoDePerto.push({ x, y, vx: rapidez, vy: 0, bateu: false, idade: 0 });
+      }
+    }
+
+    /** Comprimento das setas de pressão: cresce devagar (escala logarítmica), para caber na tela. */
+    function comprimentoDaSeta(pascal) {
+      return 20 + 78 * limitar((Math.log10(pascal * 1e9) + 2.3) / 4.2, 0, 1);
+    }
+
+    function desenharDePerto(alfa) {
+      const g = geometriaDePerto();
+      const { C, n, w, psi } = g;
+      const c = g.contas;
+      const passo = estado.passo;
+      const paraCima = w.y < 0 ? w : { x: -w.x, y: -w.y };          // a direção da parede que sobe na tela
+      const grande = 2 * Math.max(largura, altura);
+      const deFrente = psi < 0.01;
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;                // entre o título e a barra de controles
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      ctx.clip();
+
+      // Lado do campo: fundo azulado e linhas do campo, paralelas à parede. Mais juntas = campo mais forte.
+      const forcaDoCampo = passo >= 3 ? 1 : 0.5;
+      const fundo = ctx.createLinearGradient(C.x, C.y, C.x - n.x * 420, C.y - n.y * 420);
+      fundo.addColorStop(0, `rgba(${COR_CAMPO}, ${0.17 * alfa})`);
+      fundo.addColorStop(1, `rgba(${COR_CAMPO}, ${0.06 * alfa})`);
+      ctx.fillStyle = fundo;
+      ctx.beginPath();
+      ctx.moveTo(C.x + w.x * grande, C.y + w.y * grande);
+      ctx.lineTo(C.x - w.x * grande, C.y - w.y * grande);
+      ctx.lineTo(C.x - w.x * grande - n.x * grande, C.y - w.y * grande - n.y * grande);
+      ctx.lineTo(C.x + w.x * grande - n.x * grande, C.y + w.y * grande - n.y * grande);
+      ctx.closePath();
+      ctx.fill();
+      const espaco = limitar(300 / Math.sqrt(c.B * 1e9), 13, 64);
+      ctx.lineWidth = 1;
+      for (let k = 0; k < 40; k++) {
+        const d = 18 + k * espaco;
+        if (d > grande / 2) break;
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, ${alfa * forcaDoCampo * Math.max(0.1, 0.6 - k * 0.035)})`;
+        ctx.beginPath();
+        ctx.moveTo(C.x - n.x * d + w.x * grande, C.y - n.y * d + w.y * grande);
+        ctx.lineTo(C.x - n.x * d - w.x * grande, C.y - n.y * d - w.y * grande);
+        ctx.stroke();
+      }
+
+      // Passo 1: o mesmo feixe de vento cobre uma área maior quando a parede está inclinada.
+      // (Aqui vai o feixe; os textos dele vêm mais abaixo, por cima das partículas.)
+      let feixe = null;
+      if (passo === 0) {
+        const meia = Math.min(40, alturaLivre * 0.12);
+        const naParede = (y) => ({ x: C.x + (w.x * (y - C.y)) / w.y, y });
+        const a = naParede(C.y - meia), b = naParede(C.y + meia);
+        const inicio = Math.max(cena.x + 12, Math.min(a.x, b.x) - Math.min(260, cena.w * 0.34));
+        feixe = { a, b, inicio };
+        ctx.fillStyle = `rgba(${COR_VENTO}, ${0.09 * alfa})`;
+        ctx.beginPath();
+        ctx.moveTo(inicio, a.y); ctx.lineTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(inicio, b.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${0.5 * alfa})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(inicio, a.y); ctx.lineTo(a.x, a.y);
+        ctx.moveTo(inicio, b.y); ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // A "boca" do feixe: 1 m², de frente para o vento.
+        ctx.globalAlpha = alfa;
+        ctx.strokeStyle = `rgb(${COR_VENTO})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(inicio + 26, a.y); ctx.lineTo(inicio + 26, b.y);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // As partículas do vento.
+      const forcaDoVento = [1, 0.28, 0.9, 0.45, 0.85][passo];
+      ctx.lineCap = 'round';
+      for (const p of ventoDePerto) {
+        const rapidez = Math.hypot(p.vx, p.vy) || 1;
+        const forca = alfa * forcaDoVento * (p.bateu ? 0.6 * Math.max(0, 1 - p.idade / 2.4) : 0.95);
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${forca * 0.55})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - (p.vx / rapidez) * 12, p.y - (p.vy / rapidez) * 12);
+        ctx.stroke();
+        ctx.fillStyle = `rgba(${COR_VENTO}, ${forca})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (const clarao of claroes) {
+        const t = clarao.idade / 0.4;
+        ctx.strokeStyle = `rgba(255, 214, 150, ${alfa * forcaDoVento * 0.8 * (1 - t)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(clarao.x, clarao.y, 1.5 + 7.5 * t, 0, Math.PI * 2);
+        ctx.stroke();
+        if (t < 0.4) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${alfa * forcaDoVento * (1 - t / 0.4)})`;
+          ctx.beginPath();
+          ctx.arc(clarao.x, clarao.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // A parede.
+      ctx.globalAlpha = alfa;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(C.x + w.x * grande, C.y + w.y * grande);
+      ctx.lineTo(C.x - w.x * grande, C.y - w.y * grande);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      // Onde vai o nome "magnetopausa", ao longo da parede: no alto, sem sair da área livre.
+      let noAlto = Math.min(230, alturaLivre * 0.42);
+      if (paraCima.y < -0.05) noAlto = Math.min(noAlto, (C.y - cena.y - ESPACO_DO_TITULO - 12) / -paraCima.y - 50);
+      if (Math.abs(paraCima.x) > 0.05) {
+        const folga = paraCima.x > 0 ? cena.x + cena.w - 14 - C.x : C.x - cena.x - 14;
+        noAlto = Math.min(noAlto, folga / Math.abs(paraCima.x) - 50);
+      }
+      noAlto = Math.max(60, noAlto);
+
+      // Passos 3, 4 e 5: as setas de pressão, uma fileira de cada lado da parede
+      // (com um vão onde fica o nome da parede).
+      if (passo >= 2) {
+        const tamanhoVento = comprimentoDaSeta(c.vento), tamanhoCampo = comprimentoDaSeta(c.campo);
+        const mostraVento = passo === 2 || passo === 4 ? 1 : 0.35;
+        const sentido = paraCima === w ? 1 : -1;
+        for (let k = -6; k <= 6; k++) {
+          if (Math.abs(k * 72 * sentido - noAlto) < 56) continue;
+          const bx = C.x + w.x * k * 72, by = C.y + w.y * k * 72;
+          ctx.globalAlpha = alfa * mostraVento;
+          seta(bx + n.x * (9 + tamanhoVento), by + n.y * (9 + tamanhoVento), bx + n.x * 9, by + n.y * 9, { cor: `rgb(${COR_VENTO})`, espessura: 2.4, ponta: 8 });
+          if (passo >= 3) {
+            ctx.globalAlpha = alfa;
+            seta(bx - n.x * (9 + tamanhoCampo), by - n.y * (9 + tamanhoCampo), bx - n.x * 9, by - n.y * 9, { cor: `rgb(${COR_CAMPO})`, espessura: 2.4, ponta: 8 });
+          }
+        }
+      }
+
+      // Em cima, o desenho some por trás do título (os textos, desenhados depois, ficam nítidos).
+      const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
+      sombra.addColorStop(0, `rgba(0, 0, 0, ${alfa})`);
+      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), `rgba(0, 0, 0, ${alfa})`);
+      sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = sombra;
+      ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
+
+      // Passo 1: o trecho de parede que o feixe cobre, e os textos.
+      if (feixe) {
+        ctx.globalAlpha = alfa;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(feixe.a.x, feixe.a.y); ctx.lineTo(feixe.b.x, feixe.b.y);
+        ctx.stroke();
+        escrever('feixe de 1 m²', feixe.inicio + 34, feixe.a.y - 14, { tamanho: 12, cor: `rgb(${COR_VENTO})`, placa: true });
+        // O texto do trecho fica encostado no meio dele, do lado do campo.
+        const texto = deFrente ? 'cobre 1 m² de parede' : `cobre ${numero(1 / Math.cos(psi), 2)} m² de parede (1/cos ψ)`;
+        escrever(texto, C.x - n.x * 24 + 8, C.y - n.y * 24, { tamanho: 12, peso: 600, placa: true });
+      }
+
+      // Passo 2: uma partícula em câmera lenta, com a velocidade separada em duas partes.
+      if (passo === 1) desenharParticulaEmDestaque(g, alfa);
+
+      // Os nomes dos dois lados. Nos passos de pressão, a fórmula de cada lado aparece junto do nome.
+      const corDoVento = `rgb(${COR_VENTO})`, corDoCampo = `rgb(${COR_CAMPO})`;
+      const cabeMais = alturaLivre > 170;                           // em telas muito baixas, só os nomes
+      const blocoDoVento = [{ texto: 'vento solar', tamanho: 13, cor: corDoVento, peso: 600 }];
+      if (cabeMais && (passo === 2 || passo === 4)) blocoDoVento.push({ texto: '2·N·m·v²·cos² ψ', tamanho: 15, cor: corDoVento, formula: true });
+      const blocoDoCampo = [{ texto: 'campo da Terra', tamanho: 13, cor: corDoCampo, peso: 600 }];
+      if (cabeMais) blocoDoCampo.push({ texto: `B = ${emNanotesla(c.B)}`, tamanho: 11.5, cor: '#a9a9a9' });
+      if (cabeMais && passo >= 3) blocoDoCampo.push({ texto: 'B²/2μ₀', tamanho: 15, cor: corDoCampo, formula: true });
+      const dentro = (ponto, bloco) => ({
+        x: limitar(ponto.x, cena.x + 80, cena.x + cena.w - 80),
+        y: limitar(ponto.y, cena.y + ESPACO_DO_TITULO + 22, cena.y + cena.h - 18 - alturaDoBloco(bloco)),
+      });
+      // Se o lugar cair em cima da miniatura, o bloco sai dela pelo caminho mais curto: para a direita ou para cima.
+      const m = lugarDaMiniatura();
+      const foraDaMiniatura = (lugar, bloco) => {
+        if (!m) return lugar;
+        const meiaLargura = 76, topo = lugar.y - bloco[0].tamanho / 2 - 8, base = topo + alturaDoBloco(bloco) + 16;
+        const paraADireita = m.x + m.w + 10 + meiaLargura - lugar.x, paraOAlto = base - (m.y - 26);
+        if (paraADireita <= 0 || paraOAlto <= 0) return lugar;
+        return paraADireita <= paraOAlto ? { x: lugar.x + paraADireita, y: lugar.y } : { x: lugar.x, y: lugar.y - paraOAlto };
+      };
+      const afastamento = Math.min(170, cena.w * 0.24), subida = Math.min(190, alturaLivre * 0.36);
+      const lugarDoVento = foraDaMiniatura(dentro({ x: C.x + n.x * afastamento + paraCima.x * subida, y: C.y + n.y * afastamento + paraCima.y * subida }, blocoDoVento), blocoDoVento);
+      const lugarDoCampo = foraDaMiniatura(dentro({ x: C.x - n.x * afastamento + paraCima.x * subida, y: C.y - n.y * afastamento + paraCima.y * subida }, blocoDoCampo), blocoDoCampo);
+      if (passo === 1) {
+        // No passo 2, "vento solar" fica no começo do caminho da partícula em destaque (se couber).
+        const comeco = C.x - percursoDaParticula(C) - 16;
+        ctx.globalAlpha = alfa;
+        if (comeco - 76 > cena.x) escrever('vento solar', comeco, C.y, { tamanho: 13, cor: corDoVento, alinhar: 'right', peso: 600 });
+        ctx.globalAlpha = alfa * 0.75;
+      } else {
+        ctx.globalAlpha = alfa;
+        escreverBloco(blocoDoVento, lugarDoVento.x, lugarDoVento.y);
+      }
+      escreverBloco(blocoDoCampo, lugarDoCampo.x, lugarDoCampo.y);
+      ctx.globalAlpha = alfa;
+      // O nome da parede acompanha a linha, do lado do campo (onde não passam partículas).
+      ctx.save();
+      ctx.translate(C.x + paraCima.x * noAlto - n.x * 14, C.y + paraCima.y * noAlto - n.y * 14);
+      ctx.rotate(giroLegivel(Math.atan2(paraCima.y, paraCima.x)));
+      escrever('magnetopausa', 0, 0, { tamanho: 12.5, alinhar: 'center', peso: 600 });
+      ctx.restore();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      desenharMiniatura(alfa);
+    }
+
+    /** Passo 2: quanto a partícula em destaque anda até bater na parede (em pixels). */
+    const percursoDaParticula = (C) => Math.min(250, C.x - cena.x - 40, cena.w * 0.4);
+
+    /** Passo 2: a partícula chega, bate e volta. Só a parte perpendicular à parede se inverte. */
+    /** Distância, saindo de "origem" na direção "direcao", até entrar no retângulo (ou null, se não passa por ele). */
+    function distanciaAteRetangulo(origem, direcao, ret) {
+      let entra = 0, sai = Infinity;
+      for (const [o, d, min, max] of [[origem.x, direcao.x, ret.x, ret.x + ret.w], [origem.y, direcao.y, ret.y, ret.y + ret.h]]) {
+        if (Math.abs(d) < 1e-9) {
+          if (o < min || o > max) return null;
+          continue;
+        }
+        const t1 = (min - o) / d, t2 = (max - o) / d;
+        entra = Math.max(entra, Math.min(t1, t2));
+        sai = Math.min(sai, Math.max(t1, t2));
+      }
+      return entra <= sai ? entra : null;
+    }
+    /** Largura de uma palavra pequena seguida de uma fórmula, numa linha só. */
+    function larguraComPalavra(palavra, formula) {
+      ctx.font = `500 11.5px ${FONTE}`;
+      const daPalavra = palavra ? ctx.measureText(palavra).width + 7 : 0;
+      return { daPalavra, total: daPalavra + partesDaFormula(formula, 16).total };
+    }
+    /** Escreve a palavra e a fórmula centralizadas em (x, y) e giradas de "giro" (em radianos). */
+    function escreverComPalavra(palavra, formula, x, y, giro, cor) {
+      const { daPalavra, total } = larguraComPalavra(palavra, formula);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(giro);
+      if (palavra) escrever(palavra, -total / 2, 1, { tamanho: 11.5, cor: '#a9a9a9' });
+      escreverFormula(formula, -total / 2 + daPalavra, 0, { tamanho: 16, cor });
+      ctx.restore();
+    }
+    /** Ângulo para um texto que acompanha uma linha, sem ficar de cabeça para baixo. */
+    const giroLegivel = (angulo) => (angulo < -Math.PI / 2 || angulo > Math.PI / 2 ? angulo + Math.PI : angulo);
+
+    function desenharParticulaEmDestaque(g, alfa) {
+      const { C, n, psi } = g;
+      const deFrente = psi < 0.01;
+      const quaseDeFrente = psi < 0.16;                   // com menos de uns 9°, a chegada e a saída quase se confundem
+      const tamanho = 74;                                 // comprimento da seta da velocidade
+      const corDoVento = `rgb(${COR_VENTO})`;
+      const percurso = percursoDaParticula(C);
+      const volta = { x: -Math.cos(2 * psi), y: -estado.lado * Math.sin(2 * psi) };       // direção depois de bater
+      // A saída vai até onde a partícula (com a seta dela) ainda cabe na área livre, sem passar pela miniatura.
+      let saida = percurso;
+      if (volta.y < -0.05) saida = Math.min(saida, (C.y - cena.y - ESPACO_DO_TITULO - 14) / -volta.y - tamanho);
+      if (volta.y > 0.05) saida = Math.min(saida, (cena.y + cena.h - 6 - C.y) / volta.y - tamanho);
+      if (volta.x > 0.05) saida = Math.min(saida, (cena.x + cena.w - 10 - C.x) / volta.x - tamanho);
+      if (volta.x < -0.05) saida = Math.min(saida, (C.x - cena.x - 10) / -volta.x - tamanho);
+      const m = lugarDaMiniatura();
+      if (m) {
+        const ateLa = distanciaAteRetangulo(C, volta, { x: m.x - 12, y: m.y - 28, w: m.w + 24, h: m.h + 40 });
+        if (ateLa !== null) saida = Math.min(saida, ateLa - tamanho);
+      }
+      saida = Math.max(50, saida);
+      // Tempos (em segundos): chega em 1,9; fica um instante na parede; sai com a mesma rapidez; some; recomeça.
+      const fimDaSaida = 2.5 + 1.9 * (saida / percurso);
+      const tempo = estado.tempoDoPasso % (fimDaSaida + 1.4);
+      const chegando = tempo < 2.2;
+      let x, y;
+      if (tempo < 1.9) { x = C.x - percurso * (1 - tempo / 1.9); y = C.y; }
+      else if (tempo < 2.5) { x = C.x; y = C.y; }
+      else { const t = Math.min(1, (tempo - 2.5) / (fimDaSaida - 2.5)); x = C.x + volta.x * saida * t; y = C.y + volta.y * saida * t; }
+      const direcao = chegando ? { x: 1, y: 0 } : volta;
+      const some = tempo > fimDaSaida + 0.2 ? Math.max(0, 1 - (tempo - fimDaSaida - 0.2) / 0.8) : 1;
+      const depoisDoImpacto = tempo >= 1.9 ? Math.min(1, (tempo - 1.9) / 0.25) * some : 0;
+
+      ctx.globalAlpha = alfa;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      if (!deFrente) {
+        // A perpendicular à parede (de frente, ela coincide com o caminho da partícula).
+        const alcance = psi < 0.35 ? 100 : 150;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.moveTo(C.x + n.x * alcance, C.y + n.y * alcance);
+        ctx.lineTo(C.x - n.x * 60, C.y - n.y * 60);
+        ctx.stroke();
+      }
+      // O caminho de chegada e o de saída.
+      ctx.strokeStyle = `rgba(${COR_VENTO}, 0.35)`;
+      ctx.beginPath();
+      ctx.moveTo(C.x - percurso, C.y); ctx.lineTo(C.x, C.y); ctx.lineTo(C.x + volta.x * (saida + tamanho), C.y + volta.y * (saida + tamanho));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (!deFrente) {
+        // O ângulo ψ, entre o caminho de chegada e a perpendicular.
+        const a1 = Math.PI, bruto = Math.atan2(n.y, n.x), a2 = bruto < 0 ? bruto + Math.PI * 2 : bruto;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.arc(C.x, C.y, 44, Math.min(a1, a2), Math.max(a1, a2));
+        ctx.stroke();
+        const meio = (a1 + a2) / 2;
+        escreverFormula('ψ', C.x + Math.cos(meio) * 58, C.y + Math.sin(meio) * 58, { tamanho: 16, alinhar: 'center' });
+      }
+      if (psi >= 0.42) {
+        // O nome da linha tracejada acompanha a linha, do lado da saída (com pouca inclinação, não cabe).
+        const paraASaida = volta.x * -n.y + volta.y * n.x > 0 ? 1 : -1;
+        ctx.save();
+        ctx.translate(C.x + n.x * 104 - n.y * paraASaida * 11, C.y + n.y * 104 + n.x * paraASaida * 11);
+        ctx.rotate(giroLegivel(Math.atan2(n.y, n.x)));
+        escrever('perpendicular à parede', 0, 0, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        ctx.restore();
+      }
+
+      // "antes" e "depois" ficam presos aos caminhos de chegada e de saída, do lado em que há espaço.
+      const formulaDe = (sinal) => (deFrente ? `${sinal}m·v` : `${sinal}m·v·cos ψ`);
+      const ladoDaPerpendicular = Math.abs(n.y) > 0.02 ? Math.sign(n.y) : (estado.lado > 0 ? -1 : 1);
+      const ladoDoAntes = quaseDeFrente ? -ladoDaPerpendicular : ladoDaPerpendicular;
+      const cabeAntes = (texto) => percurso - 6 - larguraComPalavra(texto, formulaDe('+')).total >= 84;
+      const palavraAntes = cabeAntes('antes') ? 'antes' : '';
+      if (cabeAntes(palavraAntes)) {
+        ctx.globalAlpha = alfa * (chegando ? 1 : 0.5);
+        const meia = larguraComPalavra(palavraAntes, formulaDe('+')).total / 2;
+        escreverComPalavra(palavraAntes, formulaDe('+'), C.x - percurso + 6 + meia, C.y + ladoDoAntes * (quaseDeFrente ? 22 : 18), 0, corDoVento);
+      }
+      if (depoisDoImpacto > 0 && saida + tamanho >= 150) {
+        const lateral = { x: -volta.y, y: volta.x };
+        let paraFora = lateral.x * n.x + lateral.y * n.y < 0 ? 1 : -1;        // o lado de fora é o da parede
+        if (deFrente) paraFora = lateral.y * ladoDaPerpendicular > 0 ? 1 : -1;  // de frente: do lado oposto ao do "antes"
+        const porFora = psi < 1.13;                                             // perto de 65°, a saída encosta na parede
+        const afasta = porFora ? paraFora * 22 : -paraFora * 34;
+        const meia = larguraComPalavra('depois', formulaDe('−')).total / 2;
+        const perto = porFora ? 44 / Math.cos(psi) : 60;                        // mais perto do impacto que isso, não cabe
+        const centro = Math.min(Math.max(perto + meia, saida * 0.5 + 30), saida + tamanho + 24 - meia);
+        ctx.globalAlpha = alfa * depoisDoImpacto;
+        escreverComPalavra('depois', formulaDe('−'), C.x + volta.x * centro + lateral.x * afasta, C.y + volta.y * centro + lateral.y * afasta,
+          giroLegivel(Math.atan2(volta.y, volta.x)), corDoVento);
+      }
+
+      // O que a parede recebe: aparece no impacto e fica até o fim do ciclo.
+      if (tempo >= 1.9) {
+        ctx.globalAlpha = alfa * depoisDoImpacto;
+        seta(C.x - n.x * 6, C.y - n.y * 6, C.x - n.x * 66, C.y - n.y * 66, { cor: '#ffffff', espessura: 3, ponta: 10 });
+        escreverFormula(deFrente ? '2·m·v' : '2·m·v·cos ψ', C.x - n.x * 76 + 4, C.y - n.y * 76 + (estado.lado > 0 ? 16 : -16), { tamanho: 16, alinhar: 'left' });
+        escrever('fica com a parede', C.x - n.x * 76 + 4, C.y - n.y * 76 + (estado.lado > 0 ? 34 : -34), { tamanho: 11, cor: '#a9a9a9' });
+        const clarao = (tempo - 1.9) / 0.5;
+        if (clarao < 1) {
+          ctx.strokeStyle = `rgba(255, 236, 200, ${1 - clarao})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(C.x, C.y, 6 + 26 * clarao, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      // A partícula, a velocidade dela e a parte perpendicular à parede.
+      ctx.globalAlpha = alfa * some;
+      const perpendicular = direcao.x * n.x + direcao.y * n.y;                              // negativa chegando, positiva saindo
+      const fimPerpendicular = { x: x + n.x * perpendicular * tamanho, y: y + n.y * perpendicular * tamanho };
+      if (!deFrente) {
+        seta(x, y, fimPerpendicular.x, fimPerpendicular.y, { cor: `rgba(${COR_VENTO}, 0.95)`, espessura: 1.5, ponta: 6, tracejada: true });
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(fimPerpendicular.x, fimPerpendicular.y);
+        ctx.lineTo(x + direcao.x * tamanho, y + direcao.y * tamanho);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      seta(x, y, x + direcao.x * tamanho, y + direcao.y * tamanho, { cor: `rgb(${COR_VENTO})`, espessura: 2.4, ponta: 9 });
+      ctx.fillStyle = `rgb(${COR_VENTO})`;
+      ctx.beginPath();
+      ctx.arc(x, y, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    /** Onde fica a miniatura da visão de longe (ou null, quando não há espaço para ela). */
+    function lugarDaMiniatura() {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      if (cena.w < 520 || alturaLivre < 300) return null;
+      const w = Math.min(limitar(cena.w * 0.19, 130, 180), alturaLivre * 0.4), h = w * 0.74;
+      return { x: cena.x + 16, y: cena.y + cena.h - h - 12, w, h };
+    }
+    /** Miniatura da visão de longe, para mostrar em que ponto da parede se está. */
+    let miniatura = null;       // retângulo na tela (para o clique voltar à visão de longe)
+    function desenharMiniatura(alfa) {
+      miniatura = lugarDaMiniatura();
+      if (!miniatura) return;
+      const { x, y, w, h } = miniatura;
+      const r0 = estado.r0NaTela;
+      const escala = h / 46;
+      const ox = x + w * 0.56, oy = y + h / 2;
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      ctx.fillStyle = 'rgba(8, 8, 8, 0.9)';
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+      ctx.fill();
+      ctx.stroke();
+      ctx.clip();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let i = CURVA.n - 1; i >= 0; i -= 3) ctx.lineTo(ox + CURVA.x[i] * r0 * escala, oy - CURVA.y[i] * r0 * escala);
+      for (let i = 0; i < CURVA.n; i += 3) ctx.lineTo(ox + CURVA.x[i] * r0 * escala, oy + CURVA.y[i] * r0 * escala);
+      ctx.stroke();
+      ctx.fillStyle = '#bababa';
+      ctx.beginPath();
+      ctx.arc(ox, oy, Math.max(1.6, escala), 0, Math.PI * 2);
+      ctx.fill();
+      seta(x + 8, oy, x + 28, oy, { cor: `rgb(${COR_VENTO})`, espessura: 1.2, ponta: 5 });
+      const P = pontoEscolhido();
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      ctx.strokeStyle = `rgba(${COR_VENTO}, ${0.5 + 0.4 * pulso})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(ox + P.X * escala, oy - P.Y * escala, 5 + 2 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgb(${COR_VENTO})`;
+      ctx.beginPath();
+      ctx.arc(ox + P.X * escala, oy - P.Y * escala, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.globalAlpha = alfa;
+      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. O quadro inteiro.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+      atualizarProjecao();
+      const alfaDeLonge = 1 - suaveEntre(0.5, 0.9, estado.z);
+      const alfaDePerto = suaveEntre(0.62, 1, estado.z);
+      for (const estrela of ESTRELAS) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${estrela.brilho * (0.35 + 0.65 * alfaDeLonge)})`;
+        ctx.fillRect(Math.round(estrela.u * largura), Math.round(estrela.v * altura), 1, 1);
+      }
+      if (alfaDeLonge > 0.01) desenharDeLonge(alfaDeLonge);
+      if (alfaDePerto > 0.01) desenharDePerto(alfaDePerto);
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. Painel: textos e números que mudam.
+    // -------------------------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+    const textos = new Map();          // o que já está escrito em cada lugar (para não reescrever à toa)
+    function por(id, html) {
+      if (textos.get(id) === html) return;
+      textos.set(id, html);
+      el(id).innerHTML = html;         // só textos fixos e números desta página
+    }
+    const larguraDaBarra = (pascal) => `${Math.round(100 * limitar((Math.log10(pascal * 1e9) + 2.3) / 4.2, 0.03, 1))}%`;
+
+    // Textos que não mudam, mas dependem dos valores da seção 2.
+    const CAMPO_USADO = `${comMilhar(FATOR_DO_CAMPO * CAMPO_NA_SUPERFICIE * 1e9)} nT`;
+    por('leg-m', `massa de cada partícula (aqui, a do próton: ${cientifico(MASSA)} kg)`);
+    por('leg-mu', `permeabilidade magnética do vácuo: ${cientifico(MU0)} T·m/A`);
+    por('leg-b0', `campo na superfície da Terra, no equador (valor usado: ${CAMPO_USADO})`);
+    por('nota', `Valores usados: <i>m</i> = massa do próton; campo de dipolo, <i>B</i> = <i>B</i><sub>0</sub>·(<i>R</i><sub>T</sub>/<i>r</i>)<sup>3</sup>,
+      com <i>B</i><sub>0</sub> = ${CAMPO_USADO}. A forma da parede é uma aproximação: a mesma conta, repetida em cada ponto.
+      Partículas e linhas de campo são um esquema.`);
+
+    function atualizarPainel() {
+      const c = contas();
+      const deFrente = c.psi < 0.01;
+      const angulo = graus(c.psi);
+      const cosseno = deFrente ? '1' : numero(c.cos, 3);
+      const densidade = `${numero(estado.N, estado.N % 1 ? 1 : 0)} por cm³`;
+      const N = cientifico(estado.N * 1e6), v = cientifico(estado.v * 1e3);      // em partículas por m³ e em m/s
+      por('subtitulo', estado.perto
+        ? 'De perto: um pedaço da parede<span class="longo">. Partículas e setas fora de escala.</span><span class="curto">, fora de escala.</span>'
+        : 'De longe: a parede inteira em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>');
+      por('o-n', densidade);
+      por('o-v', `${estado.v} km/s`);
+      por('o-psi', angulo);
+
+      // Visão de longe.
+      por('l-pressao', emNanopascal(pressaoDoVento(estado.N, estado.v, 0)));
+      por('l-distancia', `${numero(estado.r0NaTela)} raios da Terra`);
+      por('l-ponto-nome', deFrente ? 'No ponto marcado (de frente: <i>ψ</i> = 0°)' : `No ponto marcado (<i>ψ</i> = ${angulo})`);
+      por('l-ponto', `${numero(c.r)} raios da Terra`);
+
+      // Visão de perto: em cada passo, a conta com os números de agora e o resultado.
+      // Passo 1: N·v·cos ψ.
+      por('conta-0', `= ${N} · ${v} · ${cosseno}`);
+      por('valor-0', `= ${cientifico(c.fluxo)} partículas por m² por segundo`);
+      por('leg-n', `partículas por m³ (${densidade} = ${N})`);
+      por('leg-v', `velocidade delas, em m/s (${estado.v} km/s = ${v})`);
+      por('leg-psi', `ângulo entre o vento e a perpendicular à parede (${deFrente ? 'aqui, 0°: cos <i>ψ</i> = 1' : `${angulo}: cos <i>ψ</i> = ${cosseno}`})`);
+      // Passo 2: 2·m·v·cos ψ.
+      por('formula-1', deFrente
+        ? '<small>antes</small>+<i>m</i>·<i>v</i><br><small>depois</small>−<i>m</i>·<i>v</i><br><small>variação</small>2·<i>m</i>·<i>v</i>'
+        : '<small>antes</small>+<i>m</i>·<i>v</i>·cos <i>ψ</i><br><small>depois</small>−<i>m</i>·<i>v</i>·cos <i>ψ</i><br><small>variação</small>2·<i>m</i>·<i>v</i>·cos <i>ψ</i>');
+      por('conta-1', `= 2 · ${cientifico(MASSA)} · ${v}${deFrente ? '' : ` · ${cosseno}`}`);
+      por('valor-1', `= ${cientifico(c.momento)} kg·m/s por partícula`);
+      por('explicacao-1', deFrente
+        ? 'De frente (<i>ψ</i> = 0), a partícula chega com +<i>m</i>·<i>v</i> e volta com −<i>m</i>·<i>v</i>. A diferença, 2·<i>m</i>·<i>v</i>, fica com a parede.'
+        : 'Com a parede inclinada, só conta a parte da velocidade perpendicular a ela, <i>v</i>·cos <i>ψ</i>: essa parte se inverte, e a parte ao longo da parede não muda.');
+      // Passo 3: os dois resultados anteriores, multiplicados.
+      por('conta-2', `= ${cientifico(c.fluxo)} · ${cientifico(c.momento)}`);
+      por('valor-2', `= ${cientifico(c.vento)} Pa = ${emNanopascal(c.vento)}`);
+      // Passo 4: B²/2μ₀.
+      por('conta-3', `= (${cientifico(c.B)})<sup>2</sup> ÷ (2 · ${cientifico(MU0)})`);
+      por('valor-3', `= ${cientifico(c.campo)} Pa = ${emNanopascal(c.campo)}`);
+      por('leg-b', `campo da Terra neste ponto, a ${numero(c.r, 2)} raios da Terra: ${numero(c.B * 1e9, 1)} nT = ${cientifico(c.B)} T`);
+      // Passo 5: o equilíbrio.
+      por('valor-4', deFrente
+        ? `De frente para o Sol, a parede fica a <b>${numero(c.r)} raios da Terra</b>.`
+        : `Neste ponto (<i>ψ</i> = ${angulo}), a parede fica a <b>${numero(c.r)} raios da Terra</b>; de frente para o Sol, a ${numero(estado.r0NaTela)}.`);
+      por('num-vento', emNanopascal(c.vento));
+      por('num-campo', emNanopascal(c.campo));
+      el('barra-vento').style.width = larguraDaBarra(c.vento);
+      el('barra-campo').style.width = larguraDaBarra(c.campo);
+      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+    }
+
+    function mostrarPasso(novo) {
+      estado.passo = limitar(novo, 0, 4);
+      estado.tempoDoPasso = 0;
+      for (const item of document.querySelectorAll('.passo')) item.classList.toggle('ativo', Number(item.dataset.passo) === estado.passo);
+      for (const ponto of document.querySelectorAll('.pontos button')) {
+        const atual = Number(ponto.dataset.passo) === estado.passo;
+        ponto.classList.toggle('ativo', atual);
+        if (atual) ponto.setAttribute('aria-current', 'step'); else ponto.removeAttribute('aria-current');
+      }
+      el('bt-anterior').disabled = estado.passo === 0;
+      el('bt-proximo').disabled = estado.passo === 4;
+      document.querySelector('.conteudo').scrollTop = 0;
+      atualizarPainel();
+      medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+    }
+    function mostrarVisao(perto) {
+      if (estado.perto === perto) return;
+      estado.perto = perto;
+      document.body.classList.toggle('perto', perto);
+      el('bt-longe').classList.toggle('ativo', !perto);
+      el('bt-perto').classList.toggle('ativo', perto);
+      el('bt-longe').setAttribute('aria-pressed', String(!perto));
+      el('bt-perto').setAttribute('aria-pressed', String(perto));
+      if (perto) {
+        estado.tempoDoPasso = 0;
+        preencherVentoDePerto(geometriaDePerto());
+      }
+      atualizarPainel();
+      medirCena();
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Controles.
+    // -------------------------------------------------------------------------
+    el('bt-longe').addEventListener('click', () => mostrarVisao(false));
+    el('bt-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-ver-de-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-anterior').addEventListener('click', () => mostrarPasso(estado.passo - 1));
+    el('bt-proximo').addEventListener('click', () => mostrarPasso(estado.passo + 1));
+    for (const item of document.querySelectorAll('.passo')) {
+      item.querySelector('.passo-titulo').addEventListener('click', () => mostrarPasso(Number(item.dataset.passo)));
+    }
+    for (const ponto of document.querySelectorAll('.pontos button')) {
+      ponto.addEventListener('click', () => mostrarPasso(Number(ponto.dataset.passo)));
+    }
+    function lerControles() {
+      estado.N = Number(el('c-n').value);
+      estado.v = Number(el('c-v').value);
+      estado.l = lDoAngulo((Number(el('c-psi').value) * Math.PI) / 180);
+      estado.r0 = distanciaDeFrente(estado.N, estado.v);
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    for (const id of ['c-n', 'c-v', 'c-psi']) el(id).addEventListener('input', lerControles);
+    el('bt-tipico').addEventListener('click', () => {
+      el('c-n').value = TIPICO.N;
+      el('c-v').value = TIPICO.v;
+      lerControles();
+    });
+    function alternarPausa() {
+      estado.pausado = !estado.pausado;
+      el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    }
+    el('bt-pausar').addEventListener('click', alternarPausa);
+    // Teclado (opcional; só depois de clicar na animação): setas trocam de passo, Espaço pausa.
+    window.addEventListener('keydown', (evento) => {
+      if (evento.target !== document.body) return;
+      if (evento.key === ' ') { evento.preventDefault(); alternarPausa(); }
+      else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
+      else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
+    });
+
+    // Na visão de longe: arrastar o ponto ao longo da parede; clicar nele abre a visão de perto.
+    let arrasto = null;
+    function pontoMaisProximo(x, y) {
+      const camera = cameraDeLonge();
+      const X = (x - camera.ox) / camera.S, Y = (camera.oy - y) / camera.S;
+      const r0 = estado.r0NaTela;
+      const lado = Math.abs(Y) < 0.15 ? estado.lado : (Y >= 0 ? 1 : -1);
+      let melhor = { l: 0, distancia: Infinity };
+      for (let i = 0; i < CURVA.n && CURVA.l[i] <= L_MAXIMO; i++) {
+        const d = Math.hypot(CURVA.x[i] * r0 - X, CURVA.y[i] * r0 - Math.abs(Y));
+        if (d < melhor.distancia) melhor = { l: CURVA.l[i], distancia: d };
+      }
+      return { l: melhor.l, lado, distancia: melhor.distancia * camera.S };
+    }
+    function distanciaDoPontoEscolhido(x, y) {
+      const camera = cameraDeLonge(), P = pontoEscolhido();
+      return Math.hypot(camera.ox + P.X * camera.S - x, camera.oy - P.Y * camera.S - y);
+    }
+    function escolherPonto(proximo) {
+      // O ângulo anda de grau em grau, como no controle: assim o ψ mostrado é exatamente o usado na conta.
+      const emGraus = Math.round((pontoDaCurva(proximo.l).psi * 180) / Math.PI);
+      estado.l = lDoAngulo((emGraus * Math.PI) / 180);
+      estado.lado = emGraus === 0 ? estado.lado : proximo.lado;
+      el('c-psi').value = emGraus;
+      atualizarPainel();
+    }
+    tela.addEventListener('pointerdown', (evento) => {
+      if (estado.perto) {
+        const m = miniatura;
+        if (m && evento.clientX >= m.x && evento.clientX <= m.x + m.w && evento.clientY >= m.y && evento.clientY <= m.y + m.h) mostrarVisao(false);
+        return;
+      }
+      if (estado.z > 0.02) return;
+      const proximo = pontoMaisProximo(evento.clientX, evento.clientY);
+      const noPonto = distanciaDoPontoEscolhido(evento.clientX, evento.clientY) < 18;
+      if (!noPonto && proximo.distancia > 26) return;
+      arrasto = { x: evento.clientX, y: evento.clientY, moveu: false, noPonto };
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+      if (!noPonto) escolherPonto(proximo);
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (estado.perto) {
+        const m = miniatura;
+        tela.style.cursor = m && evento.clientX >= m.x && evento.clientX <= m.x + m.w && evento.clientY >= m.y && evento.clientY <= m.y + m.h ? 'pointer' : '';
+        return;
+      }
+      if (arrasto) {
+        if (Math.hypot(evento.clientX - arrasto.x, evento.clientY - arrasto.y) > 4) arrasto.moveu = true;
+        if (arrasto.moveu) escolherPonto(pontoMaisProximo(evento.clientX, evento.clientY));
+        return;
+      }
+      const perto = distanciaDoPontoEscolhido(evento.clientX, evento.clientY) < 18;
+      tela.style.cursor = perto ? 'pointer' : pontoMaisProximo(evento.clientX, evento.clientY).distancia < 26 ? 'grab' : '';
+    });
+    const soltar = () => {
+      if (arrasto && arrasto.noPonto && !arrasto.moveu) mostrarVisao(true);      // clique no ponto: ver de perto
+      arrasto = null;
+    };
+    tela.addEventListener('pointerup', soltar);
+    tela.addEventListener('pointercancel', () => { arrasto = null; });
+
+    // -------------------------------------------------------------------------
+    // 12. Laço da animação.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      // O zoom e o ajuste da parede continuam mesmo na pausa (são respostas aos controles).
+      const alvo = estado.perto ? 1 : 0;
+      if (estado.z !== alvo) estado.z = alvo > estado.z ? Math.min(1, estado.z + intervalo / 1.3) : Math.max(0, estado.z - intervalo / 1.1);
+      if (Math.abs(estado.r0 - estado.r0NaTela) > 1e-4) {
+        estado.r0NaTela += (estado.r0 - estado.r0NaTela) * (1 - Math.exp(-intervalo / 0.35));
+        atualizarPainel();
+      } else {
+        estado.r0NaTela = estado.r0;
+      }
+      if (!estado.pausado) {
+        estado.tempoDoPasso += intervalo;
+        if (estado.z < 0.6) atualizarVentoDeLonge(intervalo);
+        if (estado.z > 0.4) atualizarVentoDePerto(intervalo, geometriaDePerto());
+      }
+      desenhar();
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    mostrarPasso(0);
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>

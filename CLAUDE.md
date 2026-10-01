@@ -46,7 +46,9 @@ pedidas pela pessoa usuária, um commit para cada:
 - tamanho dos cards: alça no canto do card (vale para os descendentes) e barra
   "Tamanho de todos os cards" em Opções;
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
-- vento solar radial, contornando o primeiro anel do campo da Terra.
+- vento solar radial, contornando o primeiro anel do campo da Terra;
+- primeira animação de verdade: `animacoes/magnetopausa.html` (veja "Contrato
+  das animações").
 
 O que vem depois também é decidido por ela:
 
@@ -55,7 +57,7 @@ O que vem depois também é decidido por ela:
 - **GitHub:** o push e a ativação do GitHub Pages são feitos por ela (passo a
   passo no README).
 - **Animações novas:** chegam por outras conversas, seguindo
-  `animacoes/CONTRATO.md`.
+  `animacoes/CONTRATO.md`, ou são pedidas aqui, com a física descrita por ela.
 
 ## Arquitetura
 
@@ -389,6 +391,25 @@ janela mudar, atualize o contrato junto. Resumo técnico:
 - **Arquivos:** cada animação é um HTML autossuficiente em `animacoes/`.
   `_modelo.html` é o esqueleto comentado; `demonstracao.html` é o exemplo (pontos
   em onda, sem física).
+- **`magnetopausa.html`** (a primeira com física, escrita a partir da descrição
+  da pessoa usuária): equilíbrio entre a pressão do vento solar,
+  2·N·m·v²·cos² ψ, e a pressão magnética, B²/2μ₀.
+  - Duas visões: de longe (a magnetopausa inteira; o ponto marcado pode ser
+    arrastado) e de perto (a conta em cinco passos, com os números de agora).
+  - Toda a física fica na seção 2 do script. Três valores foram assumidos e
+    **ainda vão ser conferidos por ela com o professor**: `MASSA` (próton),
+    `CAMPO_NA_SUPERFICIE` (31 000 nT, dipolo B₀·(R_T/r)³) e `FATOR_DO_CAMPO`
+    (1 = dipolo puro, sem a compressão do campo; dá 7,2 raios da Terra com
+    N = 5 por cm³ e v = 400 km/s). Não mude esses valores por conta própria.
+  - A forma da parede é a mesma conta repetida em cada ponto (`CURVA`); as
+    linhas de campo e as partículas são um esquema.
+  - Layout: painel de explicação à direita e barra de controles embaixo do
+    desenho; em telas estreitas (até 760 px) ou muito baixas, tudo num painel
+    embaixo. A janela do app num notebook dá cerca de 1300 × 550 px: confira
+    sempre nesse tamanho.
+  - Para testar pelo Edge sem janela: dentro do iframe, `estado`,
+    `mostrarVisao(true)` e `mostrarPasso(n)` são acessíveis pelo protocolo de
+    depuração (são do escopo global do script).
 - **Manifesto:** `animacoes/manifesto.json`, no formato
   `{ "animacoes": [{ "arquivo", "titulo", "descricao" }] }` (também aceita só a
   lista). Outras chaves, como `"leia-me"`, são ignoradas.

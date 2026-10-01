@@ -5,6 +5,11 @@
       "arquivo": "demonstracao.html",
       "titulo": "[exemplo] Demonstração",
       "descricao": "Teste técnico do sistema de animações: pontos em onda, com controles. Não representa nenhum fenômeno físico."
+    },
+    {
+      "arquivo": "magnetopausa.html",
+      "titulo": "Magnetopausa: equilíbrio de pressões",
+      "descricao": "Onde a pressão do vento solar se iguala à pressão magnética do campo da Terra. De longe, a magnetopausa inteira; de perto, a conta em cinco passos."
     }
   ]
 }
