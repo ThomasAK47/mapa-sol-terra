@@ -450,6 +450,10 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   não compartilhado.
   - Com a mesma ideia de teste: `estado`, `mostrarVisao` e `mostrarPasso` no
     escopo global.
+  - Na área mínima do contrato (360 × 300 px) o painel ocupa quase tudo e
+    sobram uns 70 px de altura para o desenho. Com menos de 170 px livres
+    (`comNomes`), os rótulos do canvas somem e ficam só o desenho e o painel.
+    Confira sempre também nesse tamanho.
 - **Manifesto:** `animacoes/manifesto.json`, no formato
   `{ "animacoes": [{ "arquivo", "titulo", "descricao" }] }` (também aceita só a
   lista). Outras chaves, como `"leia-me"`, são ignoradas.
