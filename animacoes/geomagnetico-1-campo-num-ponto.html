@@ -1004,6 +1004,7 @@
       const terra = { x: telaX(0, 0), y: telaY(0, 0) };
       const px = telaX(P.X, P.Y), py = telaY(P.X, P.Y);
       const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const comNomes = alturaLivre >= 170;                            // em telas muito baixas, fica só o desenho
       const comZoom = 1 - suaveEntre(0.03, 0.35, estado.z);          // partes que somem logo no começo do zoom
       const ocupados = [{ x: px, y: py }];                            // lugares já tomados por algo do ponto
 
@@ -1011,7 +1012,7 @@
       ctx.globalAlpha = alfa * comZoom;
       const alcance = Math.max(estado.R, 1.42);
       tracejado(terra.x, terra.y, telaX(P.X * alcance / estado.R, P.Y * alcance / estado.R), telaY(P.X * alcance / estado.R, P.Y * alcance / estado.R), 'rgba(255, 255, 255, 0.6)', [4, 4]);
-      if (estado.R >= 1.7) {
+      if (comNomes && estado.R >= 1.7) {
         // "R" fica no meio do trecho de fora da Terra, do lado oposto ao do arco da latitude.
         const meio = (1 + estado.R) / 2;
         const lado = (estado.graus >= 0 ? 1 : -1) * estado.lado;
@@ -1021,7 +1022,7 @@
         ocupados.push({ x: mx, y: my });
       }
       // A latitude magnética: o ângulo entre o equador do ímã e a direção do ponto.
-      if (Math.abs(estado.graus) >= 6) {
+      if (comNomes && Math.abs(estado.graus) >= 6) {
         const raio = S * 1.3;
         const doEquador = -((estado.lado > 0 ? 0 : Math.PI) + projecao.a), doPonto = -(P.fi + projecao.a);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
@@ -1060,9 +1061,11 @@
       let fuga = { x: paraFora.x - naTela.x * 0.9, y: paraFora.y - naTela.y * 0.9 };
       const tamanhoDaFuga = Math.hypot(fuga.x, fuga.y);
       fuga = tamanhoDaFuga > 0.2 ? { x: fuga.x / tamanhoDaFuga, y: fuga.y / tamanhoDaFuga } : paraFora;
-      escreverFormula(`B = ${emNT(c.B)}`, px + fuga.x * 30, py + fuga.y * 24, { tamanho: 15, cor: AZUL, alinhar: fuga.x > 0.35 ? 'left' : fuga.x < -0.35 ? 'right' : 'center', placa: true });
-      ocupados.push({ x: px + fuga.x * 70, y: py + fuga.y * 24 }, { x: px + naTela.x * comprimento, y: py + naTela.y * comprimento });
-      desenharNomesDaTerra(alfa * comZoom, ocupados);
+      if (comNomes) {
+        escreverFormula(`B = ${emNT(c.B)}`, px + fuga.x * 30, py + fuga.y * 24, { tamanho: 15, cor: AZUL, alinhar: fuga.x > 0.35 ? 'left' : fuga.x < -0.35 ? 'right' : 'center', placa: true });
+        ocupados.push({ x: px + fuga.x * 70, y: py + fuga.y * 24 }, { x: px + naTela.x * comprimento, y: py + naTela.y * comprimento });
+        desenharNomesDaTerra(alfa * comZoom, ocupados);
+      }
       ctx.globalAlpha = alfa * comZoom;
 
       // Legenda, embaixo do título.
@@ -1093,6 +1096,7 @@
       const s = setaDePerto();
       const passo = estado.passo;
       const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const comNomes = alturaLivre >= 170;                          // em telas muito baixas, fica só o desenho
       const L = comprimentoDaSeta(c.B) * Math.min(1, alturaLivre / 400);
       const ponta = { x: C.x + s.x * L, y: C.y + s.y * L };
       const horizontal = { x: C.x + s.x * L, y: C.y };              // onde termina a parte horizontal
@@ -1103,16 +1107,18 @@
       ctx.clip();
 
       // As duas direções do lugar: a vertical (para fora ou para dentro da Terra) e a horizontal (norte–sul).
-      const braco = Math.min(L + 84, alturaLivre / 2 - 30), bracoDeLado = Math.min(L + 150, cena.w * 0.42, cena.w / 2 - 46);
+      const braco = Math.max(L + 8, Math.min(L + 84, alturaLivre / 2 - 30)), bracoDeLado = Math.min(L + 150, cena.w * 0.42, cena.w / 2 - 46);
       ctx.globalAlpha = alfa;
       tracejado(C.x, C.y - braco, C.x, C.y + braco, 'rgba(255, 255, 255, 0.34)');
       tracejado(C.x - bracoDeLado, C.y, C.x + bracoDeLado, C.y, 'rgba(255, 255, 255, 0.34)');
-      escrever('para fora da Terra', C.x, C.y - braco - 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
-      escrever(`para o centro da Terra (a ${emRaios(estado.R)})`, C.x, C.y + braco + 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      if (comNomes) {
+        escrever('para fora da Terra', C.x, C.y - braco - 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(`para o centro da Terra (a ${emRaios(estado.R)})`, C.x, C.y + braco + 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      }
       escrever('norte', C.x + s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'left' : 'right' });
       escrever('sul', C.x - s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'right' : 'left' });
 
-      if (passo === 0) {
+      if (passo === 0 && comNomes) {
         // Passo 1: a régua da distância, na vertical do lugar. R = 1 é o chão.
         tracejado(C.x, C.y + braco + 22, C.x, cena.y + cena.h - 8, 'rgba(255, 255, 255, 0.34)');
         for (let meios = 2; meios <= 2 * (R_MAXIMO + 1); meios++) {
@@ -1136,7 +1142,7 @@
         ctx.arc(terra.x, terra.y, estado.R * projecao.S, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
-        for (let graus = -90; graus <= 90; graus += 10) {
+        for (let graus = -90; graus <= 90 && comNomes; graus += 10) {
           if (Math.abs(graus - estado.graus) < 4) continue;
           const lat = (graus * Math.PI) / 180, fi = estado.lado > 0 ? lat : Math.PI - lat;
           const X = Math.cos(fi), Y = Math.sin(fi);
@@ -1209,8 +1215,10 @@
           ctx.arc(C.x, C.y, raio + 9, doNorte, ate, ate < doNorte);
           ctx.stroke();
           const meio = (doNorte + ate) / 2;
-          escrever(`inclinação: ${graus}°`, C.x + Math.cos(meio) * (raio + 20), C.y + Math.sin(meio) * (raio + 20),
-            { tamanho: 12.5, peso: 600, alinhar: s.norte > 0 ? 'left' : 'right', placa: true });
+          if (comNomes) {
+            escrever(`inclinação: ${graus}°`, C.x + Math.cos(meio) * (raio + 20), C.y + Math.sin(meio) * (raio + 20),
+              { tamanho: 12.5, peso: 600, alinhar: s.norte > 0 ? 'left' : 'right', placa: true });
+          }
         }
         ctx.restore();
         ctx.globalAlpha = 1;
@@ -1254,6 +1262,12 @@
       ctx.beginPath();
       ctx.arc(C.x, C.y, 4.5, 0, Math.PI * 2);
       ctx.fill();
+      if (!comNomes) {
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        desenharMiniatura(alfa);
+        return;
+      }
 
       // Os nomes das setas.
       const aoLado = s.norte > 0 ? 'right' : 'left';                 // texto encostado no lado do sul
