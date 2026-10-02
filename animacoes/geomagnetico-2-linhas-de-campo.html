@@ -1,0 +1,1917 @@
+<!doctype html>
+<!--
+  =============================================================================
+  geomagnetico-2-linhas-de-campo.html: animação do Mapa de Estudos Sol–Terra.
+  Segunda de três sobre o campo geomagnético:
+    1. o campo num ponto;  2. as linhas de campo (esta);  3. além do dipolo.
+
+  O que mostra: a forma das linhas do campo de dipolo e onde elas tocam o chão.
+    • De longe: as linhas de R₀ = 2 a 10 (figura 5.16 do livro). O ponto pode
+      ser arrastado, e a linha que passa por ele acende. A faixa mais clara
+      reúne as linhas que sobem de 6 a 10 raios.
+    • De perto, em cinco passos (a câmera muda de lugar conforme o passo):
+        1 e 2: no ponto escolhido, o pedacinho do caminho e a seta do campo;
+        3:     meia linha, do equador até o chão, somando os pedacinhos;
+        4 e 5: o chão do hemisfério norte, onde as linhas chegam.
+
+  A física segue a descrição escrita por quem mantém o mapa (equações 5.14 a
+  5.17 do livro que ela estuda):
+    num pedacinho da linha:   r·dλ / dr = B_λ / B_r
+    a inclinação do campo:    B_λ / B_r = cos λ / (−2·sen λ) = −1 / (2·tan λ)
+    separando as variáveis:   dr / r = −2·tan λ·dλ
+    integrando:               ln r = 2·ln cos λ + constante  →  r = r₀·cos² λ
+    em raios da Terra:        R = R₀·cos² λ
+    onde toca o chão (R = 1): cos λ_E = 1 / √R₀
+  A tabela (1,12; 2; 4; 6,6; 10 raios) e a faixa de 6 a 10 raios, ligada à
+  oval auroral e ao índice AE, também vêm da descrição.
+
+  Todos os valores ficam na seção 2 do script.
+  Feita no formato de animacoes/magnetopausa.html, seguindo animacoes/CONTRATO.md.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campo geomagnético 2: as linhas de campo</title>
+  <style>
+    /* Cores: branco e cinzas, mais uma cor com significado: azul = campo magnético da Terra. */
+    :root {
+      --campo: #86b9ff;
+      --texto: #ececec;
+      --texto-2: #a9a9a9;
+      --texto-3: #747474;
+      --borda: #2b2b2b;
+      --borda-forte: #3d3d3d;
+      --fonte-mat: Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+      --largura-painel: clamp(300px, 34vw, 420px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--texto);
+      font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; color: inherit; }
+    sub, sup { line-height: 0; }
+    [hidden] { display: none !important; }
+
+    /* O desenho ocupa a área inteira. Por cima dele ficam o título, o painel
+       de explicação (à direita) e a barra de controles (embaixo do desenho). */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .topo {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      max-width: calc(100% - var(--largura-painel) - 52px);
+      pointer-events: none;
+      text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000;
+    }
+    .topo h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .topo p { margin: 2px 0 0; font-size: 12.5px; color: var(--texto-2); }
+    .curto { display: none; }          /* versão curta de um texto, para telas estreitas (troca com .longo) */
+    .campo { color: var(--campo); }
+
+    /* ---- Painel de explicação ---- */
+    #painel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      bottom: 12px;
+      width: var(--largura-painel);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+      overflow: hidden;
+    }
+    .visoes {
+      flex: none;
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+    .visoes button {
+      flex: 1;
+      height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .visoes button:hover { color: var(--texto); }
+    .visoes button.ativo { background: #ededed; color: #000; }
+    .conteudo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+    /* Visão de longe: resumo. */
+    #resumo h2 { margin: 2px 0 6px; font-size: 15px; font-weight: 600; }
+    #resumo p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    #resumo p b { color: var(--texto); font-weight: 600; }
+    .dica { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    .leituras { margin: 0; border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .leituras div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; }
+    .leituras div + div { border-top: 1px solid var(--borda); }
+    .leituras dt { font-size: 12px; color: var(--texto-2); }
+    .leituras dd { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* Visão de perto: os cinco passos da conta. */
+    #passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .passo { border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .passo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .passo-titulo:hover { color: var(--texto); }
+    .numero {
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      font-size: 11.5px;
+    }
+    .passo.ativo { border-color: #5a5a5a; background: #131313; }
+    .passo.ativo .passo-titulo { color: #fff; cursor: default; }
+    .passo.ativo .numero { background: #ededed; border-color: #ededed; color: #000; }
+    .passo-corpo { display: none; padding: 0 12px 12px; }
+    .passo.ativo .passo-corpo { display: block; }
+
+    /* Fórmulas: letras em itálico, como num livro. */
+    .formula { font-family: var(--fonte-mat); font-size: 19px; line-height: 1.55; white-space: nowrap; }
+    .formula.pequena { font-size: 16px; }
+    .formula.central { text-align: center; padding: 4px 0 12px; font-size: 20px; }
+    .formula small { font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--texto-3); margin-right: 8px; }
+    .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.12em; line-height: 1.15; }
+    .fr > span:first-child { padding: 0 0.22em 0.04em; border-bottom: 1px solid currentColor; }
+    .fr > span:last-child { padding: 0.04em 0.22em 0; }
+    /* Ao abrir um passo, a fórmula "se escreve" da esquerda para a direita;
+       logo depois aparecem a conta com os números e o resultado. */
+    @keyframes escrever { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6px 0 0); } }
+    @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .passo.ativo .formula { animation: escrever 0.9s ease-out both; }
+    .passo.ativo .conta { animation: surgir 0.4s ease-out 0.6s both; }
+    .passo.ativo .valor { animation: surgir 0.4s ease-out 0.85s both; }
+    .conta { margin-top: 5px; font-size: 12.5px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+    .valor { margin-top: 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .barras + .valor { margin-top: 8px; }
+    .conta sup, .valor sup, .legenda sup { font-size: 0.72em; }
+    .explicacao { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto-2); }
+    /* O que é cada letra, com o valor de agora. */
+    .legenda { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 9px; font-size: 12px; line-height: 1.45; color: var(--texto-2); }
+    .legenda dt { font-family: var(--fonte-mat); font-style: italic; font-size: 14px; line-height: 1.25; color: var(--texto); white-space: nowrap; }
+    .legenda dt sub { font-style: normal; }
+    .legenda dt.unidade { font-family: inherit; font-style: normal; font-size: 12px; line-height: 1.45; }
+    .legenda dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+    /* Barras para comparar valores. */
+    .barras { margin-top: 10px; display: grid; gap: 6px; }
+    .barra { display: grid; grid-template-columns: 74px 1fr 78px; align-items: center; gap: 8px; font-size: 12px; }
+    .barra .trilho { height: 8px; border-radius: 4px; background: #1d1d1d; overflow: hidden; }
+    .barra .nivel { display: block; height: 100%; border-radius: 4px; }
+    .barra .nivel.campo { background: var(--campo); }
+    .barra .num { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; }
+
+    /* Rodapé do painel: o convite para ver de perto, ou a troca de passo. */
+    .rodape, .navegacao { flex: none; }
+    .navegacao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .navegacao .botao { padding: 0 8px; gap: 2px; }
+    #contador-de-passos { font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+    .pontos { display: none; gap: 6px; }
+    .pontos button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pontos button:hover { color: #fff; border-color: #6a6a6a; }
+    .pontos button.ativo { background: #ededed; border-color: #ededed; color: #000; cursor: default; }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .botao:hover { background: #1b1b1b; }
+    .botao:disabled { opacity: 0.35; cursor: default; background: transparent; }
+    .botao svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .botao.principal { background: #ededed; border-color: #ededed; color: #000; font-weight: 600; }
+    .botao.principal:hover { background: #fff; }
+    .botao.principal:disabled { background: #ededed; }
+    .botao.largo { width: 100%; height: 36px; }
+    .nota { flex: none; margin: 0; font-size: 11px; line-height: 1.45; color: var(--texto-3); }
+
+    /* ---- Controles: uma barra embaixo do desenho, à esquerda do painel ---- */
+    .controles {
+      position: fixed;
+      left: 12px;
+      right: calc(var(--largura-painel) + 32px);
+      bottom: 12px;
+      max-width: 640px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+      align-items: center;
+      gap: 8px 20px;
+      padding: 9px 14px 10px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+    }
+    .controle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; font-size: 12.5px; color: var(--texto-2); }
+    .controle .nome { white-space: nowrap; overflow: hidden; }
+    .controle .nome i { font-family: var(--fonte-mat); font-size: 15px; color: var(--texto); margin-right: 5px; }
+    .controle .nome small { font-size: 12px; }
+    .controle output { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .controle input { grid-column: 1 / -1; }
+    input[type="range"] { width: 100%; min-width: 0; height: 16px; margin: 0; accent-color: #ededed; cursor: pointer; }
+    .botoes { display: flex; gap: 8px; }
+    #bt-pausar { min-width: 84px; }
+
+    /* Só uma das duas partes do conteúdo aparece de cada vez. */
+    body:not(.perto) .so-perto { display: none !important; }
+    body.perto .so-longe { display: none !important; }
+
+    /* Próprio desta animação. */
+    .passo-corpo .conta + .formula { margin-top: 6px; }
+    .passo-corpo .formula + .valor { margin-top: 0; }
+    .controle .nome i sub { font-style: normal; font-size: 0.7em; }
+    .legenda dt.unidade.campo { color: var(--campo); }
+    /* A tabela do passo 4: cada linha é um botão que escolhe a linha de campo. */
+    .tabela { margin: 8px 0 0; display: grid; gap: 1px; font-size: 12px; }
+    .tabela .cabecalho { display: flex; justify-content: space-between; gap: 8px; padding: 0 8px 2px; font-size: 11px; color: var(--texto-3); }
+    .tabela button {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 2px 8px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      text-align: left;
+      cursor: pointer;
+    }
+    .tabela button:hover { background: #1b1b1b; color: var(--texto); }
+    .tabela button.ativo { border-color: #5a5a5a; background: #1a1a1a; color: #fff; }
+    .tabela button small { margin-left: 6px; font-size: 11px; color: var(--texto-3); }
+    .tabela button b { font-weight: 600; color: var(--texto); }
+    @media (max-width: 760px), (max-height: 380px) {
+      .tabela { display: none; }
+    }
+
+    /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 5 para trocar ---- */
+    @media (max-height: 700px) {
+      .passo:not(.ativo) { display: none; }
+      .pontos { display: flex; }
+      #contador-de-passos { display: none; }
+    }
+    @media (max-height: 540px) {
+      .dica { display: none; }
+    }
+    @media (max-height: 520px) {
+      .nota { display: none; }
+    }
+    @media (max-height: 460px) {
+      #painel { top: 8px; bottom: 8px; padding: 12px; gap: 10px; }
+      .controles { bottom: 8px; }
+    }
+    /* ---- Janelas mais estreitas: a barra de controles e o painel encolhem ---- */
+    @media (max-width: 1180px) {
+      .controle .nome small { display: none; }
+    }
+    @media (max-width: 1060px) {
+      .navegacao .rotulo { display: none; }
+      .navegacao .botao { width: 34px; padding: 0; }
+    }
+    @media (max-width: 1000px) and (max-height: 700px) {
+      .dica { display: none; }
+    }
+    @media (max-width: 1000px) and (max-height: 640px) {
+      .nota { display: none; }
+    }
+    @media (max-width: 920px) {
+      .controles { gap: 8px 14px; }
+      #bt-pausar { min-width: 76px; }
+    }
+    @media (max-width: 860px) {
+      .longo { display: none; }
+      .curto { display: inline; }
+    }
+
+    /* ---- Telas estreitas (ou muito baixas): tudo num painel compacto, embaixo ---- */
+    @media (max-width: 760px), (max-height: 380px) {
+      :root { --largura-painel: 0px; }
+      .topo { left: 12px; top: 8px; max-width: calc(100% - 24px); }
+      .topo h1 { font-size: 13px; }
+      .topo p { font-size: 11.5px; }
+      #painel {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 62%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .visoes { grid-column: 1; grid-row: 1; }
+      body:not(.perto) .visoes { grid-column: 1 / -1; }
+      .navegacao { grid-column: 2; grid-row: 1; }
+      .navegacao .botao { width: 32px; padding: 0; }
+      .navegacao .rotulo, .pontos, #contador-de-passos { display: none; }
+      .conteudo { grid-column: 1 / -1; grid-row: 2; }
+      .controles {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 3;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 8px 10px;
+        align-items: end;
+      }
+      .passo:not(.ativo) { display: none; }
+      .passo, .passo.ativo { border: 0; background: transparent; }
+      .passo-titulo { padding: 0 0 2px; }
+      .passo-corpo { padding: 0; }
+      .numero { display: none; }
+      .formula { font-size: 16px; }
+      .formula.central { padding: 0 0 6px; font-size: 16px; text-align: left; }
+      .explicacao, .legenda, .conta, .barras, .nota, .rodape, #resumo h2, #resumo p { display: none; }
+      .valor, .barras + .valor { margin-top: 2px; }
+      .leituras { margin: 0; }
+      .leituras div { padding: 5px 8px; }
+      .leituras dd { font-size: 12.5px; }
+      .controle { font-size: 11.5px; gap: 0 4px; }
+      .controle .nome small { display: none; }
+      #bt-pausar { min-width: 0; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .topo p, .passo-titulo, .formula.central, .leituras div:first-child { display: none; }
+      .leituras div:nth-child(2) { border-top: 0; }
+      .valor { font-size: 12px; }
+    }
+    @media (max-width: 420px) {
+      .passo .formula small { display: none; }
+      .formula { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .passo.ativo .formula, .passo.ativo .conta, .passo.ativo .valor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="topo">
+    <h1>Linhas de campo<span class="longo">: a forma delas e onde tocam o chão</span></h1>
+    <p id="subtitulo"></p>
+  </div>
+
+  <aside id="painel" aria-label="Explicação e controles">
+    <div class="visoes" role="group" aria-label="Visão">
+      <button id="bt-longe" type="button" class="ativo" aria-pressed="true">De longe</button>
+      <button id="bt-perto" type="button" aria-pressed="false">De perto</button>
+    </div>
+
+    <div class="conteudo">
+      <!-- Visão de longe -->
+      <section id="resumo" class="so-longe">
+        <h2>As linhas do campo de dipolo</h2>
+        <p>Uma <span class="campo">linha de campo</span> é o caminho de quem anda sempre na direção da seta do
+          campo (o caminho que um polo norte solto seguiria). No dipolo, todas têm a mesma forma: sobem até
+          <i>R</i><sub>0</sub> sobre o equador magnético e descem em direção aos polos.</p>
+        <div class="formula central campo"><i>R</i> = <i>R</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i></div>
+        <dl class="leituras">
+          <div><dt><span class="longo">Altura da linha sobre o equador (<i>R</i><sub>0</sub>)</span><span class="curto"><i>R</i><sub>0</sub>: altura no equador</span></dt><dd id="l-r0"></dd></div>
+          <div><dt><span class="longo">Latitude magnética onde ela toca o chão</span><span class="curto">Toca o chão em</span></dt><dd id="l-chao"></dd></div>
+          <div><dt id="l-ponto-nome"></dt><dd id="l-ponto"></dd></div>
+        </dl>
+      </section>
+
+      <!-- Visão de perto: a conta em cinco passos. Em cada um: a fórmula, a conta
+           com os números de agora, o resultado e a explicação. -->
+      <ol id="passos" class="so-perto">
+        <li class="passo" data-passo="0">
+          <button class="passo-titulo" type="button"><span class="numero">1</span>Um pedacinho da linha</button>
+          <div class="passo-corpo">
+            <div class="formula"><span class="fr"><span><i>r</i>·d<i>λ</i></span><span>d<i>r</i></span></span> =
+              <span class="campo"><span class="fr"><span><i>B</i><sub>λ</sub></span><span><i>B</i><sub>r</sub></span></span></span></div>
+            <div class="conta" id="conta-0"></div>
+            <div class="valor" id="valor-0"></div>
+            <p class="explicacao">Num pedacinho da linha, você se afasta d<i>r</i> na direção radial e anda
+              <i>r</i>·d<i>λ</i> na horizontal (um arco: ângulo × raio). Como a linha segue a seta, a inclinação do
+              caminho, horizontal ÷ radial, tem de ser igual à do campo.</p>
+            <dl class="legenda">
+              <dt class="unidade">branco</dt><dd>o pedacinho do caminho</dd>
+              <dt class="unidade campo">azul</dt><dd>a seta do campo e as duas partes dela</dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="1">
+          <button class="passo-titulo" type="button"><span class="numero">2</span>A inclinação do campo</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo"><span class="fr"><span><i>B</i><sub>λ</sub></span><span><i>B</i><sub>r</sub></span></span> =
+              <span class="fr"><span>cos <i>λ</i></span><span>−2·sen <i>λ</i></span></span> =
+              −<span class="fr"><span>1</span><span>2·tan <i>λ</i></span></span></div>
+            <div class="conta" id="conta-1"></div>
+            <div class="formula pequena"><span class="fr"><span>d<i>r</i></span><span><i>r</i></span></span> = −2·tan <i>λ</i>·d<i>λ</i></div>
+            <div class="valor" id="valor-1"></div>
+            <p class="explicacao">Substituindo as duas partes do campo, os <i>M</i>/<i>r</i><sup>3</sup> se cancelam:
+              a inclinação da seta só depende da latitude, não da distância (no desenho, as setas são paralelas).
+              Juntando com o passo 1 e separando as variáveis, fica <i>r</i> de um lado e <i>λ</i> do outro.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="2">
+          <button class="passo-titulo" type="button"><span class="numero">3</span>Somando os pedacinhos</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo">ln <i>r</i> = 2·ln cos <i>λ</i> + constante<br>
+              <i>r</i> = <i>r</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i></div>
+            <div class="conta" id="conta-2"></div>
+            <div class="valor" id="valor-2"></div>
+            <p class="explicacao">Integrando os dois lados (a integral de tan <i>λ</i> é −ln cos <i>λ</i>) e tirando o
+              logaritmo. No equador (<i>λ</i> = 0), cos 0 = 1 e <i>r</i> = <i>r</i><sub>0</sub>: cada valor de
+              <i>r</i><sub>0</sub> define uma linha diferente. No desenho, cada degrau é um pedacinho de 5°.</p>
+            <dl class="legenda">
+              <dt>r<sub>0</sub></dt><dd id="leg-r0"></dd>
+            </dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="3">
+          <button class="passo-titulo" type="button"><span class="numero">4</span>Onde a linha toca o chão</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo">cos <i>λ</i><sub>E</sub> = <span class="fr"><span>1</span><span>√<i>R</i><sub>0</sub></span></span></div>
+            <div class="conta" id="conta-3"></div>
+            <div class="valor" id="valor-3"></div>
+            <div class="tabela" id="tabela" role="group" aria-label="Linhas de exemplo"></div>
+            <p class="explicacao">Em raios da Terra (<i>R</i> = <i>r</i>/<i>R</i><sub>E</sub>), a linha é
+              <i>R</i> = <i>R</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i>. No chão, <i>R</i> = 1. Quanto maior
+              <i>R</i><sub>0</sub>, mais perto do polo a linha toca o chão.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="4">
+          <button class="passo-titulo" type="button"><span class="numero">5</span>De 6 a 10 raios: a oval auroral</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo" id="formula-4"></div>
+            <div class="valor" id="valor-4"></div>
+            <p class="explicacao">Tudo o que acontece entre 6 e 10 raios da Terra (corrente de anel externa, plasma
+              sheet, borda da magnetosfera) está ligado ao solo nessa faixa de latitude magnética. É ali que fica a
+              oval auroral, e é ali que ficam os magnetômetros que compõem o índice AE: as linhas de campo levam a
+              informação lá de cima até essas estações. É por isso que o AE "enxerga" as subtempestades da
+              cauda.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="rodape so-longe">
+      <p class="dica">Arraste o ponto: a linha que passa por ele acende. Ou use os controles embaixo do desenho.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+    </div>
+    <div class="navegacao so-perto">
+      <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span class="rotulo">Anterior</span></button>
+      <span id="contador-de-passos"></span>
+      <div class="pontos" role="group" aria-label="Ir para o passo">
+        <button type="button" data-passo="0" title="Passo 1: um pedacinho da linha">1</button>
+        <button type="button" data-passo="1" title="Passo 2: a inclinação do campo">2</button>
+        <button type="button" data-passo="2" title="Passo 3: somando os pedacinhos">3</button>
+        <button type="button" data-passo="3" title="Passo 4: onde a linha toca o chão">4</button>
+        <button type="button" data-passo="4" title="Passo 5: de 6 a 10 raios, a oval auroral">5</button>
+      </div>
+      <button id="bt-proximo" type="button" class="botao principal" title="Próximo passo" aria-label="Próximo passo">
+        <span class="rotulo">Próximo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
+    <div class="controles" role="group" aria-label="Controles">
+      <label class="controle"><span class="nome"><i>R<sub>0</sub></i><small>altura da linha no equador</small></span><output id="o-r0"></output>
+        <input id="c-r0" type="range" min="1.1" max="10" step="0.05" value="4"></label>
+      <label class="controle"><span class="nome"><i>λ</i><small>ponto na linha</small></span><output id="o-lat"></output>
+        <input id="c-lat" type="range" min="-60" max="60" step="1" value="30"></label>
+      <div class="botoes">
+        <button id="bt-pausar" type="button" class="botao">Pausar</button>
+      </div>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </aside>
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do contrato).
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Valores e contas. Tudo o que é física está aqui.
+    //    As distâncias são em raios da Terra (R = r/R_E) e os ângulos, em radianos.
+    // -------------------------------------------------------------------------
+    const CAMPO_NO_EQUADOR = 31000;                         // nT: 0,31 gauss, o campo no equador, na superfície (eq. 5.15)
+    const R0_MINIMO = 1.1, R0_MAXIMO = 10;                  // as linhas que dá para escolher
+    const LINHAS_DA_FIGURA = [2, 3, 4, 5, 6, 7, 8, 9, 10];  // as da figura 5.16
+    const FAIXA = { de: 6, ate: 10 };                       // linhas ligadas à oval auroral e ao índice AE
+    const TABELA = [                                        // as linhas de exemplo da descrição
+      { R0: 1.12, nome: '' },
+      { R0: 2, nome: '' },
+      { R0: 4, nome: '' },
+      { R0: 6.6, nome: 'geoestacionária' },
+      { R0: 10, nome: 'magnetopausa' },
+    ];
+    const PEDACINHO = 5;                                    // graus de latitude em cada degrau do passo 3
+    const COMECO = { R0: 4, graus: 30 };                    // a linha e o ponto ao abrir a animação
+
+    const emRadianos = (graus) => (graus * Math.PI) / 180;
+    const emGraus = (radianos) => (radianos * 180) / Math.PI;
+    /** A linha de campo: distância ao centro, na latitude magnética "lat", da linha que sobe até R0 (R = R₀·cos² λ). */
+    const distanciaNaLinha = (R0, lat) => R0 * Math.cos(lat) ** 2;
+    /** Latitude magnética em que a linha toca o chão (R = 1): cos λ_E = 1/√R₀. */
+    const latitudeNoChao = (R0) => Math.acos(1 / Math.sqrt(R0));
+    /** As duas partes do campo no ponto (R, λ), em nT: radial (negativa = para dentro da Terra) e horizontal (para o norte). */
+    function campoEm(R, lat) {
+      const base = CAMPO_NO_EQUADOR / R ** 3;               // M/r³
+      return { Br: -2 * base * Math.sin(lat), Bl: base * Math.cos(lat) };
+    }
+    /** A inclinação do campo: B_λ/B_r = −1/(2·tan λ). Só depende da latitude. */
+    const inclinacaoDoCampo = (lat) => -1 / (2 * Math.tan(lat));
+    /** Quanto a distância muda, em fração dela mesma, ao andar dλ para o norte: dr/r = −2·tan λ·dλ. */
+    const mudancaDaDistancia = (lat, dLat) => -2 * Math.tan(lat) * dLat;
+
+    // -------------------------------------------------------------------------
+    // 3. Estado da animação.
+    // -------------------------------------------------------------------------
+    const entre = (a, b, t) => a + (b - a) * t;
+    const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+    const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+
+    // Cada "cena" é um conjunto de rótulos; várias cenas podem usar a mesma câmera.
+    const CENAS = ['longe', 'p1', 'p2', 'p3', 'p4', 'p5'];
+    const CAMERA_DA_CENA = { longe: 'longe', p1: 'ponto', p2: 'ponto', p3: 'linha', p4: 'chao', p5: 'chao' };
+    const DURACAO_DA_VIAGEM = 1.25;         // segundos que a câmera leva de um lugar a outro
+
+    const estado = {
+      R0: COMECO.R0, graus: COMECO.graus,   // a linha escolhida (altura sobre o equador) e o ponto nela (latitude, em graus)
+      lado: 1,                              // de que lado da Terra o ponto está no desenho (1 = direita, −1 = esquerda)
+      perto: false, passo: 0,               // visão escolhida e passo aberto
+      cena: 'longe',                        // a cena que está (ou vai ficar) na tela
+      viagem: 1, partida: null,             // andamento da viagem da câmera (0 a 1) e de onde ela saiu
+      tempo: 0, tempoDoPasso: 0, pausado: false,
+    };
+    const forcaDaCena = { longe: 1, p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 };     // quanto os rótulos de cada cena aparecem (0 a 1)
+
+    const latitude = () => emRadianos(estado.graus);
+    /** A maior latitude (em graus inteiros) que o ponto alcança na linha: logo acima do chão. */
+    const maiorLatitude = (R0) => Math.floor(emGraus(latitudeNoChao(R0)) + 1e-9);
+    /** O ângulo em volta da Terra do lugar de latitude "lat", do lado do ponto. */
+    const anguloDe = (lat) => (estado.lado > 0 ? lat : Math.PI - lat);
+    /** Lugar no desenho: a Terra fica em (0, 0), o eixo do ímã é vertical e o norte fica em cima. */
+    const lugar = (r, lat) => ({ X: estado.lado * r * Math.cos(lat), Y: r * Math.sin(lat) });
+    /** O ponto escolhido. */
+    function ponto() {
+      const lat = latitude(), R = distanciaNaLinha(estado.R0, lat);
+      return { ...lugar(R, lat), R, lat, fi: anguloDe(lat) };
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. Tela, tamanho e câmeras.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const painel = document.getElementById('painel');
+    const controles = document.querySelector('.controles');
+    let largura = 0, altura = 0;
+    // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
+    // "fundo" é até onde o desenho aparece (ele continua por trás da barra de controles);
+    // "barra" diz onde a barra de controles começa e termina, quando ela fica embaixo do desenho.
+    let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100, barra: null };
+    let ESPACO_DO_TITULO = 46;                   // altura ocupada pelo título, medida em medirCena()
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      medirCena();
+      desenhar();
+    }
+    function medirCena() {
+      ESPACO_DO_TITULO = Math.round(document.querySelector('.topo').getBoundingClientRect().bottom) + 4;
+      const p = painel.getBoundingClientRect();
+      if (p.left > largura * 0.3) {
+        // Painel ao lado: a barra de controles fica embaixo do desenho.
+        const barra = controles.getBoundingClientRect();
+        const temBarra = barra.height > 0 && barra.top > altura * 0.4;
+        cena = { x: 0, y: 0, w: Math.max(120, p.left - 8), h: Math.max(90, temBarra ? barra.top - 6 : altura), fundo: altura,
+          barra: temBarra ? { esquerda: barra.left, direita: barra.right } : null };
+      } else {
+        // Painel embaixo (telas estreitas): os controles ficam dentro dele.
+        const h = Math.max(90, p.top - 4);
+        cena = { x: 0, y: 0, w: largura, h, fundo: h, barra: null };
+      }
+    }
+    window.addEventListener('resize', ajustarTamanho);
+    const aoMudarDeTamanho = new ResizeObserver(() => { medirCena(); });
+    aoMudarDeTamanho.observe(painel);
+    aoMudarDeTamanho.observe(controles);
+
+    const LATITUDE_DO_CHAO = emRadianos(55);     // passos 4 e 5: a latitude que fica no alto da "colina"
+    const MEIA_VISTA = emRadianos(44);           // quanto de chão aparece para cada lado dela
+
+    /**
+     * Onde cada câmera fica: o lugar (PX, PY) do desenho cai em (cx, cy) da tela, com escala S (pixels por
+     * raio da Terra) e o desenho girado de "a".
+     *   longe: a Terra no meio, com as linhas até 10 raios;
+     *   ponto: no ponto escolhido, com "para fora da Terra" para cima. A escala é dividida por R₀, e por
+     *          isso a linha escolhida aparece sempre do mesmo tamanho (todas as linhas têm a mesma forma);
+     *   linha: meia linha, do equador ao chão, com o norte para cima;
+     *   chao:  o chão do hemisfério norte, do lado do ponto, visto como um horizonte.
+     */
+    function cameraDe(tipo) {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const meioX = cena.x + cena.w / 2, meioY = cena.y + ESPACO_DO_TITULO + alturaLivre / 2;
+      if (tipo === 'ponto') {
+        const P = ponto();
+        const K = Math.max(60, Math.min(cena.w * 0.73, alturaLivre * 1.53));
+        return { S: K / estado.R0, a: Math.PI / 2 - P.fi, cx: meioX, cy: meioY, PX: P.X, PY: P.Y };
+      }
+      if (tipo === 'linha') {
+        const hemisferio = estado.graus < 0 ? -1 : 1;
+        const K = Math.max(60, Math.min(cena.w - 90, (alturaLivre - (alturaLivre >= 170 ? 84 : 24)) / 0.385));
+        return { S: K / estado.R0, a: 0, cx: meioX, cy: meioY - hemisferio * 8,
+          PX: estado.lado * 0.5 * estado.R0, PY: hemisferio * 0.1925 * estado.R0 };
+      }
+      if (tipo === 'chao') {
+        const fi = anguloDe(LATITUDE_DO_CHAO);
+        // O chão ocupa a largura toda; em telas baixas ele encolhe, para sobrar céu em cima.
+        const S = Math.max(40, Math.min((cena.w - 60) / (2 * Math.sin(MEIA_VISTA)), (0.5 * alturaLivre - 10) / (1 - Math.cos(MEIA_VISTA))));
+        const queda = (angulo) => S * (1 - Math.cos(angulo));       // quanto o chão desce a esse ângulo do alto
+        // O chão não pode ficar atrás da barra de controles: o alto da "colina" sobe até tudo caber.
+        let topo = cena.fundo - 10 - queda(MEIA_VISTA);
+        if (cena.barra) {
+          const alcance = Math.max(Math.abs(cena.barra.esquerda - meioX), Math.abs(cena.barra.direita - meioX));
+          topo = Math.min(topo, cena.h - 30 - queda(Math.asin(Math.min(Math.sin(MEIA_VISTA), alcance / S))));
+        }
+        return { S, a: Math.PI / 2 - fi, cx: meioX, cy: topo, PX: Math.cos(fi), PY: Math.sin(fi) };
+      }
+      const S = Math.max(4, Math.min(cena.w / 21.8, (alturaLivre - 34) / 8.2));
+      return { S, a: 0, cx: meioX, cy: meioY + 10, PX: 0, PY: 0 };
+    }
+
+    // A projeção do quadro atual. Durante uma viagem, ela vai de onde a câmera estava até a câmera da cena.
+    let projecao = { S: 1, a: 0, cos: 1, sin: 0, cx: 0, cy: 0, PX: 0, PY: 0 };
+    function atualizarProjecao() {
+      let c = cameraDe(CAMERA_DA_CENA[estado.cena]);
+      if (estado.viagem < 1 && estado.partida) {
+        const e = suave(estado.viagem), de = estado.partida;
+        c = { S: de.S * Math.pow(c.S / de.S, e), a: entre(de.a, c.a, e), cx: entre(de.cx, c.cx, e), cy: entre(de.cy, c.cy, e),
+          PX: entre(de.PX, c.PX, e), PY: entre(de.PY, c.PY, e) };
+      }
+      projecao = { ...c, cos: Math.cos(c.a), sin: Math.sin(c.a) };
+    }
+    const telaX = (X, Y) => projecao.cx + projecao.S * ((X - projecao.PX) * projecao.cos - (Y - projecao.PY) * projecao.sin);
+    const telaY = (X, Y) => projecao.cy - projecao.S * ((X - projecao.PX) * projecao.sin + (Y - projecao.PY) * projecao.cos);
+    /** Faz a câmera viajar de onde está até o lugar que a cena pede. */
+    function iniciarViagem() {
+      estado.partida = { ...projecao };
+      estado.viagem = 0;
+    }
+    /** Escolhe a cena pela visão e pelo passo; se a câmera muda de lugar, começa a viagem. */
+    function atualizarCena() {
+      const nova = estado.perto ? `p${estado.passo + 1}` : 'longe';
+      if (nova === estado.cena) return;
+      if (CAMERA_DA_CENA[nova] !== CAMERA_DA_CENA[estado.cena]) iniciarViagem();
+      estado.cena = nova;
+      estado.tempoDoPasso = 0;
+    }
+    /** As direções "para fora da Terra" e "para o norte", na tela, no lugar de ângulo "fi" em volta da Terra. */
+    function direcoesEm(fi) {
+      const c = Math.cos(fi + projecao.a), s = Math.sin(fi + projecao.a);
+      return { fora: { x: c, y: -s }, norte: { x: -estado.lado * s, y: -estado.lado * c } };
+    }
+    /** O ponto (da tela) está na área livre do desenho? */
+    function dentroDaCena(p, margem = 0) {
+      return p.x >= cena.x + margem && p.x <= cena.x + cena.w - margem && p.y >= cena.y + ESPACO_DO_TITULO + margem && p.y <= cena.y + cena.h - margem;
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Ferramentas de desenho.
+    // -------------------------------------------------------------------------
+    const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+    const FONTE_MAT = "Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif";
+    const COR_CAMPO = '134, 185, 255';
+    const COR_DESTAQUE = '208, 228, 255';        // a linha escolhida: o mesmo azul, mais claro
+    const AZUL = `rgb(${COR_CAMPO})`;
+
+    /** Fundo escuro arredondado atrás de um rótulo, para ele não se misturar com o que passa por trás. */
+    function desenharPlaca(x, y, larguraDoTexto, tamanho, alinhar) {
+      const w = larguraDoTexto + 16, h = tamanho + 10;
+      const esquerda = alinhar === 'center' ? x - w / 2 : alinhar === 'right' ? x - w + 8 : x - 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.66)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda, y - h / 2, w, h, h / 2); else ctx.rect(esquerda, y - h / 2, w, h);
+      ctx.fill();
+    }
+    /** Texto com contorno preto, legível por cima do desenho. Com "placa", ganha também um fundo escuro. */
+    function escrever(texto, x, y, { tamanho = 12, cor = '#ececec', alinhar = 'left', peso = 500, placa = false } = {}) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      if (placa) desenharPlaca(x, y, ctx.measureText(texto).width, tamanho, alinhar);
+      ctx.textAlign = alinhar;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.strokeText(texto, x, y);
+      ctx.fillStyle = cor;
+      ctx.fillText(texto, x, y);
+    }
+    /** Largura de um texto comum, na tela. */
+    function larguraDoTexto(texto, tamanho, peso = 500) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      return ctx.measureText(texto).width;
+    }
+    /**
+     * Pedaços de uma fórmula, cada um com a sua fonte: letras em itálico; números, sinais, "sen", "cos"
+     * e "tan" em pé; "B_r" vira B com o r pequeno e mais baixo (vale também para "R_0").
+     */
+    function partesDaFormula(texto, tamanho) {
+      const partes = texto.split(/(cos|sen|tan|_[A-Za-zλ0-9]|[^A-Za-zλ_]+)/).filter(Boolean).map((parte) => {
+        const indice = parte[0] === '_';
+        const escrito = indice ? parte.slice(1) : parte;
+        const emPe = /^(cos|sen|tan)$/.test(escrito) || !/^[A-Za-zλ]+$/.test(escrito);
+        return { texto: escrito, indice, largura: 0, fonte: `${emPe ? '' : 'italic '}${indice ? tamanho * 0.7 : tamanho}px ${FONTE_MAT}` };
+      });
+      let total = 0;
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        parte.largura = ctx.measureText(parte.texto).width;
+        total += parte.largura;
+      }
+      return { partes, total };
+    }
+    /** Fórmula no canvas. Devolve a largura. */
+    function escreverFormula(texto, x, y, { tamanho = 15, cor = '#ffffff', alinhar = 'left', placa = false } = {}) {
+      const { partes, total } = partesDaFormula(texto, tamanho);
+      if (placa) desenharPlaca(x, y, total, tamanho, alinhar);
+      let px = alinhar === 'center' ? x - total / 2 : alinhar === 'right' ? x - total : x;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      for (const parte of partes) {
+        const py = parte.indice ? y + tamanho * 0.3 : y;
+        ctx.font = parte.fonte;
+        ctx.strokeText(parte.texto, px, py);
+        ctx.fillStyle = cor;
+        ctx.fillText(parte.texto, px, py);
+        px += parte.largura;
+      }
+      return total;
+    }
+    /** Seta de (x1, y1) até (x2, y2). */
+    function seta(x1, y1, x2, y2, { cor = '#fff', espessura = 1.6, ponta = 7 } = {}) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const comprimento = Math.hypot(dx, dy);
+      if (comprimento < 1) return;
+      const ux = dx / comprimento, uy = dy / comprimento;
+      const cabeca = Math.min(ponta, comprimento * 0.6);
+      ctx.strokeStyle = cor;
+      ctx.fillStyle = cor;
+      ctx.lineWidth = espessura;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2 - ux * cabeca * 0.8, y2 - uy * cabeca * 0.8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * cabeca - uy * cabeca * 0.5, y2 - uy * cabeca + ux * cabeca * 0.5);
+      ctx.lineTo(x2 - ux * cabeca + uy * cabeca * 0.5, y2 - uy * cabeca - ux * cabeca * 0.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+    /** Linha tracejada de (x1, y1) até (x2, y2). */
+    function tracejado(x1, y1, x2, y2, cor, tracos = [5, 5]) {
+      ctx.strokeStyle = cor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash(tracos);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    /** Arco pequeno, em volta de (x, y), da direção "de" até a direção "ate" (pelo caminho mais curto). Devolve o ângulo do meio. */
+    function arcoEntre(x, y, raio, de, ate) {
+      const a1 = Math.atan2(de.y, de.x);
+      let diferenca = Math.atan2(ate.y, ate.x) - a1;
+      while (diferenca > Math.PI) diferenca -= Math.PI * 2;
+      while (diferenca < -Math.PI) diferenca += Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(x, y, raio, a1, a1 + diferenca, diferenca < 0);
+      ctx.stroke();
+      return a1 + diferenca / 2;
+    }
+    /** Ponto marcado: bolinha branca, com ou sem o anel que pulsa. */
+    function desenharPonto(x, y, { anel = false, raio = 5 } = {}) {
+      if (anel) {
+        const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.25 + 0.3 * pulso})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, raio * 2 + 3 * pulso, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Números em português.
+    const numero = (valor, casas = 1) => valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    /** "31 000": número inteiro, sem sinal, com os milhares separados por espaço (que não quebra a linha). */
+    const comMilhar = (valor) => Math.round(Math.abs(valor)).toLocaleString('pt-BR').replace(/\./g, ' ');
+    /** "4" ou "6,6" ou "1,12": sem zeros sobrando. */
+    const semZeros = (valor) => valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+    /** "2,00 raios" ou "1,50 raio": a distância com a palavra no singular ou no plural. */
+    const emRaios = (R) => `${numero(R, 2)} ${R >= 2 ? 'raios' : 'raio'}`;
+    /** "30° norte", "30° sul" ou "0° (equador)". */
+    const latitudeEmTexto = (graus) => (graus === 0 ? '0° (equador)' : `${Math.abs(graus)}° ${graus > 0 ? 'norte' : 'sul'}`);
+    /** Número com sinal, com o "−" de verdade: "−0,866". */
+    const comSinal = (valor, casas = 3) => `${valor < 0 ? '−' : ''}${numero(Math.abs(valor), casas)}`;
+
+    // Estrelas de fundo (posições fixas, em frações da tela).
+    const ESTRELAS = Array.from({ length: 90 }, (_, i) => {
+      const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.07 + 0.16 * ((i * 37) % 10) / 10 };
+    });
+
+    // -------------------------------------------------------------------------
+    // 6. O que aparece em todas as cenas: o brilho do campo, a faixa de 6 a 10 raios, as linhas da
+    //    figura, a linha escolhida e a Terra.
+    // -------------------------------------------------------------------------
+    const N_PONTOS = 240;                                    // pontos em cada linha de campo desenhada
+    const bufferX = new Float32Array(N_PONTOS + 1), bufferY = new Float32Array(N_PONTOS + 1);
+
+    /** Calcula, já na tela, os pontos da linha de campo que sobe até R0, do pé sul ao pé norte (R = R₀·cos² λ). */
+    function pontosDaLinha(R0, lado) {
+      const noChao = latitudeNoChao(R0);
+      for (let i = 0; i <= N_PONTOS; i++) {
+        const lat = -noChao + (2 * noChao * i) / N_PONTOS;
+        const c = Math.cos(lat), r = R0 * c * c;
+        const X = lado * r * c, Y = r * Math.sin(lat);
+        bufferX[i] = telaX(X, Y);
+        bufferY[i] = telaY(X, Y);
+      }
+    }
+    /** Traça uma linha de campo. Com "setinhas", desenha também as pontas de seta que andam no sentido do campo. */
+    function tracarLinha(R0, lado, { cor = COR_CAMPO, forca = 0.36, espessura = 1, setinhas = 0 } = {}) {
+      pontosDaLinha(R0, lado);
+      ctx.beginPath();
+      ctx.moveTo(bufferX[0], bufferY[0]);
+      for (let i = 1; i <= N_PONTOS; i++) ctx.lineTo(bufferX[i], bufferY[i]);
+      ctx.strokeStyle = `rgba(${cor}, ${forca})`;
+      ctx.lineWidth = espessura;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+      if (setinhas <= 0.01) return;
+      const DISTANCIA = 104;                                 // entre uma setinha e a seguinte, em pixels
+      let falta = (estado.tempo * 22) % DISTANCIA;
+      ctx.strokeStyle = `rgba(${cor}, ${setinhas})`;
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      for (let i = 1; i <= N_PONTOS; i++) {
+        const dx = bufferX[i] - bufferX[i - 1], dy = bufferY[i] - bufferY[i - 1];
+        const trecho = Math.hypot(dx, dy);
+        if (trecho < 1e-6) continue;
+        const ux = dx / trecho, uy = dy / trecho;
+        let andado = falta;
+        while (andado <= trecho) {
+          const x = bufferX[i - 1] + ux * andado, y = bufferY[i - 1] + uy * andado;
+          if (x > cena.x - 8 && x < cena.x + cena.w + 8 && y > cena.y - 8 && y < cena.fundo + 8) {
+            ctx.beginPath();
+            ctx.moveTo(x - ux * 5 - uy * 3.4, y - uy * 5 + ux * 3.4);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x - ux * 5 + uy * 3.4, y - uy * 5 - ux * 3.4);
+            ctx.stroke();
+          }
+          andado += DISTANCIA;
+        }
+        falta = andado - trecho;
+      }
+    }
+    /** O contorno da faixa entre as linhas de 6 e de 10 raios, de um lado da Terra (para preencher). */
+    function tracarFaixa(lado) {
+      const deFora = latitudeNoChao(FAIXA.ate), deDentro = latitudeNoChao(FAIXA.de);
+      const N = 160;
+      const ir = (R0, lat, primeiro) => {
+        const c = Math.cos(lat), r = R0 * c * c;
+        const X = lado * r * c, Y = r * Math.sin(lat);
+        if (primeiro) ctx.moveTo(telaX(X, Y), telaY(X, Y)); else ctx.lineTo(telaX(X, Y), telaY(X, Y));
+      };
+      const noChao = (lat) => ctx.lineTo(telaX(lado * Math.cos(lat), Math.sin(lat)), telaY(lado * Math.cos(lat), Math.sin(lat)));
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) ir(FAIXA.ate, -deFora + (2 * deFora * i) / N, i === 0);          // a linha de fora, do sul ao norte
+      for (let i = 1; i <= 6; i++) noChao(entre(deFora, deDentro, i / 6));                           // pelo chão, no norte
+      for (let i = N; i >= 0; i--) ir(FAIXA.de, -deDentro + (2 * deDentro * i) / N, false);          // a linha de dentro, de volta
+      for (let i = 1; i <= 6; i++) noChao(entre(-deDentro, -deFora, i / 6));                         // pelo chão, no sul
+      ctx.closePath();
+    }
+
+    function desenharBase() {
+      const S = projecao.S;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+      const deMuitoPerto = Math.max(forcaDaCena.p4, forcaDaCena.p5);
+
+      // Brilho: mais forte perto da Terra. De muito perto ele fica mais fraco, para não tomar a tela inteira.
+      const forcaDoBrilho = limitar(110 / S, 0.3, 1);
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.rotate(-projecao.a);
+      ctx.scale(1, Math.cbrt(2));
+      const brilho = ctx.createRadialGradient(0, 0, S * 0.8, 0, 0, S * 6);
+      brilho.addColorStop(0, `rgba(${COR_CAMPO}, ${0.3 * forcaDoBrilho})`);
+      brilho.addColorStop(0.18, `rgba(${COR_CAMPO}, ${0.13 * forcaDoBrilho})`);
+      brilho.addColorStop(0.5, `rgba(${COR_CAMPO}, ${0.045 * forcaDoBrilho})`);
+      brilho.addColorStop(1, `rgba(${COR_CAMPO}, 0)`);
+      ctx.fillStyle = brilho;
+      ctx.beginPath();
+      ctx.arc(0, 0, S * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // A faixa das linhas que sobem de 6 a 10 raios (mais forte no passo 5).
+      ctx.fillStyle = `rgba(${COR_CAMPO}, ${0.085 + 0.11 * forcaDaCena.p5})`;
+      for (const lado of [1, -1]) {
+        tracarFaixa(lado);
+        ctx.fill();
+      }
+      // As linhas da figura 5.16 (mais apagadas no passo 2, que desenha as dele).
+      const forcaDasLinhas = 0.36 * (1 - 0.55 * forcaDaCena.p2);
+      for (const R0 of LINHAS_DA_FIGURA) {
+        for (const lado of [1, -1]) tracarLinha(R0, lado, { forca: forcaDasLinhas });
+      }
+      // A linha escolhida, com as setinhas andando no sentido do campo.
+      tracarLinha(estado.R0, estado.lado, { cor: COR_DESTAQUE, forca: 0.14, espessura: 7 });
+      tracarLinha(estado.R0, estado.lado, { cor: COR_DESTAQUE, forca: 0.95, espessura: 2, setinhas: 0.95 });
+
+      // A Terra, com o ímã em barra no centro.
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.rotate(-projecao.a);
+      const luz = ctx.createRadialGradient(-S * 0.35, -S * 0.35, S * 0.1, 0, 0, S);
+      luz.addColorStop(0, '#4f4f4f');
+      luz.addColorStop(1, '#181818');
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(0, 0, S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + 0.45 * deMuitoPerto})`;
+      ctx.lineWidth = 1 + 0.5 * deMuitoPerto;
+      ctx.stroke();
+      // O ímã em barra (um esquema): de perto ele não cresce junto com a Terra e fica mais apagado.
+      const meio = Math.min(S * 0.5, 64), grossura = limitar(S * 0.18, 3, 24);
+      ctx.globalAlpha = 1 - 0.6 * Math.max(forcaDaCena.p1, forcaDaCena.p2, forcaDaCena.p3);
+      ctx.fillStyle = '#dcdcdc';
+      ctx.fillRect(-grossura / 2, -meio, grossura, meio);
+      ctx.fillStyle = '#6c6c6c';
+      ctx.fillRect(-grossura / 2, 0, grossura, meio);
+      ctx.restore();
+      if (S >= 38) {
+        // As letras do ímã ficam em pé, mesmo com o desenho girado. O polo perto do norte geográfico é um polo sul.
+        const letra = (meio * 0.52) / S;
+        ctx.globalAlpha = 1 - 0.6 * Math.max(forcaDaCena.p1, forcaDaCena.p2, forcaDaCena.p3);
+        ctx.font = `700 ${Math.min(13, S * 0.2)}px ${FONTE}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#111';
+        ctx.fillText('S', telaX(0, letra), telaY(0, letra));
+        ctx.fillStyle = '#f2f2f2';
+        ctx.fillText('N', telaX(0, -letra), telaY(0, -letra));
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. Visão de longe: as linhas da figura, a linha escolhida e o ponto.
+    // -------------------------------------------------------------------------
+    function desenharDeLonge(alfa) {
+      const S = projecao.S, P = ponto(), lado = estado.lado, outro = -lado;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+      const px = telaX(P.X, P.Y), py = telaY(P.X, P.Y);
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      ctx.globalAlpha = alfa;
+
+      // O equador magnético.
+      tracejado(telaX(-10.9, 0), telaY(-10.9, 0), telaX(10.9, 0), telaY(10.9, 0), 'rgba(255, 255, 255, 0.2)', [3, 5]);
+
+      // A régua das distâncias e os dois lugares com nome, do lado sem o ponto.
+      if (S >= 18) {
+        for (const R of [2, 4, 6, 8, 10]) {
+          escrever(String(R), telaX(outro * R, 0) - outro * 8, terra.y + 11, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        }
+        escrever('raios da Terra', telaX(outro * 6, 0), terra.y + 26, { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
+        for (const linha of TABELA) {
+          if (!linha.nome || S < 30) continue;                          // com o desenho pequeno, os nomes se encavalam
+          const x = telaX(outro * linha.R0, 0);
+          ctx.fillStyle = '#d0d0d0';
+          ctx.beginPath();
+          ctx.arc(x, terra.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+          const naBorda = linha.R0 > 9;                                 // encostado na borda do desenho
+          escrever(linha.nome, naBorda ? telaX(outro * 10.7, 0) : x, terra.y - 12,
+            { tamanho: 10.5, cor: '#a9a9a9', alinhar: naBorda ? (outro > 0 ? 'right' : 'left') : 'center' });
+        }
+      }
+
+      // A linha escolhida: onde cruza o equador (R₀) e onde toca o chão.
+      const apice = telaX(lado * estado.R0, 0);
+      const ladoDoRotulo = estado.graus >= 0 ? 1 : -1;                  // embaixo do equador, se o ponto está em cima
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(apice, terra.y - 4);
+      ctx.lineTo(apice, terra.y + 4);
+      ctx.stroke();
+      escreverFormula(`R_0 = ${numero(estado.R0, 2)}`, limitar(apice, cena.x + 46, cena.x + cena.w - 46),
+        terra.y + ladoDoRotulo * (Math.abs(estado.graus) < 12 ? 28 : 16), { tamanho: 14, alinhar: 'center', placa: true });
+      const noChao = latitudeNoChao(estado.R0);
+      for (const sinal of [1, -1]) {
+        const pe = lugar(1, sinal * noChao);
+        desenharPonto(telaX(pe.X, pe.Y), telaY(pe.X, pe.Y), { raio: 2.6 });
+      }
+
+      // A distância do ponto ao centro e a latitude magnética dele.
+      tracejado(terra.x, terra.y, px, py, 'rgba(255, 255, 255, 0.5)', [4, 4]);
+      const { fora, norte } = direcoesEm(P.fi);
+      const cabemOsNomes = S >= 24;                                     // com o desenho pequeno, só o R₀ (o resto está no painel)
+      if (cabemOsNomes && Math.abs(estado.graus) >= 8) {
+        // "R" fica ao lado do ponto, para fora da Terra e para o lado do polo: longe da seta e da linha.
+        const paraOPolo = estado.graus > 0 ? 1 : -1;
+        const dx = (fora.x + norte.x * paraOPolo) * Math.SQRT1_2, dy = (fora.y + norte.y * paraOPolo) * Math.SQRT1_2;
+        escreverFormula(`R = ${numero(P.R, 2)}`, px + dx * 22, py + dy * 20, { tamanho: 13, alinhar: alinharPara({ x: dx }), placa: true });
+      }
+      if (cabemOsNomes && Math.abs(estado.graus) >= 6) {
+        const raio = S * 1.35;
+        const doEquador = -(anguloDe(0) + projecao.a), doPonto = -(P.fi + projecao.a);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(terra.x, terra.y, raio, doEquador, doPonto, doPonto < doEquador);
+        ctx.stroke();
+        const meio = (doEquador + doPonto) / 2;
+        escreverFormula(`λ = ${Math.abs(estado.graus)}°`, terra.x + Math.cos(meio) * (raio + 9), terra.y + Math.sin(meio) * (raio + 9),
+          { tamanho: 13, alinhar: lado > 0 ? 'left' : 'right' });
+      }
+
+      // A seta do campo no ponto, e o ponto (dá para arrastar).
+      const c = campoEm(P.R, P.lat), B = Math.hypot(c.Br, c.Bl);
+      const comprimento = Math.min(46, alturaLivre * 0.12);
+      seta(px, py, px + ((c.Br * fora.x + c.Bl * norte.x) / B) * comprimento, py + ((c.Br * fora.y + c.Bl * norte.y) / B) * comprimento,
+        { cor: AZUL, espessura: 2.4, ponta: 9 });
+      desenharPonto(px, py, { anel: true });
+
+      // Legenda, embaixo do título.
+      if (alturaLivre > 200) {
+        const y = cena.y + ESPACO_DO_TITULO + 20;
+        ctx.strokeStyle = `rgba(${COR_DESTAQUE}, 0.95)`;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cena.x + 18, y);
+        ctx.lineTo(cena.x + 56, y);
+        ctx.stroke();
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cena.x + 34, y - 3.4);
+        ctx.lineTo(cena.x + 39, y);
+        ctx.lineTo(cena.x + 34, y + 3.4);
+        ctx.stroke();
+        escrever('linha escolhida (as setinhas mostram o sentido do campo)', cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
+        ctx.fillStyle = `rgba(${COR_CAMPO}, 0.3)`;
+        ctx.fillRect(cena.x + 18, y + 13, 38, 10);
+        escrever('linhas que sobem de 6 a 10 raios', cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. Passos 1 e 2, no ponto escolhido: "para fora da Terra" fica para cima.
+    // -------------------------------------------------------------------------
+    /** O ponto na tela, as direções do lugar e a direção da seta do campo. */
+    function noPonto() {
+      const P = ponto();
+      const C = { x: telaX(P.X, P.Y), y: telaY(P.X, P.Y) };
+      const { fora, norte } = direcoesEm(P.fi);
+      const c = campoEm(P.R, P.lat), B = Math.hypot(c.Br, c.Bl);
+      const cosI = c.Bl / B, senI = c.Br / B;                 // senI < 0: a seta aponta para dentro da Terra
+      const u = { x: cosI * norte.x + senI * fora.x, y: cosI * norte.y + senI * fora.y };
+      return { P, C, fora, norte, cosI, senI, u };
+    }
+    const alinharPara = (direcao) => (direcao.x > 0.3 ? 'left' : direcao.x < -0.3 ? 'right' : 'center');
+
+    /** Passo 1: o pedacinho do caminho (branco) e a seta do campo (azul) têm a mesma inclinação. */
+    function desenharPasso1(alfa) {
+      const { P, C, fora, norte, cosI, senI, u } = noPonto();
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      // O comprimento da seta do campo (um esquema): perto do chão ela encurta, para não entrar na Terra.
+      let L = Math.min(140, alturaLivre * 0.34);
+      if (senI < -0.05) L = Math.max(Math.min(L, 64), Math.min(L, ((P.R - 1) * projecao.S) / -senI - 6));
+      const meio = L * 0.29;                                    // metade do pedacinho do caminho
+      const comNomes = alturaLivre >= 170;                      // em telas muito baixas, fica só o desenho
+      ctx.globalAlpha = alfa;
+
+      // As duas direções do lugar: a vertical (para fora ou para dentro da Terra) e a horizontal (norte–sul).
+      const braco = Math.max(L + 8, Math.min(L + 70, alturaLivre / 2 - 30)), bracoDeLado = Math.min(L + 150, cena.w * 0.42, cena.w / 2 - 46);
+      tracejado(C.x - fora.x * braco, C.y - fora.y * braco, C.x + fora.x * braco, C.y + fora.y * braco, 'rgba(255, 255, 255, 0.34)');
+      tracejado(C.x - norte.x * bracoDeLado, C.y - norte.y * bracoDeLado, C.x + norte.x * bracoDeLado, C.y + norte.y * bracoDeLado, 'rgba(255, 255, 255, 0.34)');
+      if (comNomes) {
+        escrever('para fora da Terra', C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(`para o centro da Terra (a ${emRaios(P.R)})`, C.x - fora.x * (braco + 11), C.y - fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      }
+      escrever('norte', C.x + norte.x * (bracoDeLado + 7), C.y + norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara(norte) });
+      escrever('sul', C.x - norte.x * (bracoDeLado + 7), C.y - norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara({ x: -norte.x }) });
+
+      // O pedacinho do caminho: anda r·dλ na horizontal e muda dr na vertical. A própria linha é a hipotenusa.
+      const A = { x: C.x - u.x * meio, y: C.y - u.y * meio };
+      const Q = { x: A.x + norte.x * 2 * meio * cosI, y: A.y + norte.y * 2 * meio * cosI };
+      const Z = { x: C.x + u.x * meio, y: C.y + u.y * meio };
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.13)';
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(Q.x, Q.y);
+      ctx.lineTo(Z.x, Z.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(Q.x, Q.y);
+      ctx.lineTo(Z.x, Z.y);
+      ctx.stroke();
+
+      // A seta do campo e as duas partes dela: primeiro a vertical (B_r), depois a horizontal (B_λ).
+      const V = { x: C.x + fora.x * L * senI, y: C.y + fora.y * L * senI };
+      const T = { x: C.x + u.x * L, y: C.y + u.y * L };
+      seta(C.x, C.y, V.x, V.y, { cor: AZUL, espessura: 1.6, ponta: 7 });
+      seta(V.x, V.y, T.x, T.y, { cor: AZUL, espessura: 1.6, ponta: 7 });
+      seta(C.x, C.y, T.x, T.y, { cor: AZUL, espessura: 3, ponta: 11 });
+      desenharPonto(C.x, C.y, { raio: 4.5 });
+      if (!comNomes) {
+        ctx.globalAlpha = 1;
+        return;
+      }
+
+      // Os nomes: os do caminho ficam do lado de fora do triângulo branco; os do campo, do lado de fora do azul.
+      const paraOCanto = senI > 0 ? -1 : 1;                     // de que lado da linha fica o canto do triângulo branco
+      escreverFormula('r·dλ', (A.x + Q.x) / 2 + fora.x * paraOCanto * 14, (A.y + Q.y) / 2 + fora.y * paraOCanto * 14, { tamanho: 15, alinhar: 'center', placa: true });
+      if (Math.hypot(Z.x - Q.x, Z.y - Q.y) >= 3) {
+        escreverFormula('dr', (Q.x + Z.x) / 2 + norte.x * 13, (Q.y + Z.y) / 2 + norte.y * 13, { tamanho: 15, alinhar: alinharPara(norte), placa: true });
+      }
+      if (Math.hypot(V.x - C.x, V.y - C.y) >= 16) {
+        escreverFormula('B_r', (C.x + V.x) / 2 - norte.x * 13, (C.y + V.y) / 2 - norte.y * 13, { tamanho: 15, cor: AZUL, alinhar: alinharPara({ x: -norte.x }), placa: true });
+      }
+      escreverFormula('B_λ', (V.x + T.x) / 2 - fora.x * paraOCanto * 16, (V.y + T.y) / 2 - fora.y * paraOCanto * 16, { tamanho: 15, cor: AZUL, alinhar: 'center', placa: true });
+      // "B" fica depois da ponta da seta, puxado para o lado do norte (longe do nome da parte horizontal).
+      escreverFormula('B', T.x + u.x * 8 + norte.x * 16, T.y + u.y * 8 + norte.y * 16, { tamanho: 16, cor: AZUL, alinhar: alinharPara(norte), placa: true });
+      ctx.globalAlpha = 1;
+    }
+
+    /** Passo 2: na mesma latitude, a distâncias diferentes, as setas são paralelas. */
+    function desenharPasso2(alfa) {
+      const { P, C, fora, norte, cosI, senI, u } = noPonto();
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const comNomes = alturaLivre >= 170;                      // em telas muito baixas, fica só o desenho
+      const passo = Math.min(86, alturaLivre / (comNomes ? 5 : 3.4));       // distância, na tela, entre um ponto e o seguinte
+      const L = passo * 0.86;
+      const braco = Math.max(passo * 1.2, Math.min(alturaLivre / 2 - 30, passo * 2.6));
+      ctx.globalAlpha = alfa;
+      tracejado(C.x - fora.x * braco, C.y - fora.y * braco, C.x + fora.x * braco, C.y + fora.y * braco, 'rgba(255, 255, 255, 0.34)');
+      if (comNomes) escrever('para fora da Terra', C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+
+      const inclinacao = Math.round(emGraus(Math.atan2(Math.abs(senI), cosI)));
+      for (const k of [2, 1, -1, -2, 0]) {                      // k > 0: mais longe da Terra; o ponto escolhido (0) vai por último
+        const R = P.R + (k * passo) / projecao.S;
+        const q = { x: C.x + fora.x * k * passo, y: C.y + fora.y * k * passo };
+        const ponta = { x: q.x + u.x * L, y: q.y + u.y * L };
+        if (R < 1.02 || !dentroDaCena(q, comNomes ? 10 : 2) || !dentroDaCena(ponta, comNomes ? 6 : 0)) continue;
+        if (k !== 0) tracarLinha(R / Math.cos(P.lat) ** 2, estado.lado, { forca: 0.62, espessura: 1.2 });
+        // A horizontal do lugar e o ângulo entre ela e a seta.
+        tracejado(q.x, q.y, q.x + norte.x * L * 0.82, q.y + norte.y * L * 0.82, 'rgba(255, 255, 255, 0.45)', [3, 4]);
+        seta(q.x, q.y, ponta.x, ponta.y, { cor: AZUL, espessura: k === 0 ? 3 : 2.2, ponta: k === 0 ? 10 : 8 });
+        if (inclinacao >= 5) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.lineWidth = 1.2;
+          const doMeio = arcoEntre(q.x, q.y, L * 0.42, norte, u);
+          if (k === 0 && comNomes) escrever(`${inclinacao}°`, q.x + Math.cos(doMeio) * (L * 0.42 + 15), q.y + Math.sin(doMeio) * (L * 0.42 + 15), { tamanho: 12, peso: 600, alinhar: 'center' });
+        }
+        desenharPonto(q.x, q.y, { raio: k === 0 ? 4.5 : 3 });
+        if (comNomes) escrever(`a ${emRaios(R)}`, q.x - norte.x * 12, q.y - norte.y * 12, { tamanho: 11, cor: k === 0 ? '#ececec' : '#a9a9a9', alinhar: alinharPara({ x: -norte.x }) });
+      }
+      // A frase fica embaixo, do lado do sul (as setas apontam para o norte). Em telas estreitas, ela encurta.
+      if (comNomes) {
+        const noSul = norte.x < 0 ? 1 : -1;                     // de que lado da tela fica o sul
+        const frase = `mesma latitude (${latitudeEmTexto(estado.graus)}): mesma inclinação`;
+        const inteira = `${frase}, a qualquer distância`;
+        escrever(larguraDoTexto(inteira, 12, 600) + 60 < cena.w ? inteira : frase, noSul > 0 ? cena.x + cena.w - 22 : cena.x + 22, cena.y + cena.h - 24,
+          { tamanho: 12, peso: 600, alinhar: noSul > 0 ? 'right' : 'left', placa: true });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. Passo 3, meia linha: do equador ao chão, pedacinho por pedacinho.
+    // -------------------------------------------------------------------------
+    function desenharPasso3(alfa) {
+      const P = ponto(), R0 = estado.R0, S = projecao.S;
+      const hemisferio = estado.graus < 0 ? -1 : 1;
+      const terra = { x: telaX(0, 0), y: telaY(0, 0) };
+      const naTela = (r, lat) => { const q = lugar(r, lat); return { x: telaX(q.X, q.Y), y: telaY(q.X, q.Y) }; };
+      const apice = naTela(R0, 0);
+      const comNomes = cena.h - ESPACO_DO_TITULO >= 170;         // em telas muito baixas, fica só o desenho
+      ctx.globalAlpha = alfa;
+
+      // O equador magnético e a medida de r₀, do centro da Terra até onde a linha cruza o equador.
+      const alem = naTela(R0 * 1.05, 0);
+      tracejado(terra.x, terra.y, alem.x, alem.y, 'rgba(255, 255, 255, 0.3)', [3, 5]);
+      if (comNomes) {
+        const afastado = (X) => ({ x: telaX(estado.lado * X, -hemisferio * 22 / S), y: telaY(estado.lado * X, -hemisferio * 22 / S) });
+        const m1 = afastado(0), m2 = afastado(R0);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(m1.x, m1.y);
+        ctx.lineTo(m2.x, m2.y);
+        ctx.moveTo(m1.x, m1.y - 4);
+        ctx.lineTo(m1.x, m1.y + 4);
+        ctx.moveTo(m2.x, m2.y - 4);
+        ctx.lineTo(m2.x, m2.y + 4);
+        ctx.stroke();
+        escreverFormula(`r_0 = ${numero(R0, 2)}`, entre(m1.x, m2.x, 0.62), entre(m1.y, m2.y, 0.62) + hemisferio * 15, { tamanho: 15, alinhar: 'center', placa: true });
+      }
+
+      // Os degraus: em cada um, a linha anda r·dλ (um arco) e muda dr (na direção radial).
+      const fim = latitudeNoChao(R0), d = emRadianos(PEDACINHO);
+      const total = Math.ceil(fim / d - 1e-9);
+      const ciclo = total * 0.3 + 3.2;                          // os degraus aparecem um a um, ficam um pouco e recomeçam
+      const prontos = Math.min(total, Math.floor((estado.tempoDoPasso % ciclo) / 0.3) + 1);
+      const doPonto = Math.min(total - 1, Math.floor(Math.abs(P.lat) / d));
+      let comNome = Math.min(total - 1, Math.round(total * 0.55));
+      if (comNome === doPonto) comNome = comNome + 1 < total ? comNome + 1 : Math.max(0, comNome - 1);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      for (let k = 0; k < prontos; k++) {
+        const de = k * d, ate = Math.min(fim, (k + 1) * d);
+        const r1 = distanciaNaLinha(R0, de), r2 = distanciaNaLinha(R0, ate);
+        const novo = k === prontos - 1 && prontos < total;
+        ctx.strokeStyle = novo || k === comNome ? '#ffffff' : 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = novo ? 2.2 : 1.4;
+        ctx.beginPath();
+        for (let i = 0; i <= 6; i++) {
+          const q = naTela(r1, hemisferio * entre(de, ate, i / 6));
+          if (i === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+        }
+        const canto = naTela(r1, hemisferio * ate), chegada = naTela(r2, hemisferio * ate);
+        ctx.lineTo(chegada.x, chegada.y);
+        ctx.stroke();
+        if (k === comNome && comNomes) {
+          const { fora, norte } = direcoesEm(anguloDe(hemisferio * (de + ate) / 2));
+          const meioDoArco = naTela(r1, hemisferio * (de + ate) / 2);
+          escreverFormula('r·dλ', meioDoArco.x + fora.x * 14, meioDoArco.y + fora.y * 14, { tamanho: 14, alinhar: 'center', placa: true });
+          // "dr" fica perto do canto de fora do degrau, longe do degrau seguinte.
+          const paraOPolo = { x: norte.x * hemisferio, y: norte.y * hemisferio };
+          escreverFormula('dr', entre(canto.x, chegada.x, 0.3) + paraOPolo.x * 13, entre(canto.y, chegada.y, 0.3) + paraOPolo.y * 13,
+            { tamanho: 14, alinhar: alinharPara(paraOPolo), placa: true });
+        }
+      }
+
+      // O ponto marcado: a distância r dele ao centro e a latitude λ.
+      const p = naTela(P.R, P.lat);
+      if (Math.abs(estado.graus) >= 6 && comNomes) {
+        tracejado(terra.x, terra.y, p.x, p.y, 'rgba(255, 255, 255, 0.5)', [4, 4]);
+        const { norte } = direcoesEm(P.fi);
+        const paraOEquador = { x: -norte.x * hemisferio, y: -norte.y * hemisferio };
+        escreverFormula(`r = ${numero(P.R, 2)}`, entre(terra.x, p.x, 0.6) + paraOEquador.x * 12, entre(terra.y, p.y, 0.6) + paraOEquador.y * 12,
+          { tamanho: 15, alinhar: alinharPara(paraOEquador), placa: true });
+        const raio = Math.min(S * P.R * 0.3, 120);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.2;
+        const doMeio = arcoEntre(terra.x, terra.y, raio, { x: apice.x - terra.x, y: apice.y - terra.y }, { x: p.x - terra.x, y: p.y - terra.y });
+        escreverFormula(`λ = ${Math.abs(estado.graus)}°`, terra.x + Math.cos(doMeio) * (raio + 12), terra.y + Math.sin(doMeio) * (raio + 12),
+          { tamanho: 14, alinhar: estado.lado > 0 ? 'left' : 'right' });
+      }
+      desenharPonto(p.x, p.y, { anel: true, raio: 4.5 });
+      const pe = naTela(1, hemisferio * fim);
+      desenharPonto(pe.x, pe.y, { raio: 3 });
+
+      if (comNomes) {
+        escrever(`cada degrau: ${PEDACINHO}° de latitude`, estado.lado > 0 ? cena.x + cena.w - 18 : cena.x + 18, cena.y + ESPACO_DO_TITULO + (hemisferio > 0 ? 22 : cena.h - ESPACO_DO_TITULO - 22),
+          { tamanho: 12, cor: '#d0d0d0', alinhar: estado.lado > 0 ? 'right' : 'left', placa: true });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. Passos 4 e 5: o chão do hemisfério norte, onde as linhas chegam.
+    // -------------------------------------------------------------------------
+    /** A escala das latitudes magnéticas, marcada no chão de 5 em 5 graus ("semNumero" deixa uma marca sem o número). */
+    function desenharEscalaDoChao(semNumero = -1) {
+      const entreNumeros = projecao.S < 172 ? 20 : 10;          // com o chão pequeno, os números ficam de 20 em 20 graus
+      for (let graus = 0; graus <= 90; graus += 5) {
+        const fi = anguloDe(emRadianos(graus));
+        const x = telaX(Math.cos(fi), Math.sin(fi)), y = telaY(Math.cos(fi), Math.sin(fi));
+        if (x < cena.x - 10 || x > cena.x + cena.w + 10 || y > cena.fundo + 10) continue;
+        const { fora } = direcoesEm(fi);
+        const tamanho = graus % 10 === 0 ? 8 : 4;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - fora.x * tamanho, y - fora.y * tamanho);
+        ctx.stroke();
+        if ((graus % entreNumeros === 0 || graus === 90) && graus !== semNumero) {
+          escrever(graus === 90 ? 'polo' : graus === 0 ? 'equador' : `${graus}°`, x - fora.x * 20, y - fora.y * 20, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
+        }
+      }
+    }
+    /** O lugar, na tela, do pé norte da linha que sobe até R0. */
+    function peDaLinha(R0) {
+      const lat = latitudeNoChao(R0), q = lugar(1, lat);
+      return { x: telaX(q.X, q.Y), y: telaY(q.X, q.Y), lat };
+    }
+    /** O lugar, na tela, do ponto da linha (no hemisfério norte) que fica "altura" pixels acima do chão. */
+    function acimaDoChao(R0, alturaEmPixels) {
+      const r = Math.min(R0, 1 + alturaEmPixels / projecao.S);
+      const lat = Math.acos(Math.sqrt(r / R0)), q = lugar(r, lat);
+      return { x: telaX(q.X, q.Y), y: telaY(q.X, q.Y) };
+    }
+    const grausNoChao = (R0) => Math.round(emGraus(latitudeNoChao(R0)));
+    /** O céu que aparece: do alto da "colina" do chão até o título, em pixels. */
+    const alturaDoCeu = () => projecao.cy - cena.y - ESPACO_DO_TITULO - 20;
+    /**
+     * Rótulos das linhas de campo, nos passos do chão. Cada um é uma placa presa à linha, a certa altura do
+     * chão (ou em cima do pé, se a linha é baixa). Eles são colocados por ordem de importância: o que bateria
+     * em outro, ou não cabe na área livre, tenta as outras alturas e, se nenhuma servir, não aparece.
+     * O primeiro é o da linha escolhida: se nem ele couber (tela muito baixa), nenhum aparece.
+     * Cada rótulo: { R0, texto, alturas (frações do céu, na ordem de preferência), cor, tamanho, nome }.
+     */
+    function colocarRotulos(rotulos, ocupadas = []) {
+      const ceu = alturaDoCeu();
+      const m = lugarDaMiniatura();
+      if (m) ocupadas.push({ x1: m.x - 4, x2: m.x + m.w + 4, y1: m.y - 22, y2: m.y + m.h + 4 });
+      let colocados = 0;
+      for (const [indice, { R0, texto, alturas, cor = '#c9dcf7', tamanho = 12.5, nome = '' }] of rotulos.entries()) {
+        if (indice > 0 && colocados === 0) return;
+        const larguraDaPlaca = partesDaFormula(texto, tamanho).total + 16, alturaDaPlaca = tamanho + 10;
+        const pe = peDaLinha(R0);
+        for (const fracao of alturas) {
+          const acima = Math.max(36, ceu * fracao);
+          let q;
+          if ((R0 - 1) * projecao.S * 0.7 < acima) {
+            const { fora } = direcoesEm(anguloDe(pe.lat));
+            q = { x: pe.x + fora.x * 30, y: pe.y + fora.y * 30 };
+          } else {
+            q = acimaDoChao(R0, acima);
+          }
+          const x = limitar(q.x, cena.x + larguraDaPlaca / 2 + 6, cena.x + cena.w - larguraDaPlaca / 2 - 6);
+          const caixa = { x1: x - larguraDaPlaca / 2, x2: x + larguraDaPlaca / 2, y1: q.y - alturaDaPlaca / 2, y2: q.y + alturaDaPlaca / 2 + (nome ? 14 : 0) };
+          const cabe = caixa.y1 >= cena.y + ESPACO_DO_TITULO + 2 && caixa.y2 <= cena.y + cena.h - 2
+            && !ocupadas.some((o) => caixa.x1 < o.x2 + 6 && caixa.x2 > o.x1 - 6 && caixa.y1 < o.y2 + 2 && caixa.y2 > o.y1 - 2);
+          if (!cabe) continue;
+          ocupadas.push(caixa);
+          colocados += 1;
+          escreverFormula(texto, x, q.y, { tamanho, cor, alinhar: 'center', placa: true });
+          if (nome) escrever(nome, x, q.y + tamanho + 4, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+          break;
+        }
+      }
+    }
+
+    /** Passo 4: cada linha chega ao chão numa latitude; quanto maior R₀, mais perto do polo. */
+    function desenharPasso4(alfa) {
+      ctx.globalAlpha = alfa;
+      desenharEscalaDoChao();
+      const escolhidaNaTabela = TABELA.find((linha) => Math.abs(linha.R0 - estado.R0) < 0.005);
+      // A linha escolhida vem primeiro, no alto; as da tabela, da mais longa para a mais curta, em alturas alternadas.
+      const rotulos = [{ R0: estado.R0, texto: `R_0 = ${numero(estado.R0, 2)} → λ_E = ${grausNoChao(estado.R0)}°`, alturas: [0.8, 0.5, 0.2],
+        cor: '#ffffff', tamanho: 14, nome: escolhidaNaTabela ? escolhidaNaTabela.nome : '' }];
+      const ALTURAS = [[0.2], [0.2, 0.5], [0.5, 0.2, 0.8], [0.2, 0.5, 0.8], [0.5, 0.8, 0.2]];
+      for (let i = TABELA.length - 1; i >= 0; i--) {
+        const linha = TABELA[i];
+        if (linha === escolhidaNaTabela) continue;
+        tracarLinha(linha.R0, estado.lado, { forca: 0.75, espessura: 1.3 });
+        const pe = peDaLinha(linha.R0);
+        ctx.fillStyle = AZUL;
+        ctx.beginPath();
+        ctx.arc(pe.x, pe.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        rotulos.push({ R0: linha.R0, texto: `R_0 = ${semZeros(linha.R0)} → ${grausNoChao(linha.R0)}°`, alturas: ALTURAS[i], nome: linha.nome });
+      }
+      const pe = peDaLinha(estado.R0);
+      desenharPonto(pe.x, pe.y, { anel: true, raio: 4.5 });
+      colocarRotulos(rotulos);
+      ctx.globalAlpha = 1;
+    }
+
+    /** Passo 5: as linhas que sobem de 6 a 10 raios chegam ao chão entre 66° e 72°. */
+    function desenharPasso5(alfa) {
+      ctx.globalAlpha = alfa;
+      desenharEscalaDoChao(projecao.S >= 172 ? 70 : -1);        // o 70° sai: ali ficam as latitudes das duas pontas da faixa
+      for (const R0 of [FAIXA.de, FAIXA.ate]) tracarLinha(R0, estado.lado, { forca: 0.9, espessura: 1.5 });
+
+      // Pulsos descendo pelas linhas da faixa (um esquema): o que acontece lá em cima chega ao chão por elas.
+      const ceu = alturaDoCeu() + 24;
+      ctx.lineCap = 'round';
+      for (let R0 = FAIXA.de; R0 <= FAIXA.ate; R0 += 1) {
+        const fase = (estado.tempo * 0.32 + ((R0 * 0.37) % 1)) % 1;                   // 0 = no alto; 1 = no chão
+        const cabeca = acimaDoChao(R0, ceu * (1 - fase)), cauda = acimaDoChao(R0, ceu * (1 - fase) + 22);
+        const forca = Math.min(1, fase * 6, (1 - fase) * 9);                          // aparece no alto e some ao chegar
+        const risco = ctx.createLinearGradient(cauda.x, cauda.y, cabeca.x, cabeca.y);
+        risco.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        risco.addColorStop(1, `rgba(255, 255, 255, ${0.95 * forca})`);
+        ctx.strokeStyle = risco;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(cauda.x, cauda.y);
+        ctx.lineTo(cabeca.x, cabeca.y);
+        ctx.stroke();
+      }
+
+      // O trecho do chão entre os pés das duas linhas: a oval auroral, com os magnetômetros do índice AE.
+      const deFora = latitudeNoChao(FAIXA.ate), deDentro = latitudeNoChao(FAIXA.de);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      for (let i = 0; i <= 8; i++) {
+        const q = lugar(1, entre(deDentro, deFora, i / 8));
+        if (i === 0) ctx.moveTo(telaX(q.X, q.Y), telaY(q.X, q.Y)); else ctx.lineTo(telaX(q.X, q.Y), telaY(q.X, q.Y));
+      }
+      ctx.stroke();
+      for (const fracao of [0.17, 0.5, 0.83]) {                 // três estações, em esquema
+        const lat = entre(deDentro, deFora, fracao), q = lugar(1, lat);
+        const { fora } = direcoesEm(anguloDe(lat));
+        const x = telaX(q.X, q.Y) + fora.x * 6, y = telaY(q.X, q.Y) + fora.y * 6;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 3, y - 3, 6, 6);
+      }
+      // Os textos de baixo do chão só aparecem se houver chão bastante para eles (em telas muito baixas, não há).
+      const chaoGrande = projecao.S >= 172;
+      if (chaoGrande) {
+        for (const R0 of [FAIXA.de, FAIXA.ate]) {               // a latitude de cada ponta
+          const pe = peDaLinha(R0);
+          const direcoes = direcoesEm(anguloDe(pe.lat));
+          escrever(`${grausNoChao(R0)}°`, pe.x - direcoes.fora.x * 19, pe.y - direcoes.fora.y * 19, { tamanho: 12, peso: 600, alinhar: 'center' });
+        }
+      }
+      const meio = (deFora + deDentro) / 2, q = lugar(1, meio);
+      const { fora } = direcoesEm(anguloDe(meio));
+      const mx = telaX(q.X, q.Y), my = telaY(q.X, q.Y);
+      const limite = cena.y + cena.h - 10;
+      if (chaoGrande && my - fora.y * 42 <= limite) {
+        escrever('oval auroral', mx - fora.x * 42, my - fora.y * 42, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
+        if (my - fora.y * 60 <= limite) escrever('magnetômetros do índice AE', mx - fora.x * 60, my - fora.y * 60, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
+      }
+
+      // Para onde a faixa vai: a frase fica do lado do equador, perto de onde as linhas saem da tela.
+      const ocupadas = [];
+      const altoDoCeu = alturaDoCeu();
+      if (altoDoCeu > 150) {
+        const borda = acimaDoChao(FAIXA.de, altoDoCeu * 0.92);
+        const frase = `sobem até ${FAIXA.de} a ${FAIXA.ate} raios, sobre o equador`;
+        const { norte } = direcoesEm(anguloDe(LATITUDE_DO_CHAO));
+        const sentido = norte.x < 0 ? 1 : -1;                   // na tela, o equador fica do lado oposto ao do norte
+        const texto = sentido > 0 ? `← ${frase}` : `${frase} →`;
+        const w = larguraDoTexto(texto, 12);
+        const esquerda = limitar(sentido > 0 ? borda.x + 16 : borda.x - 16 - w, cena.x + 14, cena.x + cena.w - 14 - w);
+        escrever(texto, esquerda, borda.y, { tamanho: 12, cor: '#d0d0d0', placa: true });
+        ocupadas.push({ x1: esquerda - 8, x2: esquerda + w + 8, y1: borda.y - 11, y2: borda.y + 11 });
+      }
+
+      // A linha escolhida e os nomes das duas linhas da borda da faixa.
+      const pe = peDaLinha(estado.R0);
+      desenharPonto(pe.x, pe.y, { anel: true, raio: 4.5 });
+      const rotulos = [{ R0: estado.R0, texto: `R_0 = ${numero(estado.R0, 2)} → ${grausNoChao(estado.R0)}°`, alturas: [0.68, 0.44, 0.2], cor: '#ffffff', tamanho: 13.5 }];
+      if (Math.abs(estado.R0 - FAIXA.ate) > 0.005) rotulos.push({ R0: FAIXA.ate, texto: `R_0 = ${FAIXA.ate}`, alturas: [0.44, 0.2, 0.68] });
+      if (Math.abs(estado.R0 - FAIXA.de) > 0.005) rotulos.push({ R0: FAIXA.de, texto: `R_0 = ${FAIXA.de}`, alturas: [0.2, 0.44, 0.68] });
+      colocarRotulos(rotulos, ocupadas);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Miniatura da visão de longe, para mostrar onde a câmera está.
+    // -------------------------------------------------------------------------
+    const CENAS_COM_MINIATURA = ['p1', 'p2', 'p4', 'p5'];
+    /** Onde fica a miniatura (ou null, quando não há espaço para ela ou a cena não tem). */
+    function lugarDaMiniatura() {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      if (cena.w < 520 || alturaLivre < 300 || !CENAS_COM_MINIATURA.includes(estado.cena)) return null;
+      const w = Math.min(limitar(cena.w * 0.2, 140, 190), alturaLivre * 0.45), h = w * 0.5;
+      // Nos passos do chão, ela fica do lado do polo, onde não chega nenhuma linha.
+      const naDireita = CAMERA_DA_CENA[estado.cena] === 'chao' && estado.lado < 0;
+      return { x: naDireita ? cena.x + cena.w - w - 16 : cena.x + 16, y: cena.y + ESPACO_DO_TITULO + 26, w, h };
+    }
+    let miniatura = null;       // retângulo na tela (para o clique voltar à visão de longe)
+    function desenharMiniatura(alfa) {
+      miniatura = lugarDaMiniatura();
+      if (!miniatura) return;
+      const { x, y, w, h } = miniatura;
+      const escala = Math.min(w / 22.4, h / 8.6);
+      const ox = x + w / 2, oy = y + h / 2;
+      const tracar = (R0, lado) => {
+        const noChao = latitudeNoChao(R0);
+        ctx.beginPath();
+        for (let i = 0; i <= 48; i++) {
+          const lat = -noChao + (2 * noChao * i) / 48, c = Math.cos(lat), r = R0 * c * c;
+          ctx.lineTo(ox + lado * r * c * escala, oy - r * Math.sin(lat) * escala);
+        }
+      };
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      ctx.fillStyle = 'rgba(8, 8, 8, 0.92)';
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+      ctx.fill();
+      ctx.stroke();
+      ctx.clip();
+      for (const lado of [1, -1]) {
+        // A faixa de 6 a 10 raios: entre as duas linhas.
+        tracar(FAIXA.ate, lado);
+        const dentro = latitudeNoChao(FAIXA.de);
+        for (let i = 48; i >= 0; i--) {
+          const lat = -dentro + (2 * dentro * i) / 48, c = Math.cos(lat), r = FAIXA.de * c * c;
+          ctx.lineTo(ox + lado * r * c * escala, oy - r * Math.sin(lat) * escala);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${COR_CAMPO}, ${0.13 + 0.25 * forcaDaCena.p5})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.45)`;
+        ctx.lineWidth = 1;
+        for (const R0 of [2, 4]) {
+          tracar(R0, lado);
+          ctx.stroke();
+        }
+      }
+      ctx.strokeStyle = `rgb(${COR_DESTAQUE})`;
+      ctx.lineWidth = 1.5;
+      tracar(estado.R0, estado.lado);
+      ctx.stroke();
+      ctx.fillStyle = '#8a8a8a';
+      ctx.beginPath();
+      ctx.arc(ox, oy, Math.max(2, escala), 0, Math.PI * 2);
+      ctx.fill();
+      // Onde a câmera está: no ponto escolhido (passos 1 e 2) ou no chão do norte (passos 4 e 5).
+      const P = ponto();
+      const noChao = CAMERA_DA_CENA[estado.cena] === 'chao';
+      const alvo = noChao ? lugar(1, LATITUDE_DO_CHAO) : P;
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + 0.4 * pulso})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(ox + alvo.X * escala, oy - alvo.Y * escala, 5 + 2 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ox + P.X * escala, oy - P.Y * escala, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.globalAlpha = alfa;
+      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. O quadro inteiro.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+      atualizarProjecao();
+      for (const estrela of ESTRELAS) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${estrela.brilho})`;
+        ctx.fillRect(Math.round(estrela.u * largura), Math.round(estrela.v * altura), 1, 1);
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      ctx.clip();
+      desenharBase();
+      // Em cima, o desenho some por trás do título (os textos, desenhados depois, ficam nítidos).
+      const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
+      sombra.addColorStop(0, '#000');
+      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), '#000');
+      sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = sombra;
+      ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
+      if (forcaDaCena.longe > 0.01) desenharDeLonge(forcaDaCena.longe);
+      if (forcaDaCena.p1 > 0.01) desenharPasso1(forcaDaCena.p1);
+      if (forcaDaCena.p2 > 0.01) desenharPasso2(forcaDaCena.p2);
+      if (forcaDaCena.p3 > 0.01) desenharPasso3(forcaDaCena.p3);
+      if (forcaDaCena.p4 > 0.01) desenharPasso4(forcaDaCena.p4);
+      if (forcaDaCena.p5 > 0.01) desenharPasso5(forcaDaCena.p5);
+      ctx.restore();
+      const forcaDaMiniatura = Math.max(...CENAS_COM_MINIATURA.map((nome) => forcaDaCena[nome]));
+      if (forcaDaMiniatura > 0.01) desenharMiniatura(forcaDaMiniatura); else miniatura = null;
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 13. Painel: textos e números que mudam.
+    // -------------------------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+    const textos = new Map();          // o que já está escrito em cada lugar (para não reescrever à toa)
+    function por(id, html) {
+      if (textos.get(id) === html) return;
+      textos.set(id, html);
+      el(id).innerHTML = html;         // só textos fixos e números desta página
+    }
+
+    // Textos que não mudam, mas dependem dos valores da seção 2.
+    por('tabela', `<div class="cabecalho"><span><i>R</i><sub>0</sub>: altura no equador</span><span>toca o chão em</span></div>${
+      TABELA.map((linha) => `<button type="button" data-r0="${linha.R0}"><span>${semZeros(linha.R0)} <i>R</i><sub>E</sub>${
+        linha.nome ? `<small>${linha.nome}</small>` : ''}</span><b>${grausNoChao(linha.R0)}°</b></button>`).join('')}`);
+    por('formula-4', `<i>R</i><sub>0</sub> de ${FAIXA.de} a ${FAIXA.ate} → <i>λ</i><sub>E</sub> de ${grausNoChao(FAIXA.de)}° a ${grausNoChao(FAIXA.ate)}°`);
+    por('nota', `As linhas são as do modelo de dipolo, uma aproximação: além de 3 ou 4 raios, o vento solar deforma o campo.
+      Distâncias em raios da Terra (<i>R</i> = <i>r</i>/<i>R</i><sub>E</sub>). Setas, degraus, estações e pulsos são um esquema.`);
+    const SUBTITULOS = {
+      longe: 'De longe: as linhas do dipolo, de 2 a 10 raios.<span class="longo"> Distâncias em raios da Terra.</span>',
+      ponto: 'De perto: um pedacinho da linha, no ponto escolhido.<span class="longo"> O tamanho das setas é um esquema.</span>',
+      linha: 'De perto: meia linha, do equador até o chão.',
+      chao: 'De perto: o chão do hemisfério norte, onde as linhas chegam.',
+    };
+
+    function atualizarPainel() {
+      const lat = latitude(), R0 = estado.R0;
+      const R = distanciaNaLinha(R0, lat), c = campoEm(R, lat);
+      const tangente = Math.tan(lat), cosseno = Math.cos(lat);
+      const noEquador = estado.graus === 0, noNorte = estado.graus > 0;
+      const noChao = grausNoChao(R0);
+      const entreParenteses = (texto, negativo) => (negativo ? `(${texto})` : texto);
+      por('subtitulo', SUBTITULOS[CAMERA_DA_CENA[estado.cena]]);
+      por('o-r0', `${numero(R0, 2)} <i>R</i><sub>E</sub>`);
+      por('o-lat', latitudeEmTexto(estado.graus));
+
+      // Visão de longe.
+      por('l-r0', `${emRaios(R0)} da Terra`);
+      por('l-chao', `${noChao}° norte e sul`);
+      const ondeFicaOPonto = noEquador ? 'no equador' : `<i>λ</i> = ${latitudeEmTexto(estado.graus)}`;
+      por('l-ponto-nome', `<span class="longo">Distância ao centro no ponto (${ondeFicaOPonto})</span><span class="curto">No ponto (${ondeFicaOPonto})</span>`);
+      por('l-ponto', `${emRaios(R)} da Terra`);
+
+      // Passo 1: a inclinação do caminho é a do campo.
+      const razao = noEquador ? 0 : inclinacaoDoCampo(lat);
+      por('conta-0', noEquador
+        ? 'no equador, <i>B</i><sub>r</sub> = 0: a seta do campo fica deitada'
+        : `= ${comMilhar(c.Bl)} ÷ ${entreParenteses(`${c.Br < 0 ? '−' : ''}${comMilhar(c.Br)}`, c.Br < 0)} <span class="longo">(em nT)</span>`);
+      por('valor-0', noEquador
+        ? 'd<i>r</i> = 0: aqui a linha nem sobe nem desce'
+        : `= <b>${comSinal(razao)}</b>: para cada 1 que ${noNorte ? 'desce' : 'sobe'}, a linha anda ${numero(Math.abs(razao), 3)} para o norte`);
+      // Passo 2: a inclinação só depende da latitude; separando as variáveis.
+      por('conta-1', noEquador
+        ? 'no equador, tan 0 = 0: a seta fica deitada, sem parte radial'
+        : `= −1 ÷ (2 · ${entreParenteses(comSinal(tangente), tangente < 0)}) = <b>${comSinal(razao)}</b>, o mesmo valor do passo 1`);
+      const porGrau = Math.abs(mudancaDaDistancia(lat, emRadianos(1))) * 100;
+      por('valor-1', noEquador
+        ? 'no equador, d<i>r</i> = 0: é o ponto mais alto da linha'
+        : `aqui, a cada grau para o norte, a linha ${noNorte ? 'desce' : 'sobe'} <b>${numero(porGrau, 1)}%</b> da distância`);
+      // Passo 3: r = r₀·cos² λ.
+      por('conta-2', `= ${numero(R0, 2)} · cos<sup>2</sup> ${Math.abs(estado.graus)}° = ${numero(R0, 2)} · ${numero(cosseno * cosseno, 3)}`);
+      por('valor-2', `= <b>${emRaios(R)} da Terra</b> no ponto marcado`);
+      por('leg-r0', `onde a linha cruza o equador: a altura máxima dela. Aqui, ${emRaios(R0)} da Terra`);
+      // Passo 4: onde a linha toca o chão.
+      por('conta-3', `= 1 ÷ √${numero(R0, 2)} = ${numero(1 / Math.sqrt(R0), 3)}`);
+      por('valor-3', `<i>λ</i><sub>E</sub> = <b>${noChao}°</b> de latitude magnética, no norte e no sul`);
+      for (const botao of document.querySelectorAll('#tabela button')) botao.classList.toggle('ativo', Math.abs(Number(botao.dataset.r0) - R0) < 0.005);
+      // Passo 5: a linha escolhida está na faixa?
+      const naFaixa = R0 >= FAIXA.de - 1e-9 && R0 <= FAIXA.ate + 1e-9;
+      por('valor-4', `A linha escolhida (<i>R</i><sub>0</sub> = ${numero(R0, 2)}) toca o chão em ${noChao}°: <b>${naFaixa ? 'dentro' : 'fora'} dessa faixa</b>.`);
+      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+    }
+
+    function mostrarPasso(novo) {
+      estado.passo = limitar(novo, 0, 4);
+      for (const item of document.querySelectorAll('.passo')) item.classList.toggle('ativo', Number(item.dataset.passo) === estado.passo);
+      for (const marca of document.querySelectorAll('.pontos button')) {
+        const atual = Number(marca.dataset.passo) === estado.passo;
+        marca.classList.toggle('ativo', atual);
+        if (atual) marca.setAttribute('aria-current', 'step'); else marca.removeAttribute('aria-current');
+      }
+      el('bt-anterior').disabled = estado.passo === 0;
+      el('bt-proximo').disabled = estado.passo === 4;
+      document.querySelector('.conteudo').scrollTop = 0;
+      atualizarCena();
+      atualizarPainel();
+      medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+    }
+    function mostrarVisao(perto) {
+      if (estado.perto === perto) return;
+      estado.perto = perto;
+      document.body.classList.toggle('perto', perto);
+      el('bt-longe').classList.toggle('ativo', !perto);
+      el('bt-perto').classList.toggle('ativo', perto);
+      el('bt-longe').setAttribute('aria-pressed', String(!perto));
+      el('bt-perto').setAttribute('aria-pressed', String(perto));
+      atualizarCena();
+      atualizarPainel();
+      medirCena();
+    }
+
+    // -------------------------------------------------------------------------
+    // 14. Controles.
+    // -------------------------------------------------------------------------
+    el('bt-longe').addEventListener('click', () => mostrarVisao(false));
+    el('bt-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-ver-de-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-anterior').addEventListener('click', () => mostrarPasso(estado.passo - 1));
+    el('bt-proximo').addEventListener('click', () => mostrarPasso(estado.passo + 1));
+    for (const item of document.querySelectorAll('.passo')) {
+      item.querySelector('.passo-titulo').addEventListener('click', () => mostrarPasso(Number(item.dataset.passo)));
+    }
+    for (const marca of document.querySelectorAll('.pontos button')) {
+      marca.addEventListener('click', () => mostrarPasso(Number(marca.dataset.passo)));
+    }
+
+    /** Escolhe a linha (R₀), o ponto nela (latitude em graus) e o lado. O ponto nunca passa do chão. */
+    function escolher({ R0 = estado.R0, graus = estado.graus, lado = estado.lado }, origem = '') {
+      const hemisferioAntes = estado.graus < 0 ? -1 : 1;
+      estado.R0 = limitar(R0, R0_MINIMO, R0_MAXIMO);
+      const maior = maiorLatitude(estado.R0);
+      estado.graus = limitar(Math.round(graus), -maior, maior);
+      estado.lado = lado;
+      // O controle da latitude vai do pé sul ao pé norte da linha escolhida.
+      const controle = el('c-lat');
+      controle.min = -maior;
+      controle.max = maior;
+      controle.value = estado.graus;
+      if (origem !== 'controle-r0') el('c-r0').value = estado.R0;
+      // No passo 3, trocar de hemisfério troca a metade da linha que aparece: a câmera viaja até lá.
+      if (estado.cena === 'p3' && (estado.graus < 0 ? -1 : 1) !== hemisferioAntes) iniciarViagem();
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    el('c-r0').addEventListener('input', () => escolher({ R0: Number(el('c-r0').value) }, 'controle-r0'));
+    el('c-lat').addEventListener('input', () => escolher({ graus: Number(el('c-lat').value) }));
+    el('tabela').addEventListener('click', (evento) => {
+      const botao = evento.target.closest('button[data-r0]');
+      if (botao) escolher({ R0: Number(botao.dataset.r0) });
+    });
+    function alternarPausa() {
+      estado.pausado = !estado.pausado;
+      el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    }
+    el('bt-pausar').addEventListener('click', alternarPausa);
+    // Teclado (opcional; só depois de clicar na animação): setas trocam de passo, Espaço pausa.
+    window.addEventListener('keydown', (evento) => {
+      if (evento.target !== document.body) return;
+      if (evento.key === ' ') { evento.preventDefault(); alternarPausa(); }
+      else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
+      else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
+    });
+
+    // Na visão de longe: arrastar o ponto (a linha que passa por ele acende); clicar nele abre a visão de perto.
+    let arrasto = null;
+    /** A linha e o ponto que ficam embaixo do ponteiro, na visão de longe. */
+    function lugarDoPonteiro(x, y) {
+      const camera = cameraDe('longe');
+      const X = (x - camera.cx) / camera.S, Y = (camera.cy - y) / camera.S;
+      const distancia = Math.hypot(X, Y), r = Math.max(1, distancia);
+      const graus = distancia > 0.05 ? Math.round(emGraus(Math.asin(limitar(Y / distancia, -1, 1)))) : estado.graus;
+      const cos2 = Math.max(1e-6, Math.cos(emRadianos(graus)) ** 2);
+      return { distancia, R0: Math.round((r / cos2) * 20) / 20, graus, lado: Math.abs(X) < 0.04 * r ? estado.lado : (X > 0 ? 1 : -1) };
+    }
+    function distanciaDoPonto(x, y) {
+      const camera = cameraDe('longe'), P = ponto();
+      return Math.hypot(camera.cx + P.X * camera.S - x, camera.cy - P.Y * camera.S - y);
+    }
+    const dentroDaMiniatura = (evento) => miniatura && evento.clientX >= miniatura.x && evento.clientX <= miniatura.x + miniatura.w
+      && evento.clientY >= miniatura.y && evento.clientY <= miniatura.y + miniatura.h;
+    tela.addEventListener('pointerdown', (evento) => {
+      if (estado.perto) {
+        if (dentroDaMiniatura(evento)) mostrarVisao(false);
+        return;
+      }
+      if (estado.viagem < 1) return;
+      const noPontoMarcado = distanciaDoPonto(evento.clientX, evento.clientY) < 18;
+      const novo = lugarDoPonteiro(evento.clientX, evento.clientY);
+      if (!noPontoMarcado && novo.distancia > 11.6) return;
+      arrasto = { x: evento.clientX, y: evento.clientY, moveu: false, noPonto: noPontoMarcado };
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+      if (!noPontoMarcado) escolher(novo);
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (estado.perto) {
+        tela.style.cursor = dentroDaMiniatura(evento) ? 'pointer' : '';
+        return;
+      }
+      if (arrasto) {
+        if (Math.hypot(evento.clientX - arrasto.x, evento.clientY - arrasto.y) > 4) arrasto.moveu = true;
+        if (arrasto.moveu || !arrasto.noPonto) escolher(lugarDoPonteiro(evento.clientX, evento.clientY));
+        return;
+      }
+      const noPontoMarcado = distanciaDoPonto(evento.clientX, evento.clientY) < 18;
+      tela.style.cursor = noPontoMarcado ? 'pointer' : lugarDoPonteiro(evento.clientX, evento.clientY).distancia <= 11.6 ? 'grab' : '';
+    });
+    tela.addEventListener('pointerup', () => {
+      if (arrasto && arrasto.noPonto && !arrasto.moveu) mostrarVisao(true);      // clique no ponto: ver de perto
+      arrasto = null;
+    });
+    tela.addEventListener('pointercancel', () => { arrasto = null; });
+
+    // -------------------------------------------------------------------------
+    // 15. Laço da animação.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      // A viagem da câmera e a troca dos rótulos continuam mesmo na pausa (são respostas aos controles).
+      if (estado.viagem < 1) estado.viagem = Math.min(1, estado.viagem + intervalo / DURACAO_DA_VIAGEM);
+      for (const nome of CENAS) {
+        const alvo = nome === estado.cena && estado.viagem >= 0.5 ? 1 : 0;
+        forcaDaCena[nome] += limitar(alvo - forcaDaCena[nome], -intervalo / 0.4, intervalo / 0.4);
+      }
+      if (!estado.pausado) {
+        estado.tempo += intervalo;
+        estado.tempoDoPasso += intervalo;
+      }
+      desenhar();
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    escolher(COMECO);
+    mostrarPasso(0);
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>

@@ -15,6 +15,11 @@
       "arquivo": "geomagnetico-1-campo-num-ponto.html",
       "titulo": "Campo geomagnético 1: o campo num ponto",
       "descricao": "A Terra como um ímã em barra: como a intensidade do campo muda com a distância e com a latitude magnética, as duas partes da seta do campo e a agulha da bússola."
+    },
+    {
+      "arquivo": "geomagnetico-2-linhas-de-campo.html",
+      "titulo": "Campo geomagnético 2: as linhas de campo",
+      "descricao": "A forma das linhas do campo de dipolo, de onde ela vem e onde cada linha toca o chão. No fim, a faixa de 6 a 10 raios, ligada à oval auroral e ao índice AE."
     }
   ]
 }

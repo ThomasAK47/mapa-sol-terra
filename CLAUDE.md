@@ -421,8 +421,24 @@ janela mudar, atualize o contrato junto. Resumo técnico:
      Valores na seção 2 do script: 0,31 gauss = 31 000 nT no equador, ímã
      inclinado 11°. A inclinação da agulha (tan = |B_r|/B_λ) foi tirada das duas
      partes, não do livro.
-  2. As linhas de campo (a fazer): r = r₀·cos² λ, onde cada linha toca o chão,
-     a faixa de 65° a 72° (oval auroral e índice AE).
+  2. `geomagnetico-2-linhas-de-campo.html` (feita): a forma das linhas e onde
+     elas tocam o chão. De longe, as linhas de R₀ = 2 a 10 (a figura 5.16),
+     com um ponto para arrastar: a linha que passa por ele acende. De perto,
+     cinco passos com três câmeras (`CAMERA_DA_CENA`):
+     - no ponto (passos 1 e 2): r·dλ/dr = B_λ/B_r e dr/r = −2·tan λ·dλ;
+     - meia linha (passo 3): r = r₀·cos² λ, em degraus de 5°;
+     - o chão do hemisfério norte (passos 4 e 5): cos λ_E = 1/√R₀, a tabela da
+       descrição (clicável) e a faixa de 6 a 10 raios, com a oval auroral e o
+       índice AE.
+
+     A câmera "viaja" de um lugar a outro (`iniciarViagem`), e os rótulos de
+     cada cena aparecem e somem com `forcaDaCena`. Os rótulos das linhas no
+     chão são colocados sem sobreposição (`colocarRotulos`). Para testar:
+     `escolher({ R0, graus, lado })` também é do escopo global.
+     Acréscimos fora da descrição: as setas paralelas do passo 2 (a inclinação
+     só depende da latitude) e os pulsos que descem pela faixa no passo 5 (um
+     esquema). A descrição fala em "65° a 72°"; a conta dá 65,9°, e a tela
+     mostra 66° a 72°.
   3. Além do dipolo (a fazer): dipolo deslocado e Atlântico Sul, harmônicos
      esféricos, IGRF, onde cada modelo vale. **Antes de fazer**, confirme com
      ela a queda com a distância: o texto dela diz R^(−(n+1)) e também que o
