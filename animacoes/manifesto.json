@@ -20,6 +20,11 @@
       "arquivo": "geomagnetico-2-linhas-de-campo.html",
       "titulo": "Campo geomagnético 2: as linhas de campo",
       "descricao": "A forma das linhas do campo de dipolo, de onde ela vem e onde cada linha toca o chão. No fim, a faixa de 6 a 10 raios, ligada à oval auroral e ao índice AE."
+    },
+    {
+      "arquivo": "geomagnetico-3-alem-do-dipolo.html",
+      "titulo": "Campo geomagnético 3: além do dipolo",
+      "descricao": "Por que o dipolo é só uma aproximação: o ímã fora do centro e o Atlântico Sul, a soma de formas simples (harmônicos esféricos, IGRF), a queda de cada forma com a distância e onde cada modelo vale."
     }
   ]
 }

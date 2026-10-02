@@ -1,0 +1,2105 @@
+<!doctype html>
+<!--
+  =============================================================================
+  geomagnetico-3-alem-do-dipolo.html: animação do Mapa de Estudos Sol–Terra.
+  Terceira de três sobre o campo geomagnético:
+    1. o campo num ponto;  2. as linhas de campo;  3. além do dipolo (esta).
+
+  O que mostra: por que o dipolo no centro da Terra é só uma aproximação, e
+  onde ela vale.
+    • De longe: três territórios em volta da Terra. Perto da superfície o
+      campo é irregular; a meia distância ele parece um dipolo; mais longe, o
+      vento solar deforma tudo. O ponto pode ser arrastado.
+    • De perto, em cinco passos (a câmera muda de lugar conforme o passo):
+        1: o ímã um pouco fora do centro (dipolo deslocado);
+        2: o campo como soma de formas simples (harmônicos esféricos);
+        3: quanto de cada forma entra na soma (os coeficientes de Gauss);
+        4: a queda de cada forma com a distância;
+        5: de volta à visão de longe, onde cada modelo vale.
+
+  A física segue a descrição escrita por quem mantém o mapa (o trecho da
+  equação 5.18 do livro que ela estuda):
+    dipolo deslocado:   mover o ímã uns 400 km para o lado do Pacífico deixa o
+                        campo mais fraco no lado oposto, sobre o Atlântico Sul
+    soma de formas:     dipolo (n = 1) + quadrupolo (n = 2) + octupolo (n = 3) + …;
+                        não há n = 0 (seria um monopolo)
+    coeficientes:       g e h (de Gauss), ajustados com medidas; na prática, o IGRF
+    queda:              potencial ∝ R^−(n+1);  campo ∝ R^−(n+2)
+    onde cada um vale:  perto da superfície, o IGRF; de ~2 a ~4 raios, o dipolo;
+                        além de 3 ou 4 raios, um modelo de magnetosfera
+
+  O que a animação precisou assumir (está na seção 2 do script e na tela):
+    • as quantidades de quadrupolo e de octupolo são de exemplo, não as da Terra;
+    • de cada ordem, só aparece a forma mais simples (simétrica em torno do eixo);
+    • os números do ímã deslocado saem da fórmula da animação 1, com a
+      distância medida a partir do ímã; R_E = 6 371 km;
+    • a deformação pelo vento solar, a magnetopausa e a direção do
+      deslocamento do ímã são um esquema.
+
+  Feita no formato de animacoes/magnetopausa.html, seguindo animacoes/CONTRATO.md.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campo geomagnético 3: além do dipolo</title>
+  <style>
+    /* Cores: branco e cinzas, mais duas cores com significado:
+       laranja = vento solar; azul = campo magnético da Terra. */
+    :root {
+      --vento: #ffb347;
+      --campo: #86b9ff;
+      --texto: #ececec;
+      --texto-2: #a9a9a9;
+      --texto-3: #747474;
+      --borda: #2b2b2b;
+      --borda-forte: #3d3d3d;
+      --fonte-mat: Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+      --largura-painel: clamp(300px, 34vw, 420px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--texto);
+      font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; color: inherit; }
+    sub, sup { line-height: 0; }
+    [hidden] { display: none !important; }
+
+    /* O desenho ocupa a área inteira. Por cima dele ficam o título, o painel
+       de explicação (à direita) e a barra de controles (embaixo do desenho). */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .topo {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      max-width: calc(100% - var(--largura-painel) - 52px);
+      pointer-events: none;
+      text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000;
+    }
+    .topo h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .topo p { margin: 2px 0 0; font-size: 12.5px; color: var(--texto-2); }
+    .curto { display: none; }          /* versão curta de um texto, para telas estreitas (troca com .longo) */
+    .vento { color: var(--vento); }
+    .campo { color: var(--campo); }
+
+    /* ---- Painel de explicação ---- */
+    #painel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      bottom: 12px;
+      width: var(--largura-painel);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+      overflow: hidden;
+    }
+    .visoes {
+      flex: none;
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+    .visoes button {
+      flex: 1;
+      height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .visoes button:hover { color: var(--texto); }
+    .visoes button.ativo { background: #ededed; color: #000; }
+    .conteudo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+    /* Visão de longe: resumo. */
+    #resumo h2 { margin: 2px 0 6px; font-size: 15px; font-weight: 600; }
+    #resumo p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    #resumo p b { color: var(--texto); font-weight: 600; }
+    .dica { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    .leituras { margin: 0; border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .leituras div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; }
+    .leituras div + div { border-top: 1px solid var(--borda); }
+    .leituras dt { font-size: 12px; color: var(--texto-2); }
+    .leituras dd { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* Visão de perto: os cinco passos da conta. */
+    #passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .passo { border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .passo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .passo-titulo:hover { color: var(--texto); }
+    .numero {
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      font-size: 11.5px;
+    }
+    .passo.ativo { border-color: #5a5a5a; background: #131313; }
+    .passo.ativo .passo-titulo { color: #fff; cursor: default; }
+    .passo.ativo .numero { background: #ededed; border-color: #ededed; color: #000; }
+    .passo-corpo { display: none; padding: 0 12px 12px; }
+    .passo.ativo .passo-corpo { display: block; }
+
+    /* Fórmulas: letras em itálico, como num livro. */
+    .formula { font-family: var(--fonte-mat); font-size: 19px; line-height: 1.55; white-space: nowrap; }
+    .formula.pequena { font-size: 16px; }
+    .formula.central { text-align: center; padding: 4px 0 12px; font-size: 20px; }
+    .formula small { font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--texto-3); margin-right: 8px; }
+    .fr { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.12em; line-height: 1.15; }
+    .fr > span:first-child { padding: 0 0.22em 0.04em; border-bottom: 1px solid currentColor; }
+    .fr > span:last-child { padding: 0.04em 0.22em 0; }
+    /* Ao abrir um passo, a fórmula "se escreve" da esquerda para a direita;
+       logo depois aparecem a conta com os números e o resultado. */
+    @keyframes escrever { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6px 0 0); } }
+    @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .passo.ativo .formula { animation: escrever 0.9s ease-out both; }
+    .passo.ativo .conta { animation: surgir 0.4s ease-out 0.6s both; }
+    .passo.ativo .valor { animation: surgir 0.4s ease-out 0.85s both; }
+    .conta { margin-top: 5px; font-size: 12.5px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+    .valor { margin-top: 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .barras + .valor { margin-top: 8px; }
+    .conta sup, .valor sup, .legenda sup { font-size: 0.72em; }
+    .explicacao { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto-2); }
+    /* O que é cada letra, com o valor de agora. */
+    .legenda { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 9px; font-size: 12px; line-height: 1.45; color: var(--texto-2); }
+    .legenda dt { font-family: var(--fonte-mat); font-style: italic; font-size: 14px; line-height: 1.25; color: var(--texto); white-space: nowrap; }
+    .legenda dt sub { font-style: normal; }
+    .legenda dt.unidade { font-family: inherit; font-style: normal; font-size: 12px; line-height: 1.45; }
+    .legenda dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+    /* Barras para comparar valores. */
+    .barras { margin-top: 10px; display: grid; gap: 6px; }
+    .barra { display: grid; grid-template-columns: 74px 1fr 78px; align-items: center; gap: 8px; font-size: 12px; }
+    .barra .trilho { height: 8px; border-radius: 4px; background: #1d1d1d; overflow: hidden; }
+    .barra .nivel { display: block; height: 100%; border-radius: 4px; }
+    .barra .nivel.vento { background: var(--vento); }
+    .barra .nivel.campo { background: var(--campo); }
+    .barra .num { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; }
+
+    /* Rodapé do painel: o convite para ver de perto, ou a troca de passo. */
+    .rodape, .navegacao { flex: none; }
+    .navegacao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .navegacao .botao { padding: 0 8px; gap: 2px; }
+    #contador-de-passos { font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+    .pontos { display: none; gap: 6px; }
+    .pontos button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pontos button:hover { color: #fff; border-color: #6a6a6a; }
+    .pontos button.ativo { background: #ededed; border-color: #ededed; color: #000; cursor: default; }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .botao:hover { background: #1b1b1b; }
+    .botao:disabled { opacity: 0.35; cursor: default; background: transparent; }
+    .botao svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .botao.principal { background: #ededed; border-color: #ededed; color: #000; font-weight: 600; }
+    .botao.principal:hover { background: #fff; }
+    .botao.principal:disabled { background: #ededed; }
+    .botao.largo { width: 100%; height: 36px; }
+    .nota { flex: none; margin: 0; font-size: 11px; line-height: 1.45; color: var(--texto-3); }
+
+    /* ---- Controles: uma barra embaixo do desenho, à esquerda do painel ---- */
+    .controles {
+      position: fixed;
+      left: 12px;
+      right: calc(var(--largura-painel) + 32px);
+      bottom: 12px;
+      max-width: 640px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+      align-items: center;
+      gap: 8px 20px;
+      padding: 9px 14px 10px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+    }
+    .controle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; font-size: 12.5px; color: var(--texto-2); }
+    .controle .nome { white-space: nowrap; overflow: hidden; }
+    .controle .nome i { font-family: var(--fonte-mat); font-size: 15px; color: var(--texto); margin-right: 5px; }
+    .controle .nome small { font-size: 12px; }
+    .controle output { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .controle input { grid-column: 1 / -1; }
+    input[type="range"] { width: 100%; min-width: 0; height: 16px; margin: 0; accent-color: #ededed; cursor: pointer; }
+    .botoes { display: flex; gap: 8px; }
+    #bt-pausar { min-width: 84px; }
+
+    /* Só uma das duas partes do conteúdo aparece de cada vez. */
+    body:not(.perto) .so-perto { display: none !important; }
+    body.perto .so-longe { display: none !important; }
+
+    /* Próprio desta animação. */
+    /* A barra de controles mostra só os controles do passo aberto. */
+    .controles { display: flex; align-items: center; }
+    .controle { flex: 1 1 0; min-width: 0; }
+    .botoes { flex: none; }
+    /* Fórmulas escritas com palavras podem quebrar a linha (no painel estreito, não cabem numa só). */
+    .formula.quebra { white-space: normal; line-height: 1.4; }
+    .junto { white-space: nowrap; }
+    /* Os dois índices de um coeficiente de Gauss, um em cima do outro: g com 0 em cima e n embaixo. */
+    .ix { display: inline-flex; flex-direction: column; vertical-align: middle; margin-left: 1px; font-size: 0.6em; line-height: 1.05; font-style: normal; }
+    .controle .nome i.com-indices { margin-right: 0; }
+    .controle .nome .ix { margin-right: 5px; font-family: var(--fonte-mat); font-size: 9.5px; color: var(--texto); }
+    .barra { grid-template-columns: 84px 1fr 66px; }
+    .passo-corpo .conta + .valor { margin-top: 0; }
+    /* Os números dos três territórios (no texto e no desenho). */
+    .marca {
+      display: inline-grid;
+      place-items: center;
+      width: 17px;
+      height: 17px;
+      border: 1px solid #8a8a8a;
+      border-radius: 50%;
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--texto);
+      vertical-align: 1px;
+    }
+    /* Passo 4: a tabela das ordens. */
+    .ordens { margin: 8px 0 0; width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .ordens th { padding: 0 8px 2px 0; font-size: 11px; font-weight: 400; line-height: 1.25; color: var(--texto-3); text-align: left; vertical-align: bottom; white-space: nowrap; }
+    .ordens th:last-child, .ordens td:last-child { padding-right: 0; }
+    .ordens th:last-child { white-space: normal; }       /* no painel estreito, o último título quebra em duas linhas */
+    .ordens td { padding: 2px 8px 2px 0; color: var(--texto-2); white-space: nowrap; }
+    .ordens td.mat { font-family: var(--fonte-mat); font-size: 14.5px; color: var(--texto); }
+    .ordens td sup { font-size: 0.72em; }
+    .ordens td b { color: var(--texto); font-weight: 600; }
+    /* Passo 5: os três territórios. */
+    .territorios { margin: 2px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 12.5px; line-height: 1.45; color: var(--texto-2); }
+    .territorios li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start; }
+    .territorios b { color: var(--texto); font-weight: 600; }
+    .territorios li.aqui .marca { background: #ededed; border-color: #ededed; color: #000; }
+    @media (min-width: 761px) and (min-height: 381px) {
+      body[data-controles="1"] .controles { max-width: 430px; }
+      body[data-controles="0"] .controles { max-width: 120px; }
+    }
+    @media (max-width: 760px), (max-height: 380px) {
+      .ordens, .leituras .so-largo, .territorios li:not(.aqui) { display: none; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .leituras div + div { border-top: 0; }
+    }
+
+    /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 5 para trocar ---- */
+    @media (max-height: 700px) {
+      .passo:not(.ativo) { display: none; }
+      .pontos { display: flex; }
+      #contador-de-passos { display: none; }
+    }
+    @media (max-height: 540px) {
+      .dica { display: none; }
+    }
+    @media (max-height: 520px) {
+      .nota { display: none; }
+    }
+    @media (max-height: 460px) {
+      #painel { top: 8px; bottom: 8px; padding: 12px; gap: 10px; }
+      .controles { bottom: 8px; }
+    }
+    /* ---- Janelas mais estreitas: a barra de controles e o painel encolhem ---- */
+    @media (max-width: 1180px) {
+      .controle .nome small { display: none; }
+    }
+    @media (max-width: 1060px) {
+      .navegacao .rotulo { display: none; }
+      .navegacao .botao { width: 34px; padding: 0; }
+    }
+    @media (max-width: 1000px) and (max-height: 700px) {
+      .dica { display: none; }
+    }
+    @media (max-width: 1000px) and (max-height: 640px) {
+      .nota { display: none; }
+    }
+    @media (max-width: 920px) {
+      .controles { gap: 8px 14px; }
+      #bt-pausar { min-width: 76px; }
+    }
+    @media (max-width: 860px) {
+      .longo { display: none; }
+      .curto { display: inline; }
+    }
+
+    /* ---- Telas estreitas (ou muito baixas): tudo num painel compacto, embaixo ---- */
+    @media (max-width: 760px), (max-height: 380px) {
+      :root { --largura-painel: 0px; }
+      .topo { left: 12px; top: 8px; max-width: calc(100% - 24px); }
+      .topo h1 { font-size: 13px; }
+      .topo p { font-size: 11.5px; }
+      #painel {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 62%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .visoes { grid-column: 1; grid-row: 1; }
+      body:not(.perto) .visoes { grid-column: 1 / -1; }
+      .navegacao { grid-column: 2; grid-row: 1; }
+      .navegacao .botao { width: 32px; padding: 0; }
+      .navegacao .rotulo, .pontos, #contador-de-passos { display: none; }
+      .conteudo { grid-column: 1 / -1; grid-row: 2; }
+      .controles {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 3;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 8px 10px;
+        align-items: end;
+      }
+      .passo:not(.ativo) { display: none; }
+      .passo, .passo.ativo { border: 0; background: transparent; }
+      .passo-titulo { padding: 0 0 2px; }
+      .passo-corpo { padding: 0; }
+      .numero { display: none; }
+      .formula { font-size: 16px; }
+      .formula.central { padding: 0 0 6px; font-size: 16px; text-align: left; }
+      .explicacao, .legenda, .conta, .barras, .nota, .rodape, #resumo h2, #resumo p { display: none; }
+      .valor, .barras + .valor { margin-top: 2px; }
+      .leituras { margin: 0; }
+      .leituras div { padding: 5px 8px; }
+      .leituras dd { font-size: 12.5px; }
+      .controle { font-size: 11.5px; gap: 0 4px; }
+      .controle .nome small { display: none; }
+      #bt-pausar { min-width: 0; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .topo p, .passo-titulo, .formula.central, .leituras div:first-child { display: none; }
+      .leituras div:nth-child(2) { border-top: 0; }
+      .valor { font-size: 12px; }
+    }
+    @media (max-width: 420px) {
+      .passo .formula small { display: none; }
+      .formula { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .passo.ativo .formula, .passo.ativo .conta, .passo.ativo .valor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="topo">
+    <h1>Além do dipolo<span class="longo">: o campo de verdade e onde cada modelo vale</span></h1>
+    <p id="subtitulo"></p>
+  </div>
+
+  <aside id="painel" aria-label="Explicação e controles">
+    <div class="visoes" role="group" aria-label="Visão">
+      <button id="bt-longe" type="button" class="ativo" aria-pressed="true">De longe</button>
+      <button id="bt-perto" type="button" aria-pressed="false">De perto</button>
+    </div>
+
+    <div class="conteudo">
+      <!-- Visão de longe -->
+      <section id="resumo" class="so-longe">
+        <h2>Três territórios</h2>
+        <p>O dipolo no centro da Terra é uma aproximação. O <span class="campo">campo</span> real é irregular perto da
+          superfície <span class="marca">1</span>, parece um dipolo a meia distância <span class="marca">2</span> e,
+          mais longe, é deformado pelo <span class="vento">vento solar</span> <span class="marca">3</span>.</p>
+        <dl class="leituras">
+          <div><dt>Distância do ponto ao centro</dt><dd id="l-distancia"></dd></div>
+          <div class="so-largo"><dt>Quadrupolo ÷ dipolo, comparado à superfície</dt><dd id="l-quadrupolo"></dd></div>
+          <div class="so-largo"><dt>Octupolo ÷ dipolo, comparado à superfície</dt><dd id="l-octupolo"></dd></div>
+          <div><dt>O que vale ali</dt><dd id="l-modelo"></dd></div>
+        </dl>
+      </section>
+
+      <!-- Visão de perto: cinco passos. Em cada um: a fórmula ou a ideia, os números de agora e a explicação. -->
+      <ol id="passos" class="so-perto">
+        <li class="passo" data-passo="0">
+          <button class="passo-titulo" type="button"><span class="numero">1</span>O ímã fora do centro</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo"><i>B</i> = <span class="fr"><span>0,31 G</span><span>(1 ± <i>d</i>/<i>R</i><sub>E</sub>)<sup>3</sup></span></span></div>
+            <div class="conta" id="conta-0"></div>
+            <div class="conta" id="conta-0b"></div>
+            <div class="valor" id="valor-0"></div>
+            <div class="barras">
+              <div class="barra"><span>Pacífico</span><span class="trilho"><span class="nivel campo" id="barra-pacifico"></span></span><span class="num" id="num-pacifico"></span></div>
+              <div class="barra"><span>no centro</span><span class="trilho"><span class="nivel campo" id="barra-centro"></span></span><span class="num" id="num-centro"></span></div>
+              <div class="barra"><span class="campo">Atlântico Sul</span><span class="trilho"><span class="nivel campo" id="barra-atlantico"></span></span><span class="num" id="num-atlantico"></span></div>
+            </div>
+            <p class="explicacao">Mover o ímã imaginário uns 400 km para fora do centro da Terra já melhora o modelo.
+              O deslocamento é para o lado do Pacífico, o que deixa o campo mais fraco no lado oposto, sobre o
+              Atlântico Sul: é a explicação mais simples para a Anomalia Magnética do Atlântico Sul.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="1">
+          <button class="passo-titulo" type="button"><span class="numero">2</span>Uma soma de formas simples</button>
+          <div class="passo-corpo">
+            <div class="formula pequena quebra campo">campo = dipolo + quadrupolo + <span class="junto">octupolo + …</span></div>
+            <div class="valor">ordem <i>n</i> = 1, 2, 3, …: são os harmônicos esféricos</div>
+            <p class="explicacao">O campo real tem uma forma complicada. Ela é escrita como uma soma de formas
+              simples: um dipolo (<i>n</i> = 1), mais um quadrupolo (<i>n</i> = 2, como dois ímãs), mais um octupolo
+              (<i>n</i> = 3), e assim por diante. É o mesmo princípio de decompor um som em notas, só que sobre a
+              superfície de uma esfera.</p>
+            <p class="explicacao">Não há termo <i>n</i> = 0: ele seria um monopolo, um polo magnético isolado, que
+              não existe na natureza.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="2">
+          <button class="passo-titulo" type="button"><span class="numero">3</span>Quanto de cada forma</button>
+          <div class="passo-corpo">
+            <div class="formula pequena quebra campo"><span class="junto"><i>g</i><span class="ix"><span>0</span><span>1</span></span>·dipolo</span> +
+              <span class="junto"><i>g</i><span class="ix"><span>0</span><span>2</span></span>·quadrupolo</span> +
+              <span class="junto"><i>g</i><span class="ix"><span>0</span><span>3</span></span>·octupolo + …</span></div>
+            <div class="barras">
+              <div class="barra"><span>dipolo</span><span class="trilho"><span class="nivel campo" id="barra-dipolo"></span></span><span class="num" id="num-dipolo"></span></div>
+              <div class="barra"><span>quadrupolo</span><span class="trilho"><span class="nivel campo" id="barra-quadrupolo"></span></span><span class="num" id="num-quadrupolo"></span></div>
+              <div class="barra"><span>octupolo</span><span class="trilho"><span class="nivel campo" id="barra-octupolo"></span></span><span class="num" id="num-octupolo"></span></div>
+            </div>
+            <div class="valor" id="valor-2"></div>
+            <p class="explicacao">Os <i>g</i> e <i>h</i> são os coeficientes de Gauss: quanto de cada forma entra na
+              soma. Eles são ajustados com medições de magnetômetros no solo e em satélites. O campo da Terra muda
+              lentamente com os anos (variação secular), então os coeficientes precisam ser recalculados: na
+              prática, esse modelo é o IGRF, atualizado a cada 5 anos.</p>
+            <!-- Aqui só entram os g das formas mais simples (g com 0 em cima: simétricas em torno do eixo do ímã). -->
+          </div>
+        </li>
+        <li class="passo" data-passo="3">
+          <button class="passo-titulo" type="button"><span class="numero">4</span>A queda com a distância</button>
+          <div class="passo-corpo">
+            <div class="formula pequena campo">potencial ∝ <span class="fr"><span>1</span><span><i>R</i><sup><i>n</i>+1</sup></span></span>
+              &nbsp; campo ∝ <span class="fr"><span>1</span><span><i>R</i><sup><i>n</i>+2</sup></span></span></div>
+            <table class="ordens">
+              <thead><tr><th>forma</th><th>potencial</th><th>campo</th><th id="cabecalho-sobra"></th></tr></thead>
+              <tbody>
+                <tr><td>dipolo (<i>n</i> = 1)</td><td class="mat"><i>R</i><sup>−2</sup></td><td class="mat"><i>R</i><sup>−3</sup></td><td id="sobra-1"></td></tr>
+                <tr><td>quadrupolo (<i>n</i> = 2)</td><td class="mat"><i>R</i><sup>−3</sup></td><td class="mat"><i>R</i><sup>−4</sup></td><td id="sobra-2"></td></tr>
+                <tr><td>octupolo (<i>n</i> = 3)</td><td class="mat"><i>R</i><sup>−4</sup></td><td class="mat"><i>R</i><sup>−5</sup></td><td id="sobra-3"></td></tr>
+              </tbody>
+            </table>
+            <div class="valor" id="valor-3"></div>
+            <p class="explicacao">O campo é a derivada do potencial em relação à distância, e derivar uma potência
+              baixa o expoente em mais 1. Como cada ordem cai uma potência mais rápido que a anterior, longe da
+              Terra sobra só o dipolo.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="4">
+          <button class="passo-titulo" type="button"><span class="numero">5</span>Onde cada modelo vale</button>
+          <div class="passo-corpo">
+            <ul class="territorios">
+              <li data-territorio="1"><span class="marca">1</span><span><b>Perto da superfície:</b> o campo é irregular e
+                precisa do IGRF.</span></li>
+              <li data-territorio="2"><span class="marca">2</span><span><b>Entre uns 2 e 4 raios da Terra:</b> o dipolo
+                funciona bem.</span></li>
+              <li data-territorio="3"><span class="marca">3</span><span><b>Além disso:</b> o
+                <span class="vento">vento solar</span> domina, e é preciso usar um modelo de magnetosfera.</span></li>
+            </ul>
+            <div class="valor" id="valor-4"></div>
+            <p class="explicacao">Os termos complicados morrem rápido com a distância e, longe da Terra, sobra só o
+              dipolo. Mas além de 3 ou 4 raios da Terra o vento solar começa a deformar tudo.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="rodape so-longe">
+      <p class="dica">Arraste o ponto para mudar a distância. "Menor" quer dizer: menor, em relação ao dipolo, do que
+        era na superfície.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem cada território</button>
+    </div>
+    <div class="navegacao so-perto">
+      <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span class="rotulo">Anterior</span></button>
+      <span id="contador-de-passos"></span>
+      <div class="pontos" role="group" aria-label="Ir para o passo">
+        <button type="button" data-passo="0" title="Passo 1: o ímã fora do centro">1</button>
+        <button type="button" data-passo="1" title="Passo 2: uma soma de formas simples">2</button>
+        <button type="button" data-passo="2" title="Passo 3: quanto de cada forma">3</button>
+        <button type="button" data-passo="3" title="Passo 4: a queda com a distância">4</button>
+        <button type="button" data-passo="4" title="Passo 5: onde cada modelo vale">5</button>
+      </div>
+      <button id="bt-proximo" type="button" class="botao principal" title="Próximo passo" aria-label="Próximo passo">
+        <span class="rotulo">Próximo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
+         Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
+    <div class="controles" role="group" aria-label="Controles">
+      <label class="controle" data-cenas="longe p4 p5"><span class="nome"><i>R</i><small>distância do ponto ao centro</small></span><output id="o-r"></output>
+        <input id="c-r" type="range" min="1" max="8" step="0.05" value="3"></label>
+      <label class="controle" data-cenas="p1"><span class="nome"><i>d</i><small>deslocamento do ímã</small></span><output id="o-d"></output>
+        <input id="c-d" type="range" min="0" max="1200" step="10" value="400"></label>
+      <label class="controle" data-cenas="p3"><span class="nome"><i class="com-indices">g</i><span class="ix"><span>0</span><span>2</span></span><small>quadrupolo</small></span><output id="o-q"></output>
+        <input id="c-q" type="range" min="0" max="40" step="1" value="25"></label>
+      <label class="controle" data-cenas="p3"><span class="nome"><i class="com-indices">g</i><span class="ix"><span>0</span><span>3</span></span><small>octupolo</small></span><output id="o-o"></output>
+        <input id="c-o" type="range" min="0" max="30" step="1" value="15"></label>
+      <div class="botoes">
+        <button id="bt-pausar" type="button" class="botao">Pausar</button>
+      </div>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </aside>
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do contrato).
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Valores e contas. Tudo o que é física está aqui.
+    //    As distâncias são em raios da Terra (R = r/R_E) e o campo, em nanotesla.
+    // -------------------------------------------------------------------------
+    const CAMPO_NO_EQUADOR = 31000;        // nT: 0,31 gauss, o campo do dipolo no equador, na superfície (eq. 5.15)
+    const RAIO_DA_TERRA_KM = 6371;         // para passar o deslocamento do ímã, em km, a raios da Terra
+    const DESLOCAMENTO_MAXIMO = 1200;      // km: até onde o controle deixa levar o ímã (a descrição fala em uns 400 km)
+    // Quanto de cada forma entra na soma, em fração do dipolo. São valores de EXEMPLO, não os da Terra.
+    const QUADRUPOLO_MAXIMO = 0.4, OCTUPOLO_MAXIMO = 0.3;
+    const TERRITORIOS = { irregular: 2, dipolo: 4 };       // raios da Terra: até onde o campo é irregular; até onde o dipolo funciona bem
+    const MAGNETOPAUSA = 10;               // raios da Terra, de frente para o Sol (o valor da tabela da animação 2)
+    const R_MAXIMO = 8;                    // até onde o ponto vai
+    const COMECO = { R: 3, graus: 30, d: 400, quadrupolo: 0.25, octupolo: 0.15 };
+
+    /**
+     * Quanto sobra do CAMPO da forma de ordem n a R raios do centro (1 na superfície): R^−(n+2).
+     * (O POTENCIAL cai com R^−(n+1); o campo é a derivada dele em relação à distância, e derivar uma
+     * potência baixa o expoente em mais 1.)
+     */
+    const quedaDoCampo = (n, R) => R ** -(n + 2);
+    /** Em relação ao dipolo, quantas vezes a forma de ordem n ficou menor do que era na superfície: R^(n−1). */
+    const vezesMenorQueODipolo = (n, R) => quedaDoCampo(1, R) / quedaDoCampo(n, R);
+    /** O campo do dipolo sobre o equador do ímã, a "distancia" raios da Terra do ímã: 0,31 G ÷ distância³. */
+    const campoNoEquadorDoIma = (distancia) => CAMPO_NO_EQUADOR / distancia ** 3;
+    /** Qual dos três territórios vale a R raios do centro. */
+    const territorioEm = (R) => (R < TERRITORIOS.irregular ? 1 : R <= TERRITORIOS.dipolo ? 2 : 3);
+
+    // -------------------------------------------------------------------------
+    // 3. As formas simples e as linhas de campo.
+    // -------------------------------------------------------------------------
+    const entre = (a, b, t) => a + (b - a) * t;
+    const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+    const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+    const emRadianos = (graus) => (graus * Math.PI) / 180;
+    const emGraus = (radianos) => (radianos * 180) / Math.PI;
+
+    // O coeficiente do dipolo. É negativo porque, no hemisfério norte, o campo entra na Terra
+    // (o polo norte geográfico é, magneticamente, um polo sul).
+    const G1 = -CAMPO_NO_EQUADOR;
+    /**
+     * O campo no ponto (X, Y) do desenho, em nT: a soma das formas simples. A Terra fica em (0, 0),
+     * o eixo do ímã é vertical e o norte fica em cima. "modelo" diz quanto de cada forma entra na
+     * soma (g: dipolo, quadrupolo e octupolo) e onde está o ímã (dx, em raios da Terra).
+     * De cada ordem n, só entra a forma simétrica em torno do eixo, que é a mais simples:
+     *   parte radial:      (n + 1)·g·P(cos θ) / r^(n+2)
+     *   parte horizontal:  g·sen θ·P′(cos θ) / r^(n+2)      (para o sul)
+     * com θ medido a partir do eixo e P = cos θ, (3·cos² θ − 1)/2 e (5·cos³ θ − 3·cos θ)/2.
+     * Com só o dipolo, dá as fórmulas da animação 1: B_r = −2·M·sen λ/r³ e B_λ = M·cos λ/r³.
+     */
+    function campoEm(X, Y, modelo) {
+      const x = X - modelo.dx;
+      const r2 = x * x + Y * Y, r = Math.sqrt(r2), r3 = r2 * r;
+      const c = Y / r, s = Math.abs(x) / r;
+      const g = modelo.g;
+      let radial = (2 * g[0] * c) / r3, paraOSul = (g[0] * s) / r3;
+      if (g[1] !== 0) {
+        radial += (3 * g[1] * (1.5 * c * c - 0.5)) / (r3 * r);
+        paraOSul += (g[1] * s * 3 * c) / (r3 * r);
+      }
+      if (g[2] !== 0) {
+        radial += (4 * g[2] * (2.5 * c * c * c - 1.5 * c)) / (r3 * r2);
+        paraOSul += (g[2] * s * (7.5 * c * c - 1.5)) / (r3 * r2);
+      }
+      const lado = x < 0 ? -1 : 1;
+      return { x: lado * (radial * s + paraOSul * c), y: radial * c - paraOSul * s };
+    }
+    const MODELO_DO_DIPOLO = { g: [G1, 0, 0], dx: 0 };
+
+    /** Segue a seta do campo a partir de (X0, Y0), passo a passo, até voltar ao chão ou passar de "limite". */
+    function seguirLinha(X0, Y0, modelo, limite) {
+      const direcao = (X, Y) => {
+        const b = campoEm(X, Y, modelo), intensidade = Math.hypot(b.x, b.y);
+        return intensidade > 1e-9 ? [b.x / intensidade, b.y / intensidade] : null;
+      };
+      const pontos = [X0, Y0];
+      let X = X0, Y = Y0;
+      for (let i = 0; i < 2600; i++) {
+        const h = 0.03 * limitar(Math.hypot(X, Y), 1, 9);                 // passos maiores longe da Terra
+        const k1 = direcao(X, Y);
+        const k2 = k1 && direcao(X + (k1[0] * h) / 2, Y + (k1[1] * h) / 2);
+        const k3 = k2 && direcao(X + (k2[0] * h) / 2, Y + (k2[1] * h) / 2);
+        const k4 = k3 && direcao(X + k3[0] * h, Y + k3[1] * h);
+        if (!k4) break;
+        const NX = X + (h / 6) * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]);
+        const NY = Y + (h / 6) * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]);
+        const r = Math.hypot(NX, NY);
+        if (r < 1) {
+          // Voltou ao chão: a linha termina exatamente na superfície.
+          const antes = Math.hypot(X, Y), t = (antes - 1) / (antes - r || 1);
+          pontos.push(X + (NX - X) * t, Y + (NY - Y) * t);
+          break;
+        }
+        X = NX;
+        Y = NY;
+        pontos.push(X, Y);
+        if (r > limite) break;
+      }
+      return Float32Array.from(pontos);
+    }
+    // As latitudes (em graus) dos pés das linhas desenhadas. No dipolo, são as linhas de R₀ = 1,5 a 33.
+    const PES = [35.3, 45, 50.8, 54.7, 60, 63.4, 66.9, 69.9, 72.5, 75, 77.5, 80];
+    /**
+     * As linhas de campo de um modelo: cada uma parte do chão, de um lugar em que o campo sai da Terra.
+     * Com "lados" = [1], só o lado direito é calculado (o esquerdo é o espelho dele).
+     */
+    function linhasDoModelo(modelo, { pes = PES, lados = [1], limite = 46, alturaMinima = 0 } = {}) {
+      const linhas = [];
+      for (const lado of lados) {
+        for (const sinal of [-1, 1]) {
+          for (const graus of pes) {
+            const lat = sinal * emRadianos(graus), X = lado * Math.cos(lat), Y = Math.sin(lat);
+            const b = campoEm(X, Y, modelo);
+            if (b.x * X + b.y * Y <= 0) continue;                         // aqui o campo entra na Terra: a linha chega, não parte
+            const pontos = seguirLinha(X, Y, modelo, limite);
+            let maisLonge = 0;
+            for (let i = 0; i < pontos.length; i += 2) maisLonge = Math.max(maisLonge, Math.hypot(pontos[i], pontos[i + 1]));
+            if (pontos.length >= 8 && maisLonge >= 1 + alturaMinima) linhas.push(pontos);
+          }
+        }
+      }
+      return linhas;
+    }
+    const LINHAS_DO_DIPOLO = linhasDoModelo(MODELO_DO_DIPOLO);
+
+    // As três formas, cada uma sozinha (passo 2). Os pés foram escolhidos para mostrar bem os "laços" de cada uma.
+    const FORMAS = {
+      1: { nome: 'dipolo', linhas: linhasDoModelo({ g: [G1, 0, 0], dx: 0 }, { pes: [38, 48, 56], limite: 3.6 }) },
+      2: { nome: 'quadrupolo', linhas: linhasDoModelo({ g: [0, G1, 0], dx: 0 }, { pes: [3.3, 9.1, 17.2], limite: 3.6 }) },
+      3: { nome: 'octupolo', linhas: linhasDoModelo({ g: [0, 0, G1], dx: 0 }, { pes: [19, 23.5, 25.6, 27.6, 30, 35, 68.9, 77.1, 83], limite: 3.6 }) },
+    };
+
+    /** A intensidade do campo em volta da superfície (N_FAIXA + 1 pontos, dando a volta inteira). */
+    const N_FAIXA = 180;
+    function intensidadesNaSuperficie(modelo) {
+      const valores = new Float32Array(N_FAIXA + 1);
+      for (let i = 0; i <= N_FAIXA; i++) {
+        const fi = (i / N_FAIXA) * Math.PI * 2;
+        const b = campoEm(Math.cos(fi), Math.sin(fi), modelo);
+        valores[i] = Math.hypot(b.x, b.y);
+      }
+      return valores;
+    }
+    const FAIXA_DO_DIPOLO = intensidadesNaSuperficie(MODELO_DO_DIPOLO);
+
+    // -------------------------------------------------------------------------
+    // 4. O vento solar e a magnetopausa (um esquema).
+    //    A forma da parede é a da animação da magnetopausa (a pressão do vento igual à do campo,
+    //    em cada ponto), com a frente a 10 raios da Terra. O Sol fica à esquerda.
+    // -------------------------------------------------------------------------
+    const PAREDE = (() => {
+      const x = [], y = [], beta = [], r = [];
+      const direcao = (px, py) => {
+        const c = Math.min(1, Math.hypot(px, py) ** -3);
+        return [Math.sqrt(Math.max(0, 1 - c * c)), c];
+      };
+      const passo = 0.002;
+      let X = -1, Y = 0, L = 0, proximo = 0;
+      while (L <= 6) {
+        if (L >= proximo - 1e-9) {
+          x.push(X * MAGNETOPAUSA);
+          y.push(Y * MAGNETOPAUSA);
+          beta.push(Math.atan2(Y, X));                 // direção vista da Terra: π = para o Sol; 0 = para a cauda
+          r.push(Math.hypot(X, Y) * MAGNETOPAUSA);
+          proximo += 0.02;
+        }
+        const [a1, b1] = direcao(X, Y);
+        const [a2, b2] = direcao(X + (a1 * passo) / 2, Y + (b1 * passo) / 2);
+        X += a2 * passo;
+        Y += b2 * passo;
+        L += passo;
+      }
+      return { x, y, beta, r, n: x.length };
+    })();
+    /** A altura da parede na posição x (0 antes do "nariz"). */
+    function alturaDaParede(x) {
+      const ultimo = PAREDE.n - 1;
+      if (x <= PAREDE.x[0]) return 0;
+      if (x >= PAREDE.x[ultimo]) return PAREDE.y[ultimo];
+      let a = 0, b = ultimo;
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (PAREDE.x[meio] <= x) a = meio; else b = meio;
+      }
+      return entre(PAREDE.y[a], PAREDE.y[b], (x - PAREDE.x[a]) / (PAREDE.x[b] - PAREDE.x[a] || 1));
+    }
+    /** A distância da Terra até a parede na direção "beta" (π = para o Sol; 0 = para a cauda). */
+    function distanciaDaParede(beta) {
+      const ultimo = PAREDE.n - 1;
+      if (beta <= PAREDE.beta[ultimo]) return PAREDE.y[ultimo] / Math.max(Math.sin(beta), 1e-3);     // na cauda, a parede segue reta
+      let a = 0, b = ultimo;                           // ao longo da parede, beta só diminui
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (PAREDE.beta[meio] >= beta) a = meio; else b = meio;
+      }
+      return entre(PAREDE.r[a], PAREDE.r[b], (PAREDE.beta[a] - beta) / (PAREDE.beta[a] - PAREDE.beta[b] || 1));
+    }
+    /**
+     * Para onde vai um ponto das linhas de campo quando o vento solar as deforma (resultado em dX, dY).
+     * Até 4 raios, nada muda. Além disso, as linhas são apertadas para caber dentro da parede (do lado
+     * do Sol) e esticadas (do lado da noite). É só um desenho: não é um modelo de magnetosfera.
+     */
+    let dX = 0, dY = 0;
+    function deformar(X, Y) {
+      const r = Math.hypot(X, Y), alem = r - TERRITORIOS.dipolo;
+      if (alem <= 0) {
+        dX = X;
+        dY = Y;
+        return;
+      }
+      const cabe = distanciaDaParede(Math.atan2(Math.abs(Y), X)) - TERRITORIOS.dipolo;
+      const novo = TERRITORIOS.dipolo + cabe * (1 - Math.exp(-alem / cabe));
+      dX = (X / r) * novo;
+      dY = (Y / r) * novo;
+      if (X > 0) {
+        const estica = suave(alem / 8) * (X / r);
+        dX *= 1 + 0.5 * estica;
+        dY *= 1 - 0.2 * estica;
+      }
+    }
+    /** A altura em que passa, na posição x, a partícula do vento que vinha na altura y0: ela contorna a parede. */
+    const alturaDoVento = (x, y0) => (y0 < 0 ? -1 : 1) * Math.hypot(y0, 1.06 * alturaDaParede(x));
+
+    // -------------------------------------------------------------------------
+    // 5. Estado da animação.
+    // -------------------------------------------------------------------------
+    // Cada "cena" é um conjunto de rótulos; várias cenas podem usar a mesma câmera.
+    const CENAS = ['longe', 'p1', 'p2', 'p3', 'p4', 'p5'];
+    const CAMERA_DA_CENA = { longe: 'longe', p1: 'terra', p2: 'soma', p3: 'soma', p4: 'queda', p5: 'longe' };
+    // O que cada cena acrescenta ao desenho (as trocas são suaves: veja "misturas"):
+    //   vento: os territórios, o vento solar e a deformação das linhas;  deslocado: as linhas do ímã fora do centro;
+    //   faixa: a intensidade do campo na superfície;  formas: as três formas, cada uma sozinha;
+    //   fantasma: as linhas do dipolo puro, tracejadas, para comparar.
+    const MISTURA_DA_CENA = {
+      longe: { vento: 1 },
+      p1: { deslocado: 1, faixa: 1 },
+      p2: { formas: 1 },
+      p3: { fantasma: 1, faixa: 1 },
+      p4: { fantasma: 1 },
+      p5: { vento: 1 },
+    };
+    const misturas = { vento: 1, deslocado: 0, faixa: 0, formas: 0, fantasma: 0 };
+    const DURACAO_DA_VIAGEM = 1.25;         // segundos que a câmera leva de um lugar a outro
+
+    const estado = {
+      R: COMECO.R, graus: COMECO.graus,     // o ponto: distância ao centro e direção (ângulo a partir do equador, do lado da noite)
+      d: COMECO.d,                          // deslocamento do ímã, em km (passo 1)
+      quadrupolo: COMECO.quadrupolo, octupolo: COMECO.octupolo,       // quanto de cada forma, em fração do dipolo
+      perto: false, passo: 0,               // visão escolhida e passo aberto
+      cena: 'longe',                        // a cena que está (ou vai ficar) na tela
+      viagem: 1, partida: null,             // andamento da viagem da câmera (0 a 1) e de onde ela saiu
+      tempo: 0, pausado: false,
+    };
+    const forcaDaCena = { longe: 1, p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 };     // quanto os rótulos de cada cena aparecem (0 a 1)
+
+    /** O ponto escolhido, no desenho. */
+    const ponto = () => ({ X: estado.R * Math.cos(emRadianos(estado.graus)), Y: estado.R * Math.sin(emRadianos(estado.graus)) });
+    /** O deslocamento do ímã, em raios da Terra. No desenho, ele vai para a esquerda (o "lado do Pacífico"). */
+    const deslocamento = () => estado.d / RAIO_DA_TERRA_KM;
+
+    // As linhas e a faixa da soma e do ímã deslocado só são refeitas quando os valores mudam.
+    const guardado = { soma: { chave: '', linhas: [], faixa: null }, deslocado: { chave: '', linhas: [], faixa: null } };
+    function daSoma() {
+      const chave = `${estado.quadrupolo}|${estado.octupolo}`;
+      if (guardado.soma.chave !== chave) {
+        const modelo = { g: [G1, G1 * estado.quadrupolo, G1 * estado.octupolo], dx: 0 };
+        guardado.soma = { chave, linhas: linhasDoModelo(modelo), faixa: intensidadesNaSuperficie(modelo) };
+      }
+      return guardado.soma;
+    }
+    function doDeslocado() {
+      const chave = String(estado.d);
+      if (guardado.deslocado.chave !== chave) {
+        const modelo = { g: [G1, 0, 0], dx: -deslocamento() };
+        guardado.deslocado = { chave, linhas: linhasDoModelo(modelo, { lados: [1, -1] }), faixa: intensidadesNaSuperficie(modelo) };
+      }
+      return guardado.deslocado;
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Tela, tamanho e câmeras.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const painel = document.getElementById('painel');
+    const controles = document.querySelector('.controles');
+    let largura = 0, altura = 0;
+    // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
+    // "fundo" é até onde o desenho aparece (ele continua por trás da barra de controles).
+    let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100 };
+    let ESPACO_DO_TITULO = 46;                   // altura ocupada pelo título, medida em medirCena()
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      medirCena();
+      desenhar();
+    }
+    function medirCena() {
+      ESPACO_DO_TITULO = Math.round(document.querySelector('.topo').getBoundingClientRect().bottom) + 4;
+      const p = painel.getBoundingClientRect();
+      if (p.left > largura * 0.3) {
+        // Painel ao lado: a barra de controles fica embaixo do desenho.
+        const barra = controles.getBoundingClientRect();
+        const livre = barra.height > 0 && barra.top > altura * 0.4 ? barra.top - 6 : altura;
+        cena = { x: 0, y: 0, w: Math.max(120, p.left - 8), h: Math.max(90, livre), fundo: altura };
+      } else {
+        // Painel embaixo (telas estreitas): os controles ficam dentro dele.
+        const h = Math.max(90, p.top - 4);
+        cena = { x: 0, y: 0, w: largura, h, fundo: h };
+      }
+    }
+    window.addEventListener('resize', ajustarTamanho);
+    const aoMudarDeTamanho = new ResizeObserver(() => { medirCena(); });
+    aoMudarDeTamanho.observe(painel);
+    aoMudarDeTamanho.observe(controles);
+
+    /** A altura do gráfico do passo 4, embaixo do desenho (0 em telas muito baixas: ali fica só a régua). */
+    function alturaDoGrafico() {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      return alturaLivre >= 170 ? limitar(alturaLivre * 0.36, 70, 158) : 0;
+    }
+    /**
+     * Onde cada câmera fica: a Terra cai em (cx, cy) da tela, com escala S (pixels por raio da Terra).
+     *   longe: os três territórios, com o "nariz" da magnetopausa à esquerda e a cauda à direita;
+     *   terra: a Terra de perto (o ímã fora do centro);
+     *   soma:  a Terra e o campo até uns 3 raios;
+     *   queda: a Terra à esquerda e uma régua até 8 raios, com o gráfico embaixo.
+     */
+    function cameraDe(tipo) {
+      const alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const meioX = cena.x + cena.w / 2, meioY = cena.y + ESPACO_DO_TITULO + alturaLivre / 2;
+      if (tipo === 'terra') return { S: Math.max(16, Math.min(cena.w / 4.4, (alturaLivre - 24) / 3.5)), cx: meioX, cy: meioY + 4 };
+      if (tipo === 'soma') return { S: Math.max(12, Math.min(cena.w / 9, (alturaLivre - 20) / 6.6)), cx: meioX, cy: meioY };
+      if (tipo === 'queda') {
+        const grafico = alturaDoGrafico();
+        const S = Math.max(8, Math.min((cena.w - 40) / (R_MAXIMO + 1.9), (alturaLivre - grafico - 14) / 4.6));
+        return { S, cx: meioX - S * (R_MAXIMO + 1.9) / 2 + S * 1.3, cy: cena.y + ESPACO_DO_TITULO + (alturaLivre - grafico) / 2 };
+      }
+      return { S: Math.max(3, Math.min((cena.w * 0.46) / 13.6, (alturaLivre - 10) / 13.4)), cx: cena.x + cena.w * 0.46, cy: meioY };
+    }
+
+    // A projeção do quadro atual. Durante uma viagem, ela vai de onde a câmera estava até a câmera da cena.
+    let projecao = { S: 1, cx: 0, cy: 0 };
+    function atualizarProjecao() {
+      const c = cameraDe(CAMERA_DA_CENA[estado.cena]);
+      if (estado.viagem < 1 && estado.partida) {
+        const e = suave(estado.viagem), de = estado.partida;
+        projecao = { S: de.S * Math.pow(c.S / de.S, e), cx: entre(de.cx, c.cx, e), cy: entre(de.cy, c.cy, e) };
+      } else {
+        projecao = c;
+      }
+    }
+    const telaX = (X) => projecao.cx + projecao.S * X;
+    const telaY = (Y) => projecao.cy - projecao.S * Y;
+    /** Escolhe a cena pela visão e pelo passo; se a câmera muda de lugar, começa a viagem. */
+    function atualizarCena() {
+      const nova = estado.perto ? `p${estado.passo + 1}` : 'longe';
+      if (nova === estado.cena) return;
+      if (CAMERA_DA_CENA[nova] !== CAMERA_DA_CENA[estado.cena]) {
+        estado.partida = { ...projecao };
+        estado.viagem = 0;
+      }
+      estado.cena = nova;
+      mostrarControles();
+    }
+    /** Mostra, na barra, só os controles que fazem diferença na cena. */
+    function mostrarControles() {
+      let visiveis = 0;
+      for (const controle of document.querySelectorAll('.controle[data-cenas]')) {
+        const mostra = controle.dataset.cenas.split(' ').includes(estado.cena);
+        controle.hidden = !mostra;
+        if (mostra) visiveis += 1;
+      }
+      document.body.dataset.controles = String(visiveis);
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. Ferramentas de desenho.
+    // -------------------------------------------------------------------------
+    const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+    const FONTE_MAT = "Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif";
+    const COR_CAMPO = '134, 185, 255';
+    const COR_DESTAQUE = '208, 228, 255';        // o mesmo azul, mais claro
+    const COR_VENTO = '255, 179, 71';
+    const AZUL = `rgb(${COR_CAMPO})`;
+
+    /** Fundo escuro arredondado atrás de um rótulo, para ele não se misturar com o que passa por trás. */
+    function desenharPlaca(x, y, larguraDoTexto, tamanho, alinhar) {
+      const w = larguraDoTexto + 16, h = tamanho + 10;
+      const esquerda = alinhar === 'center' ? x - w / 2 : alinhar === 'right' ? x - w + 8 : x - 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.66)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda, y - h / 2, w, h, h / 2); else ctx.rect(esquerda, y - h / 2, w, h);
+      ctx.fill();
+    }
+    /** Largura de um texto comum, na tela. */
+    function larguraDoTexto(texto, tamanho, peso = 500) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      return ctx.measureText(texto).width;
+    }
+    /** Texto com contorno preto, legível por cima do desenho. Com "placa", ganha também um fundo escuro. */
+    function escrever(texto, x, y, { tamanho = 12, cor = '#ececec', alinhar = 'left', peso = 500, placa = false } = {}) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      if (placa) desenharPlaca(x, y, ctx.measureText(texto).width, tamanho, alinhar);
+      ctx.textAlign = alinhar;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.strokeText(texto, x, y);
+      ctx.fillStyle = cor;
+      ctx.fillText(texto, x, y);
+    }
+    /** Pedaços de uma fórmula, cada um com a sua fonte: letras em itálico; números e sinais em pé. */
+    function partesDaFormula(texto, tamanho) {
+      const partes = texto.split(/([^A-Za-zλ]+)/).filter(Boolean).map((parte) => ({
+        texto: parte,
+        fonte: `${/^[A-Za-zλ]+$/.test(parte) ? 'italic ' : ''}${tamanho}px ${FONTE_MAT}`,
+        largura: 0,
+      }));
+      let total = 0;
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        parte.largura = ctx.measureText(parte.texto).width;
+        total += parte.largura;
+      }
+      return { partes, total };
+    }
+    /** Fórmula no canvas. Devolve a largura. */
+    function escreverFormula(texto, x, y, { tamanho = 15, cor = '#ffffff', alinhar = 'left', placa = false } = {}) {
+      const { partes, total } = partesDaFormula(texto, tamanho);
+      if (placa) desenharPlaca(x, y, total, tamanho, alinhar);
+      let px = alinhar === 'center' ? x - total / 2 : alinhar === 'right' ? x - total : x;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      for (const parte of partes) {
+        ctx.font = parte.fonte;
+        ctx.strokeText(parte.texto, px, y);
+        ctx.fillStyle = cor;
+        ctx.fillText(parte.texto, px, y);
+        px += parte.largura;
+      }
+      return total;
+    }
+    /**
+     * Várias linhas de texto, uma embaixo da outra, sobre uma placa escura. "x" é a borda (ou o meio) e
+     * "y" é o meio da primeira linha. Cada linha: { texto, tamanho, cor, peso }.
+     */
+    const ENTRE_LINHAS = 6;
+    function escreverBloco(linhas, x, y, alinhar = 'left') {
+      let maior = 0;
+      for (const linha of linhas) maior = Math.max(maior, larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500));
+      const total = linhas.reduce((soma, linha) => soma + linha.tamanho + ENTRE_LINHAS, -ENTRE_LINHAS);
+      const esquerda = alinhar === 'center' ? x - maior / 2 : alinhar === 'right' ? x - maior : x;
+      const topo = y - linhas[0].tamanho / 2;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda - 10, topo - 7, maior + 20, total + 14, 10); else ctx.rect(esquerda - 10, topo - 7, maior + 20, total + 14);
+      ctx.fill();
+      let py = topo;
+      for (const linha of linhas) {
+        escrever(linha.texto, x, py + linha.tamanho / 2, { tamanho: linha.tamanho, cor: linha.cor, alinhar, peso: linha.peso ?? 500 });
+        py += linha.tamanho + ENTRE_LINHAS;
+      }
+      return maior;
+    }
+    /** Linha tracejada de (x1, y1) até (x2, y2). */
+    function tracejado(x1, y1, x2, y2, cor, tracos = [5, 5]) {
+      ctx.strokeStyle = cor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash(tracos);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    /** Ponto marcado: bolinha branca, com ou sem o anel que pulsa. */
+    function desenharPonto(x, y, { anel = false, raio = 5 } = {}) {
+      if (anel) {
+        const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.25 + 0.3 * pulso})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, raio * 2 + 3 * pulso, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /** O número de um território, dentro de um círculo ("aceso" = é onde o ponto está). */
+    function desenharMarca(x, y, numeroDoTerritorio, aceso, raio = 9) {
+      ctx.fillStyle = aceso ? '#ededed' : 'rgba(0, 0, 0, 0.75)';
+      ctx.strokeStyle = aceso ? '#ededed' : '#9a9a9a';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.font = `600 ${raio * 1.25}px ${FONTE}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = aceso ? '#000' : '#ececec';
+      ctx.fillText(String(numeroDoTerritorio), x, y + 0.5);
+    }
+    // As amostras das legendas: cada uma desenha, de x1 a x2 e na altura y, o traço que a legenda explica.
+    const AMOSTRAS = {
+      /** Linha de campo, com a setinha do sentido. */
+      campo(x1, x2, y) {
+        AMOSTRAS.soma(x1, x2, y);
+        ctx.beginPath();
+        ctx.moveTo(x1 + 17, y - 3);
+        ctx.lineTo(x1 + 21.5, y);
+        ctx.lineTo(x1 + 17, y + 3);
+        ctx.stroke();
+      },
+      /** Linha de campo da soma das formas. */
+      soma(x1, x2, y) {
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.9)`;
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+      },
+      /** Tracejado branco: só o dipolo, no centro. */
+      dipolo: (x1, x2, y) => tracejado(x1, y, x2, y, 'rgba(255, 255, 255, 0.75)', [4, 4]),
+      /** Riscos do vento solar. */
+      vento(x1, x2, y) {
+        ctx.strokeStyle = `rgba(${COR_VENTO}, 0.85)`;
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (const x of [x1, x1 + 14, x1 + 28]) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + 9, y);
+        }
+        ctx.stroke();
+      },
+      /** A magnetopausa. */
+      parede(x1, x2, y) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+      },
+      /** A faixa da intensidade na superfície. */
+      faixa(x1, x2, y) {
+        ctx.fillStyle = `rgba(${COR_CAMPO}, 0.3)`;
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.9)`;
+        ctx.lineWidth = 1.3;
+        ctx.fillRect(x1, y - 5, x2 - x1, 10);
+        ctx.strokeRect(x1, y - 5, x2 - x1, 10);
+      },
+      /** Um magnetômetro no solo (quadradinho) e um satélite (ponto). */
+      medidores(x1, x2, y) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x1 + 6, y - 2.5, 5, 5);
+        ctx.beginPath();
+        ctx.arc(x2 - 10, y, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      },
+    };
+    /** A legenda, embaixo do título, sobre um fundo escuro. Cada item: [amostra, texto]. */
+    function desenharLegenda(itens) {
+      if (cena.h - ESPACO_DO_TITULO <= 200) return;            // em telas baixas, não há espaço para ela
+      const x = cena.x + 10, y = cena.y + ESPACO_DO_TITULO + 6;
+      const maior = Math.max(...itens.map(([, texto]) => larguraDoTexto(texto, 11.5)));
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, 66 + maior, itens.length * 18 + 10, 9); else ctx.rect(x, y, 66 + maior, itens.length * 18 + 10);
+      ctx.fill();
+      itens.forEach(([amostra, texto], i) => {
+        const altura = y + 14 + i * 18;
+        amostra(x + 8, x + 46, altura);
+        escrever(texto, x + 54, altura, { tamanho: 11.5, cor: '#b4b4b4' });
+      });
+    }
+
+    // Números em português.
+    const numero = (valor, casas = 1) => valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    /** "31 000": número inteiro, com os milhares separados por espaço (que não quebra a linha). */
+    const comMilhar = (valor) => Math.round(Math.abs(valor)).toLocaleString('pt-BR').replace(/\./g, ' ');
+    /** "2,00 raios" ou "1,50 raio": a distância com a palavra no singular ou no plural. */
+    const emRaios = (R) => `${numero(R, 2)} ${R >= 2 ? 'raios' : 'raio'}`;
+    /** "3,0 vezes menor", "1,5 vez menor" ou, na superfície, "igual". */
+    const vezesMenor = (vezes) => (vezes < 1.05 ? 'igual' : `${numero(vezes, 1)} ${vezes >= 2 ? 'vezes' : 'vez'} menor`);
+    /** "25%". */
+    const emPorCento = (fracao) => `${Math.round(fracao * 100)}%`;
+
+    // Estrelas de fundo (posições fixas, em frações da tela).
+    const ESTRELAS = Array.from({ length: 90 }, (_, i) => {
+      const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.07 + 0.16 * ((i * 37) % 10) / 10 };
+    });
+
+    const bufferX = new Float32Array(2700), bufferY = new Float32Array(2700);
+    /**
+     * Traça uma linha de campo (pontos do desenho: x0, y0, x1, y1…). "lado" = −1 desenha o espelho dela.
+     * Com "setinhas", desenha também as pontas de seta que andam no sentido do campo; com "deformacao",
+     * leva cada ponto para onde o vento solar o empurra (0 = nada; 1 = tudo).
+     */
+    function tracarPontos(pontos, lado, { cor = COR_CAMPO, forca = 0.4, espessura = 1, setinhas = 0, tracos = null, deformacao = 0, fase = 0, distancia = 104 } = {}) {
+      const n = pontos.length / 2;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        let X = pontos[2 * i] * lado, Y = pontos[2 * i + 1];
+        if (deformacao > 0.001) {
+          deformar(X, Y);
+          X += (dX - X) * deformacao;
+          Y += (dY - Y) * deformacao;
+        }
+        bufferX[i] = telaX(X);
+        bufferY[i] = telaY(Y);
+        if (i === 0) ctx.moveTo(bufferX[i], bufferY[i]); else ctx.lineTo(bufferX[i], bufferY[i]);
+      }
+      ctx.strokeStyle = `rgba(${cor}, ${forca})`;
+      ctx.lineWidth = espessura;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'butt';
+      if (tracos) ctx.setLineDash(tracos);
+      ctx.stroke();
+      if (tracos) ctx.setLineDash([]);
+      if (setinhas <= 0.01) return;
+      let falta = (estado.tempo * 22 + fase) % distancia;
+      ctx.strokeStyle = `rgba(${cor}, ${setinhas})`;
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = 'round';
+      for (let i = 1; i < n; i++) {
+        const dx = bufferX[i] - bufferX[i - 1], dy = bufferY[i] - bufferY[i - 1];
+        const trecho = Math.hypot(dx, dy);
+        if (trecho < 1e-6) continue;
+        const ux = dx / trecho, uy = dy / trecho;
+        let andado = falta;
+        while (andado <= trecho) {
+          const x = bufferX[i - 1] + ux * andado, y = bufferY[i - 1] + uy * andado;
+          if (x > cena.x - 8 && x < cena.x + cena.w + 8 && y > cena.y - 8 && y < cena.fundo + 8) {
+            ctx.beginPath();
+            ctx.moveTo(x - ux * 4.5 - uy * 3, y - uy * 4.5 + ux * 3);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x - ux * 4.5 + uy * 3, y - uy * 4.5 - ux * 3);
+            ctx.stroke();
+          }
+          andado += distancia;
+        }
+        falta = andado - trecho;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. O mundo: os territórios, as linhas de campo, o vento solar, a faixa da superfície e a Terra.
+    // -------------------------------------------------------------------------
+    const ESPESSURA_DA_FAIXA = 0.34;       // raios da Terra de espessura para o campo de um dipolo no polo (62 000 nT)
+    /** O contorno de fora da faixa cuja espessura mostra a intensidade do campo na superfície. */
+    function tracarContornoDaFaixa(valores) {
+      ctx.beginPath();
+      for (let i = 0; i <= N_FAIXA; i++) {
+        const fi = (i / N_FAIXA) * Math.PI * 2;
+        const r = 1 + (ESPESSURA_DA_FAIXA * valores[i]) / (2 * CAMPO_NO_EQUADOR);
+        if (i === 0) ctx.moveTo(telaX(r * Math.cos(fi)), telaY(r * Math.sin(fi))); else ctx.lineTo(telaX(r * Math.cos(fi)), telaY(r * Math.sin(fi)));
+      }
+      ctx.closePath();
+    }
+
+    const vento = [];                      // partículas do vento solar: { x, y0 } (y0 = a altura em que vinham, longe da Terra)
+    function limitesDoVento() {
+      const c = cameraDe('longe');
+      return { esquerda: (cena.x - c.cx) / c.S - 0.5, meiaAltura: Math.max(c.cy - cena.y, cena.fundo - c.cy) / c.S + 0.5 };
+    }
+    function renascerNoVento(p, limites, emQualquerLugar) {
+      p.y0 = (Math.random() * 2 - 1) * limites.meiaAltura;
+      p.x = emQualquerLugar ? entre(limites.esquerda, -MAGNETOPAUSA * 0.55, Math.random()) : limites.esquerda - Math.random() * 1.5;
+    }
+    function atualizarVento(dt) {
+      const limites = limitesDoVento();
+      while (vento.length < 80) {
+        const p = { x: 0, y0: 0 };
+        renascerNoVento(p, limites, true);
+        vento.push(p);
+      }
+      for (const p of vento) {
+        p.x += 3.2 * dt;
+        if (Math.abs(alturaDoVento(p.x, p.y0)) > limites.meiaAltura || p.x > 40) renascerNoVento(p, limites, false);
+      }
+    }
+
+    function desenharMundo() {
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      const soma = daSoma();
+      const comVento = misturas.vento, comDeslocado = misturas.deslocado, comFantasma = misturas.fantasma;
+
+      // Brilho: mais forte perto da Terra. De muito perto ele fica mais fraco, para não tomar a tela inteira.
+      const forcaDoBrilho = limitar(90 / S, 0.3, 1) * (1 - 0.5 * comVento);
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.scale(1, Math.cbrt(2));
+      const brilho = ctx.createRadialGradient(0, 0, S * 0.8, 0, 0, S * 6);
+      brilho.addColorStop(0, `rgba(${COR_CAMPO}, ${0.3 * forcaDoBrilho})`);
+      brilho.addColorStop(0.18, `rgba(${COR_CAMPO}, ${0.13 * forcaDoBrilho})`);
+      brilho.addColorStop(0.5, `rgba(${COR_CAMPO}, ${0.045 * forcaDoBrilho})`);
+      brilho.addColorStop(1, `rgba(${COR_CAMPO}, 0)`);
+      ctx.fillStyle = brilho;
+      ctx.beginPath();
+      ctx.arc(0, 0, S * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Os territórios: o disco até 4 raios e, por cima, o disco até 2 raios (mais claro).
+      if (comVento > 0.01) {
+        for (const [raio, forca] of [[TERRITORIOS.dipolo, 0.075], [TERRITORIOS.irregular, 0.11]]) {
+          ctx.fillStyle = `rgba(${COR_CAMPO}, ${forca * comVento})`;
+          ctx.beginPath();
+          ctx.arc(terra.x, terra.y, raio * S, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 * comVento})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // As linhas do dipolo puro, tracejadas, para comparar com a soma (passos 3 e 4).
+      if (comFantasma > 0.01) {
+        for (const linha of LINHAS_DO_DIPOLO) {
+          for (const lado of [1, -1]) tracarPontos(linha, lado, { cor: '255, 255, 255', forca: 0.42 * comFantasma, tracos: [4, 5] });
+        }
+      }
+      // As linhas da soma das formas (deformadas pelo vento solar, na visão de longe).
+      if (comDeslocado < 0.99) {
+        soma.linhas.forEach((linha, i) => {
+          for (const lado of [1, -1]) {
+            tracarPontos(linha, lado, { forca: (0.42 + 0.34 * comFantasma) * (1 - comDeslocado), espessura: 1 + 0.3 * comFantasma,
+              setinhas: 0.6 * (1 - comDeslocado), deformacao: comVento, fase: (i * 37 + (lado > 0 ? 0 : 53)) % 104 });
+          }
+        });
+      }
+      // As linhas do ímã fora do centro (passo 1).
+      if (comDeslocado > 0.01) {
+        doDeslocado().linhas.forEach((linha, i) => tracarPontos(linha, 1, { forca: 0.5 * comDeslocado, setinhas: 0.6 * comDeslocado, fase: (i * 37) % 104 }));
+      }
+
+      // O vento solar, que contorna a magnetopausa, e a própria magnetopausa.
+      if (comVento > 0.01) {
+        const limite = (cena.fundo - terra.y) / S + 1;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.62 * comVento})`;
+        ctx.lineWidth = 1.4;
+        for (const sinal of [1, -1]) {
+          ctx.beginPath();
+          for (let i = 0; i < PAREDE.n && PAREDE.y[i] <= limite + 2; i++) {
+            if (i === 0) ctx.moveTo(telaX(PAREDE.x[i]), telaY(0)); else ctx.lineTo(telaX(PAREDE.x[i]), telaY(sinal * PAREDE.y[i]));
+          }
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${0.75 * comVento})`;
+        ctx.beginPath();
+        for (const p of vento) {
+          // Um risco de comprimento fixo, na direção em que a partícula anda.
+          const y = alturaDoVento(p.x, p.y0), subida = y - alturaDoVento(p.x - 0.1, p.y0);
+          const comprimento = 0.6 / Math.hypot(0.1, subida);
+          ctx.moveTo(telaX(p.x), telaY(y));
+          ctx.lineTo(telaX(p.x - 0.1 * comprimento), telaY(y - subida * comprimento));
+        }
+        ctx.stroke();
+      }
+
+      // A faixa em volta da Terra: a espessura mostra a intensidade do campo na superfície.
+      if (misturas.faixa > 0.01) {
+        const valores = comDeslocado > 0.5 ? doDeslocado().faixa : soma.faixa;
+        tracarContornoDaFaixa(valores);
+        ctx.moveTo(terra.x + S, terra.y);
+        ctx.arc(terra.x, terra.y, S, 0, Math.PI * 2, true);
+        ctx.fillStyle = `rgba(${COR_CAMPO}, ${0.3 * misturas.faixa})`;
+        ctx.fill('evenodd');
+        tracarContornoDaFaixa(valores);
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, ${0.9 * misturas.faixa})`;
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+        // Tracejado: como seria com só o dipolo, no centro.
+        tracarContornoDaFaixa(FAIXA_DO_DIPOLO);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * misturas.faixa})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // A Terra, com o ímã em barra (no passo 1, ele sai do centro).
+      const luz = ctx.createRadialGradient(terra.x - S * 0.35, terra.y - S * 0.35, S * 0.1, terra.x, terra.y, S);
+      luz.addColorStop(0, '#4f4f4f');
+      luz.addColorStop(1, '#181818');
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(terra.x, terra.y, S, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      const xDoIma = telaX(-deslocamento() * comDeslocado);
+      const meio = S * 0.5, grossura = Math.max(3, S * 0.18);
+      ctx.fillStyle = '#dcdcdc';
+      ctx.fillRect(xDoIma - grossura / 2, terra.y - meio, grossura, meio);
+      ctx.fillStyle = '#6c6c6c';
+      ctx.fillRect(xDoIma - grossura / 2, terra.y, grossura, meio);
+      if (S >= 38) {
+        // O polo do ímã que fica perto do norte geográfico é, magneticamente, um polo sul.
+        ctx.font = `700 ${Math.min(13, S * 0.2)}px ${FONTE}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#111';
+        ctx.fillText('S', xDoIma, telaY(0.26));
+        ctx.fillStyle = '#f2f2f2';
+        ctx.fillText('N', xDoIma, telaY(-0.26));
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. Visão de longe e passo 5: os três territórios.
+    // -------------------------------------------------------------------------
+    const RAIO_DAS_MARCAS = emRadianos(218);     // a direção em que ficam os números: para baixo, do lado do Sol
+    const LUGAR_DAS_MARCAS = [1.5, 3, 6.6];      // a distância de cada número ao centro, em raios da Terra
+    const LEGENDA_DAS_MARCAS = ['campo irregular: IGRF', 'o dipolo funciona bem', 'modelo de magnetosfera'];
+
+    function desenharDeLonge(alfa, comLegendas) {
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      const alturaLivre = cena.h - ESPACO_DO_TITULO, comNomes = alturaLivre >= 170;
+      const aqui = territorioEm(estado.R);
+      ctx.globalAlpha = alfa;
+
+      // A régua das distâncias, na linha do equador, do lado da noite.
+      if (comNomes && S >= 13) {
+        for (const R of [2, 4, 6, 8]) escrever(String(R), telaX(R) + 8, terra.y + 11, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        escrever('raios da Terra', telaX(9.4), terra.y + 11, { tamanho: 10.5, cor: '#747474' });
+      }
+
+      // Os números dos três territórios, ao longo de um raio que sai da Terra.
+      const noRaio = (r) => ({ x: telaX(r * Math.cos(RAIO_DAS_MARCAS)), y: telaY(r * Math.sin(RAIO_DAS_MARCAS)) });
+      const tamanhoDaMarca = limitar(S * 0.36, 6, 9);
+      if (S >= 12) {
+        const de = noRaio(1.05), ate = noRaio(7.6);
+        tracejado(de.x, de.y, ate.x, ate.y, 'rgba(255, 255, 255, 0.3)', [2, 4]);
+        LUGAR_DAS_MARCAS.forEach((r, i) => {
+          const p = noRaio(r);
+          desenharMarca(p.x, p.y, i + 1, aqui === i + 1, tamanhoDaMarca);
+          if (comLegendas && comNomes) {
+            // O nome fica à esquerda do número; se não couber ali, vai para a direita.
+            const peso = aqui === i + 1 ? 600 : 500;
+            const cabe = p.x - tamanhoDaMarca - 16 - larguraDoTexto(LEGENDA_DAS_MARCAS[i], 12, peso) >= cena.x + 6;
+            escrever(LEGENDA_DAS_MARCAS[i], p.x + (cabe ? -1 : 1) * (tamanhoDaMarca + 8), p.y,
+              { tamanho: 12, peso, cor: aqui === i + 1 ? '#ffffff' : '#c8c8c8', alinhar: cabe ? 'right' : 'left', placa: true });
+          }
+        });
+      }
+
+      // O ponto (dá para arrastar) e a distância dele ao centro.
+      const P = ponto();
+      const px = telaX(P.X), py = telaY(P.Y);
+      tracejado(terra.x, terra.y, px, py, 'rgba(255, 255, 255, 0.5)', [4, 4]);
+      desenharPonto(px, py, { anel: true });
+      if (comNomes) {
+        // "R" fica logo depois do ponto, para fora da Terra (perto do equador, um pouco acima, longe da régua).
+        const fora = { x: P.X / estado.R, y: -P.Y / estado.R };
+        const acima = Math.abs(fora.y) < 0.3 ? 15 * (1 - Math.abs(fora.y) / 0.3) : 0;
+        escreverFormula(`R = ${numero(estado.R, 2)}`, px + fora.x * 22, py + fora.y * 18 - acima,
+          { tamanho: 13.5, alinhar: fora.x > 0.3 ? 'left' : fora.x < -0.3 ? 'right' : 'center', placa: true });
+      }
+
+      desenharLegenda([
+        [AMOSTRAS.campo, 'linhas do campo (as setinhas mostram o sentido)'],
+        [AMOSTRAS.vento, 'vento solar (o Sol fica à esquerda)'],
+        [AMOSTRAS.parede, 'magnetopausa'],
+      ]);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. Passo 1: o ímã fora do centro.
+    // -------------------------------------------------------------------------
+    function desenharPasso1(alfa) {
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      const alturaLivre = cena.h - ESPACO_DO_TITULO, comNomes = alturaLivre >= 170;
+      const delta = deslocamento();
+      const xDoIma = telaX(-delta);
+      ctx.globalAlpha = alfa;
+
+      // O centro da Terra: uma cruz e, embaixo do ímã, o nome.
+      for (const [cor, espessura] of [['#000000', 3.4], ['#ffffff', 1.4]]) {
+        ctx.strokeStyle = cor;
+        ctx.lineWidth = espessura;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(terra.x - 5, terra.y);
+        ctx.lineTo(terra.x + 5, terra.y);
+        ctx.moveTo(terra.x, terra.y - 5);
+        ctx.lineTo(terra.x, terra.y + 5);
+        ctx.stroke();
+      }
+      if (!comNomes) {
+        ctx.globalAlpha = 1;
+        return;
+      }
+      tracejado(terra.x, telaY(-0.5) + 3, terra.x, telaY(-0.62), 'rgba(255, 255, 255, 0.6)', [2, 3]);
+      escrever('centro da Terra', terra.x, telaY(-0.62) + 10, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center' });
+      // A medida do deslocamento, em cima do ímã.
+      if (estado.d > 0) {
+        const y = telaY(0.5) - 9;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(xDoIma, y);
+        ctx.lineTo(terra.x, y);
+        ctx.moveTo(xDoIma, y - 4);
+        ctx.lineTo(xDoIma, y + 4);
+        ctx.moveTo(terra.x, y - 4);
+        ctx.lineTo(terra.x, y + 4);
+        ctx.stroke();
+        escrever(`${estado.d} km`, (xDoIma + terra.x) / 2, y - 12, { tamanho: 12, peso: 600, alinhar: 'center' });
+      }
+
+      // Os dois lados, sobre o equador do ímã: perto dele (Pacífico) e longe dele (Atlântico Sul).
+      const doPacifico = campoNoEquadorDoIma(1 - delta), doAtlantico = campoNoEquadorDoIma(1 + delta);
+      const espessura = (valor) => (S * ESPESSURA_DA_FAIXA * valor) / (2 * CAMPO_NO_EQUADOR);
+      const blocos = [
+        { lado: -1, valor: doPacifico, linhas: [
+          { texto: 'lado do Pacífico', tamanho: 13, peso: 600 },
+          { texto: `${comMilhar(doPacifico)} nT`, tamanho: 14, cor: AZUL, peso: 600 },
+          { texto: estado.d > 0 ? 'mais forte' : 'igual ao outro lado', tamanho: 11, cor: '#a9a9a9' }] },
+        { lado: 1, valor: doAtlantico, linhas: [
+          { texto: 'lado do Atlântico Sul', tamanho: 13, peso: 600 },
+          { texto: `${comMilhar(doAtlantico)} nT`, tamanho: 14, cor: AZUL, peso: 600 },
+          { texto: estado.d > 0 ? 'mais fraco' : 'igual ao outro lado', tamanho: 11, cor: '#a9a9a9' }] },
+      ];
+      for (const bloco of blocos) {
+        const naSuperficie = telaX(bloco.lado);
+        desenharPonto(naSuperficie, terra.y, { raio: 3 });
+        const larguraDoBloco = Math.max(...bloco.linhas.map((linha) => larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500)));
+        const x = naSuperficie + bloco.lado * (espessura(bloco.valor) + 18);
+        const cabeAoLado = bloco.lado < 0 ? x - larguraDoBloco - 12 >= cena.x : x + larguraDoBloco + 12 <= cena.x + cena.w;
+        if (cabeAoLado) escreverBloco(bloco.linhas, x, terra.y - 19, bloco.lado < 0 ? 'right' : 'left');
+        else escreverBloco(bloco.linhas, bloco.lado < 0 ? cena.x + 18 : cena.x + cena.w - 18, cena.y + cena.h - 58, bloco.lado < 0 ? 'left' : 'right');
+      }
+
+      desenharLegenda([
+        [AMOSTRAS.faixa, 'faixa azul: intensidade do campo na superfície'],
+        [AMOSTRAS.dipolo, 'tracejado: como seria com o ímã no centro'],
+      ]);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Passo 2: as três formas, cada uma sozinha.
+    // -------------------------------------------------------------------------
+    /** Uma esfera com os ímãs que dão a forma de ordem n (n ímãs em fila, alternados), em volta de (cx, cy). */
+    function desenharEsferaComImas(n, cx, cy, raio) {
+      const luz = ctx.createRadialGradient(cx - raio * 0.35, cy - raio * 0.35, raio * 0.1, cx, cy, raio);
+      luz.addColorStop(0, '#4f4f4f');
+      luz.addColorStop(1, '#181818');
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(cx, cy, raio, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      const grossura = Math.max(3, raio * 0.2), comprimento = (raio * 1.24) / n, vao = raio * 0.06;
+      for (let k = 0; k < n; k++) {
+        const topo = cy - (comprimento * n) / 2 + k * comprimento + vao / 2;
+        const invertido = k % 2 === 1;                         // os ímãs vizinhos apontam em sentidos opostos
+        ctx.fillStyle = invertido ? '#6c6c6c' : '#dcdcdc';
+        ctx.fillRect(cx - grossura / 2, topo, grossura, (comprimento - vao) / 2);
+        ctx.fillStyle = invertido ? '#dcdcdc' : '#6c6c6c';
+        ctx.fillRect(cx - grossura / 2, topo + (comprimento - vao) / 2, grossura, (comprimento - vao) / 2);
+      }
+    }
+
+    function desenharFormas(alfa) {
+      const topo = cena.y + ESPACO_DO_TITULO, alturaLivre = cena.h - ESPACO_DO_TITULO;
+      const comNomes = alturaLivre >= 170;
+      const larguraDeCada = (cena.w - 36) / 3;
+      const emCima = comNomes ? 54 : 0;                        // altura reservada, em cima, para o aviso do monopolo
+      const embaixo = comNomes ? 60 : 0;                       // altura das legendas, embaixo de cada forma
+      const raio = Math.max(6, Math.min(larguraDeCada / 7.4, (alturaLivre - emCima - embaixo - 10) / 3.5, 62));
+      const cy = topo + emCima + (alturaLivre - emCima - embaixo) / 2;
+      const guardada = projecao;
+      ctx.globalAlpha = alfa;
+
+      for (let n = 1; n <= 3; n++) {
+        const cx = cena.x + 14 + larguraDeCada * (n - 0.5);
+        projecao = { S: raio, cx, cy };
+        FORMAS[n].linhas.forEach((linha, i) => {
+          for (const lado of [1, -1]) tracarPontos(linha, lado, { forca: 0.8, espessura: 1.2, setinhas: 0.85, distancia: 62, fase: (i * 23) % 62 });
+        });
+        desenharEsferaComImas(n, cx, cy, raio);
+        if (n > 1) escreverFormula('+', cx - larguraDeCada / 2, cy, { tamanho: 24, alinhar: 'center' });
+        if (comNomes) {
+          const y = cy + raio * 1.75 + 22;
+          escreverFormula(`n = ${n}`, cx, y, { tamanho: 15, alinhar: 'center' });
+          escrever(FORMAS[n].nome, cx, y + 19, { tamanho: 13, peso: 600, alinhar: 'center' });
+          if (n === 2) escrever('como dois ímãs', cx, y + 36, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        }
+      }
+      escreverFormula('+ …', cena.x + cena.w - 8, cy, { tamanho: 20, alinhar: 'right' });
+      projecao = guardada;
+
+      // O que NÃO entra na soma: n = 0 seria um monopolo, um polo isolado.
+      if (comNomes) {
+        const x = cena.x + 34, y = topo + 30, r = 11;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        for (let k = 0; k < 8; k++) {
+          const a = (k * Math.PI) / 4;
+          ctx.moveTo(x + Math.cos(a) * (r + 3), y + Math.sin(a) * (r + 3));
+          ctx.lineTo(x + Math.cos(a) * (r + 12), y + Math.sin(a) * (r + 12));
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x - r - 9, y + r + 9);
+        ctx.lineTo(x + r + 9, y - r - 9);
+        ctx.stroke();
+        const depois = escreverFormula('n = 0', x + r + 22, y, { tamanho: 14 });
+        escrever('seria um monopolo: não existe', x + r + 22 + depois + 8, y, { tamanho: 12, cor: '#c8c8c8' });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. Passo 3: a soma das formas, e de onde vêm as medidas.
+    // -------------------------------------------------------------------------
+    const MAGNETOMETROS = [-62, -38, -14, 12, 36, 60];      // latitudes (graus) das estações do desenho, dos dois lados
+
+    function desenharPasso3(alfa) {
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      ctx.globalAlpha = alfa;
+      // Magnetômetros no solo (quadradinhos) e satélites (pontos em órbita): é com as medidas deles que os
+      // coeficientes são ajustados. As posições são um esquema.
+      ctx.fillStyle = '#ffffff';
+      for (const graus of MAGNETOMETROS) {
+        for (const lado of [1, -1]) {
+          const lat = emRadianos(graus);
+          ctx.fillRect(telaX(lado * Math.cos(lat)) - 2.5, telaY(Math.sin(lat)) - 2.5, 5, 5);
+        }
+      }
+      for (const fase of [0, 2.7]) {
+        const a = estado.tempo * 0.45 + fase;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(terra.x, terra.y, 1.17 * S, -a, -a + 0.35);
+        ctx.stroke();
+        desenharPonto(telaX(1.17 * Math.cos(a)), telaY(1.17 * Math.sin(a)), { raio: 2.6 });
+      }
+
+      desenharLegenda([
+        [AMOSTRAS.soma, 'soma das formas'],
+        [AMOSTRAS.dipolo, 'só o dipolo'],
+        [AMOSTRAS.faixa, 'faixa: intensidade do campo na superfície'],
+        [AMOSTRAS.medidores, 'magnetômetros no solo e satélites'],
+      ]);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 13. Passo 4: a queda com a distância (uma régua e um gráfico, alinhados).
+    // -------------------------------------------------------------------------
+    function desenharPasso4(alfa) {
+      const terra = { x: telaX(0), y: telaY(0) };
+      const alturaLivre = cena.h - ESPACO_DO_TITULO, comNomes = alturaLivre >= 170;
+      const R = estado.R;
+      const xDoPonto = telaX(R);
+      ctx.globalAlpha = alfa;
+
+      // A régua, na linha do equador: a distância ao centro, de 1 a 8 raios.
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(telaX(1), terra.y);
+      ctx.lineTo(telaX(R_MAXIMO), terra.y);
+      for (let k = 1; k <= R_MAXIMO; k++) {
+        ctx.moveTo(telaX(k), terra.y - 4);
+        ctx.lineTo(telaX(k), terra.y + 4);
+      }
+      ctx.stroke();
+      if (!comNomes) {
+        // Em telas muito baixas, fica só a régua com o ponto (os números estão no painel).
+        desenharPonto(xDoPonto, terra.y, { anel: true });
+        ctx.globalAlpha = 1;
+        return;
+      }
+
+      // O gráfico: em relação ao dipolo, quanto sobra do quadrupolo (1/R) e do octupolo (1/R²).
+      const esquerda = telaX(1), direita = telaX(R_MAXIMO);
+      const base = cena.y + cena.h - 34, alto = cena.y + cena.h - alturaDoGrafico() + 20;
+      const naAltura = (fracao) => base - (base - alto) * fracao;
+      ctx.fillStyle = 'rgba(6, 6, 6, 0.86)';
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda - 30, alto - 14, direita - esquerda + 48, base - alto + 44, 10);
+      else ctx.rect(esquerda - 30, alto - 14, direita - esquerda + 48, base - alto + 44);
+      ctx.fill();
+      ctx.stroke();
+      // Os eixos.
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.moveTo(esquerda, alto);
+      ctx.lineTo(esquerda, base);
+      ctx.lineTo(direita, base);
+      for (let k = 1; k <= R_MAXIMO; k++) {
+        ctx.moveTo(telaX(k), base);
+        ctx.lineTo(telaX(k), base + 4);
+      }
+      ctx.stroke();
+      tracejado(esquerda, alto, direita, alto, 'rgba(255, 255, 255, 0.28)', [2, 4]);
+      for (let k = 1; k <= R_MAXIMO; k++) escrever(String(k), telaX(k), base + 13, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+      escrever('raios da Terra', direita, base + 27, { tamanho: 10.5, cor: '#747474', alinhar: 'right' });
+      escrever('1', esquerda - 8, alto, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
+      escrever('0', esquerda - 8, base, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
+      // As duas curvas.
+      const CURVAS = [
+        { n: 2, nome: 'quadrupolo', cor: COR_DESTAQUE, tracos: [] },
+        { n: 3, nome: 'octupolo', cor: COR_CAMPO, tracos: [7, 4] },
+      ];
+      for (const curva of CURVAS) {
+        ctx.strokeStyle = `rgb(${curva.cor})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(curva.tracos);
+        ctx.beginPath();
+        for (let k = 0; k <= 70; k++) {
+          const r = 1 + (k / 70) * (R_MAXIMO - 1);
+          if (k === 0) ctx.moveTo(telaX(r), naAltura(1 / vezesMenorQueODipolo(curva.n, r))); else ctx.lineTo(telaX(r), naAltura(1 / vezesMenorQueODipolo(curva.n, r)));
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      // A distância escolhida: uma linha que desce da régua até o gráfico, e os dois valores.
+      tracejado(xDoPonto, terra.y, xDoPonto, base, 'rgba(255, 255, 255, 0.5)', [3, 4]);
+      for (const curva of CURVAS) {
+        ctx.fillStyle = `rgb(${curva.cor})`;
+        ctx.beginPath();
+        ctx.arc(xDoPonto, naAltura(1 / vezesMenorQueODipolo(curva.n, R)), 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // O que cada curva é, no alto do gráfico, à direita (ali as curvas já estão baixas).
+      const linhas = [
+        { texto: `a ${emRaios(R)} do centro, em relação ao dipolo:`, tamanho: 11.5, cor: '#c8c8c8' },
+        ...CURVAS.map((curva) => ({ texto: `${curva.nome}: ${vezesMenor(vezesMenorQueODipolo(curva.n, R))}`, tamanho: 12.5, cor: `rgb(${curva.cor})`, peso: 600 })),
+      ];
+      const cabe = direita - telaX(2.15);
+      const mostradas = larguraDoTexto(linhas[0].texto, 11.5) <= cabe && base - alto >= 86 ? linhas : linhas.slice(1);
+      if (larguraDoTexto(mostradas[mostradas.length - 1].texto, 12.5, 600) + 34 <= cabe) {
+        let y = alto + 9;
+        for (const linha of mostradas) {
+          escrever(linha.texto, direita - 6, y, { tamanho: linha.tamanho, cor: linha.cor, peso: linha.peso ?? 500, alinhar: 'right' });
+          const curva = CURVAS.find((c) => linha.texto.startsWith(c.nome));
+          if (curva) {
+            const fim = direita - 12 - larguraDoTexto(linha.texto, linha.tamanho, 600);
+            ctx.strokeStyle = `rgb(${curva.cor})`;
+            ctx.lineWidth = 2;
+            ctx.setLineDash(curva.tracos);
+            ctx.beginPath();
+            ctx.moveTo(fim - 24, y);
+            ctx.lineTo(fim, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          y += linha.tamanho + 6;
+        }
+      }
+
+      // O ponto na régua.
+      desenharPonto(xDoPonto, terra.y, { anel: true });
+      escreverFormula(`R = ${numero(R, 2)}`, xDoPonto, terra.y - 22, { tamanho: 14, alinhar: 'center', placa: true });
+
+      if (alturaLivre > 240) {
+        desenharLegenda([
+          [AMOSTRAS.soma, 'soma das formas'],
+          [AMOSTRAS.dipolo, 'só o dipolo: longe da Terra, as duas se confundem'],
+        ]);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 14. O quadro inteiro.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+      atualizarProjecao();
+      for (const estrela of ESTRELAS) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${estrela.brilho})`;
+        ctx.fillRect(Math.round(estrela.u * largura), Math.round(estrela.v * altura), 1, 1);
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      ctx.clip();
+      desenharMundo();
+      // No passo 2, o mundo se apaga e dá lugar às três formas.
+      if (misturas.formas > 0.01) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${0.97 * misturas.formas})`;
+        ctx.fillRect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      }
+      // Em cima, o desenho some por trás do título (os textos, desenhados depois, ficam nítidos).
+      const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
+      sombra.addColorStop(0, '#000');
+      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), '#000');
+      sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = sombra;
+      ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
+      const deLonge = Math.min(1, forcaDaCena.longe + forcaDaCena.p5);     // as duas cenas usam o mesmo desenho
+      if (deLonge > 0.01) desenharDeLonge(deLonge, forcaDaCena.p5 > forcaDaCena.longe);
+      if (forcaDaCena.p1 > 0.01) desenharPasso1(forcaDaCena.p1);
+      if (forcaDaCena.p2 > 0.01) desenharFormas(forcaDaCena.p2);
+      if (forcaDaCena.p3 > 0.01) desenharPasso3(forcaDaCena.p3);
+      if (forcaDaCena.p4 > 0.01) desenharPasso4(forcaDaCena.p4);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 15. Painel: textos e números que mudam.
+    // -------------------------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+    const textos = new Map();          // o que já está escrito em cada lugar (para não reescrever à toa)
+    function por(id, html) {
+      if (textos.get(id) === html) return;
+      textos.set(id, html);
+      el(id).innerHTML = html;         // só textos fixos e números desta página
+    }
+
+    // Textos que não mudam, mas dependem dos valores da seção 2.
+    const CAMPO_EM_TEXTO = `${comMilhar(CAMPO_NO_EQUADOR)} nT`;
+    por('nota', `Quadrupolo e octupolo com valores de exemplo, não os da Terra; de cada ordem, só aparece a forma mais
+      simples. A deformação pelo vento solar, a magnetopausa e a direção do deslocamento do ímã são um esquema.
+      <i>R</i><sub>E</sub> = ${comMilhar(RAIO_DA_TERRA_KM)} km.`);
+    const SUBTITULOS = {
+      longe: 'De longe: três territórios em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>',
+      p1: 'De perto: o ímã um pouco fora do centro da Terra.',
+      p2: 'De perto: as formas simples que, somadas, dão o campo.',
+      p3: 'De perto: a soma das formas, com valores de exemplo.',
+      p4: 'De perto: quanto sobra de cada forma, conforme a distância.',
+      p5: 'De volta à visão de longe: onde cada modelo vale.',
+    };
+    const NOME_DO_TERRITORIO = ['', 'campo irregular: IGRF', 'o dipolo funciona bem', 'modelo de magnetosfera'];
+
+    function atualizarPainel() {
+      const R = estado.R, delta = deslocamento();
+      const aqui = territorioEm(R);
+      por('subtitulo', SUBTITULOS[estado.cena]);
+      por('o-r', `${numero(R, 2)} <i>R</i><sub>E</sub>`);
+      por('o-d', `${estado.d} km`);
+      por('o-q', `${emPorCento(estado.quadrupolo)} do dipolo`);
+      por('o-o', `${emPorCento(estado.octupolo)} do dipolo`);
+
+      // Visão de longe.
+      por('l-distancia', `${emRaios(R)} da Terra`);
+      por('l-quadrupolo', vezesMenor(vezesMenorQueODipolo(2, R)));
+      por('l-octupolo', vezesMenor(vezesMenorQueODipolo(3, R)));
+      por('l-modelo', `<span class="marca">${aqui}</span> ${NOME_DO_TERRITORIO[aqui]}`);
+
+      // Passo 1: o ímã fora do centro. Dos dois lados, sobre o equador do ímã, na superfície.
+      const doPacifico = campoNoEquadorDoIma(1 - delta), doAtlantico = campoNoEquadorDoIma(1 + delta);
+      const maior = campoNoEquadorDoIma(1 - DESLOCAMENTO_MAXIMO / RAIO_DA_TERRA_KM);
+      // (Com 4 casas, quem refizer a conta à mão chega ao mesmo resultado, a menos de uns poucos nT.)
+      por('conta-0', `<i>d</i>/<i>R</i><sub>E</sub> = ${estado.d} km ÷ ${comMilhar(RAIO_DA_TERRA_KM)} km = ${numero(delta, 4)}`);
+      por('conta-0b', estado.d > 0
+        ? `Pacífico (−): ${comMilhar(CAMPO_NO_EQUADOR)} ÷ ${numero(1 - delta, 4)}<sup>3</sup> = ${comMilhar(doPacifico)} nT`
+        : 'com o ímã no centro, os dois lados são iguais');
+      por('valor-0', estado.d > 0
+        ? `Atlântico Sul (+): ${comMilhar(CAMPO_NO_EQUADOR)} ÷ ${numero(1 + delta, 4)}<sup>3</sup> = <b>${comMilhar(doAtlantico)} nT</b>`
+        : `dos dois lados: <b>${CAMPO_EM_TEXTO}</b>`);
+      por('num-pacifico', `${comMilhar(doPacifico)} nT`);
+      por('num-centro', CAMPO_EM_TEXTO);
+      por('num-atlantico', `${comMilhar(doAtlantico)} nT`);
+      el('barra-pacifico').style.width = `${((100 * doPacifico) / maior).toFixed(1)}%`;
+      el('barra-centro').style.width = `${((100 * CAMPO_NO_EQUADOR) / maior).toFixed(1)}%`;
+      el('barra-atlantico').style.width = `${((100 * doAtlantico) / maior).toFixed(1)}%`;
+
+      // Passo 3: quanto de cada forma.
+      por('num-dipolo', '100%');
+      por('num-quadrupolo', emPorCento(estado.quadrupolo));
+      por('num-octupolo', emPorCento(estado.octupolo));
+      el('barra-dipolo').style.width = '100%';
+      el('barra-quadrupolo').style.width = `${Math.round(estado.quadrupolo * 100)}%`;
+      el('barra-octupolo').style.width = `${Math.round(estado.octupolo * 100)}%`;
+      por('valor-2', estado.quadrupolo === 0 && estado.octupolo === 0
+        ? 'só o dipolo: a soma e o tracejado coincidem'
+        : 'valores de exemplo: <b>não são os coeficientes da Terra</b>');
+
+      // Passo 4: a queda com a distância.
+      por('cabecalho-sobra', `sobra a ${numero(R, 2)} <i>R</i><sub>E</sub>`);
+      for (const n of [1, 2, 3]) {
+        const divisor = 1 / quedaDoCampo(n, R);
+        por(`sobra-${n}`, R < 1.004 ? 'tudo' : `<b>1/${divisor < 100 ? divisor.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : comMilhar(divisor)}</b>`);
+      }
+      por('valor-3', R < 1.02
+        ? 'na superfície, cada forma vale o que os coeficientes dizem'
+        : `a ${emRaios(R)}, em relação ao dipolo: quadrupolo <b>${vezesMenor(vezesMenorQueODipolo(2, R))}</b> do que na superfície; octupolo, <b>${vezesMenor(vezesMenorQueODipolo(3, R))}</b>`);
+
+      // Passo 5: onde cada modelo vale.
+      for (const item of document.querySelectorAll('.territorios li')) item.classList.toggle('aqui', Number(item.dataset.territorio) === aqui);
+      por('valor-4', `O ponto está a ${emRaios(R)} do centro: território <b>${aqui}</b>.`);
+      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+    }
+
+    function mostrarPasso(novo) {
+      estado.passo = limitar(novo, 0, 4);
+      for (const item of document.querySelectorAll('.passo')) item.classList.toggle('ativo', Number(item.dataset.passo) === estado.passo);
+      for (const marca of document.querySelectorAll('.pontos button')) {
+        const atual = Number(marca.dataset.passo) === estado.passo;
+        marca.classList.toggle('ativo', atual);
+        if (atual) marca.setAttribute('aria-current', 'step'); else marca.removeAttribute('aria-current');
+      }
+      el('bt-anterior').disabled = estado.passo === 0;
+      el('bt-proximo').disabled = estado.passo === 4;
+      document.querySelector('.conteudo').scrollTop = 0;
+      atualizarCena();
+      atualizarPainel();
+      medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+    }
+    function mostrarVisao(perto) {
+      if (estado.perto === perto) return;
+      estado.perto = perto;
+      document.body.classList.toggle('perto', perto);
+      el('bt-longe').classList.toggle('ativo', !perto);
+      el('bt-perto').classList.toggle('ativo', perto);
+      el('bt-longe').setAttribute('aria-pressed', String(!perto));
+      el('bt-perto').setAttribute('aria-pressed', String(perto));
+      atualizarCena();
+      atualizarPainel();
+      medirCena();
+    }
+
+    // -------------------------------------------------------------------------
+    // 16. Controles.
+    // -------------------------------------------------------------------------
+    el('bt-longe').addEventListener('click', () => mostrarVisao(false));
+    el('bt-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-ver-de-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-anterior').addEventListener('click', () => mostrarPasso(estado.passo - 1));
+    el('bt-proximo').addEventListener('click', () => mostrarPasso(estado.passo + 1));
+    for (const item of document.querySelectorAll('.passo')) {
+      item.querySelector('.passo-titulo').addEventListener('click', () => mostrarPasso(Number(item.dataset.passo)));
+    }
+    for (const marca of document.querySelectorAll('.pontos button')) {
+      marca.addEventListener('click', () => mostrarPasso(Number(marca.dataset.passo)));
+    }
+
+    /** Muda um ou mais valores (dentro dos limites de cada um) e põe os controles de acordo. */
+    function definir({ R = estado.R, graus = estado.graus, d = estado.d, quadrupolo = estado.quadrupolo, octupolo = estado.octupolo }) {
+      estado.R = limitar(Math.round(R * 20) / 20, 1, R_MAXIMO);
+      estado.graus = Math.round(graus);
+      estado.d = limitar(Math.round(d / 10) * 10, 0, DESLOCAMENTO_MAXIMO);
+      estado.quadrupolo = limitar(Math.round(quadrupolo * 100) / 100, 0, QUADRUPOLO_MAXIMO);
+      estado.octupolo = limitar(Math.round(octupolo * 100) / 100, 0, OCTUPOLO_MAXIMO);
+      el('c-r').value = estado.R;
+      el('c-d').value = estado.d;
+      el('c-q').value = Math.round(estado.quadrupolo * 100);
+      el('c-o').value = Math.round(estado.octupolo * 100);
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    el('c-r').addEventListener('input', () => definir({ R: Number(el('c-r').value) }));
+    el('c-d').addEventListener('input', () => definir({ d: Number(el('c-d').value) }));
+    el('c-q').addEventListener('input', () => definir({ quadrupolo: Number(el('c-q').value) / 100 }));
+    el('c-o').addEventListener('input', () => definir({ octupolo: Number(el('c-o').value) / 100 }));
+    function alternarPausa() {
+      estado.pausado = !estado.pausado;
+      el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    }
+    el('bt-pausar').addEventListener('click', alternarPausa);
+    // Teclado (opcional; só depois de clicar na animação): setas trocam de passo, Espaço pausa.
+    window.addEventListener('keydown', (evento) => {
+      if (evento.target !== document.body) return;
+      if (evento.key === ' ') { evento.preventDefault(); alternarPausa(); }
+      else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
+      else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
+    });
+
+    // Arrastar no desenho: o ponto (de longe e no passo 5), a distância na régua (passo 4) ou o ímã (passo 1).
+    // De longe, clicar no ponto abre a visão de perto.
+    let arrasto = null;
+    /** O lugar do desenho que fica embaixo do ponteiro, em raios da Terra. */
+    const lugarDoPonteiro = (evento) => ({ X: (evento.clientX - projecao.cx) / projecao.S, Y: (projecao.cy - evento.clientY) / projecao.S });
+    /** O que dá para arrastar ali: 'ponto', 'regua', 'ima' ou nada. */
+    function oQueHaAli(evento) {
+      if (estado.viagem < 1) return null;
+      const { X, Y } = lugarDoPonteiro(evento);
+      const camera = CAMERA_DA_CENA[estado.cena];
+      if (camera === 'longe') return Math.hypot(X, Y) <= R_MAXIMO + 1.2 ? 'ponto' : null;
+      if (camera === 'queda') return X >= 0.4 && X <= R_MAXIMO + 0.6 ? 'regua' : null;
+      if (estado.cena === 'p1') return Math.hypot(X, Y) <= 1.5 ? 'ima' : null;
+      return null;
+    }
+    function arrastarPara(evento) {
+      const { X, Y } = lugarDoPonteiro(evento);
+      if (arrasto.tipo === 'ponto') definir({ R: Math.hypot(X, Y), graus: Math.hypot(X, Y) > 0.05 ? emGraus(Math.atan2(Y, X)) : estado.graus });
+      else if (arrasto.tipo === 'regua') definir({ R: X });
+      else definir({ d: -X * RAIO_DA_TERRA_KM });
+    }
+    function sobreOPonto(evento) {
+      if (CAMERA_DA_CENA[estado.cena] !== 'longe') return false;
+      const P = ponto();
+      return Math.hypot(telaX(P.X) - evento.clientX, telaY(P.Y) - evento.clientY) < 18;
+    }
+    tela.addEventListener('pointerdown', (evento) => {
+      const tipo = oQueHaAli(evento);
+      if (!tipo) return;
+      arrasto = { tipo, x: evento.clientX, y: evento.clientY, moveu: false, noPonto: tipo === 'ponto' && sobreOPonto(evento) };
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+      if (!arrasto.noPonto) arrastarPara(evento);
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (arrasto) {
+        if (Math.hypot(evento.clientX - arrasto.x, evento.clientY - arrasto.y) > 4) arrasto.moveu = true;
+        if (arrasto.moveu || !arrasto.noPonto) arrastarPara(evento);
+        return;
+      }
+      const tipo = oQueHaAli(evento);
+      tela.style.cursor = !tipo ? '' : sobreOPonto(evento) && !estado.perto ? 'pointer' : tipo === 'ponto' ? 'grab' : 'ew-resize';
+    });
+    tela.addEventListener('pointerup', () => {
+      if (arrasto && arrasto.noPonto && !arrasto.moveu && !estado.perto) mostrarVisao(true);      // clique no ponto: ver de perto
+      arrasto = null;
+    });
+    tela.addEventListener('pointercancel', () => { arrasto = null; });
+
+    // -------------------------------------------------------------------------
+    // 17. Laço da animação.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      // A viagem da câmera e as trocas de cena continuam mesmo na pausa (são respostas aos controles).
+      if (estado.viagem < 1) estado.viagem = Math.min(1, estado.viagem + intervalo / DURACAO_DA_VIAGEM);
+      for (const nome of CENAS) {
+        const alvo = nome === estado.cena && estado.viagem >= 0.5 ? 1 : 0;
+        forcaDaCena[nome] += limitar(alvo - forcaDaCena[nome], -intervalo / 0.4, intervalo / 0.4);
+      }
+      for (const nome of Object.keys(misturas)) {
+        const alvo = MISTURA_DA_CENA[estado.cena][nome] ?? 0;
+        misturas[nome] += limitar(alvo - misturas[nome], -intervalo / 0.7, intervalo / 0.7);
+      }
+      if (!estado.pausado) {
+        estado.tempo += intervalo;
+        if (misturas.vento > 0.01) atualizarVento(intervalo);
+      }
+      desenhar();
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    mostrarControles();
+    definir(COMECO);
+    mostrarPasso(0);
+    ajustarTamanho();
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>

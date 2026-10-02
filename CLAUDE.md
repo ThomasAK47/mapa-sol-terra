@@ -439,10 +439,31 @@ janela mudar, atualize o contrato junto. Resumo técnico:
      só depende da latitude) e os pulsos que descem pela faixa no passo 5 (um
      esquema). A descrição fala em "65° a 72°"; a conta dá 65,9°, e a tela
      mostra 66° a 72°.
-  3. Além do dipolo (a fazer): dipolo deslocado e Atlântico Sul, harmônicos
-     esféricos, IGRF, onde cada modelo vale. **Antes de fazer**, confirme com
-     ela a queda com a distância: o texto dela diz R^(−(n+1)) e também que o
-     dipolo cai com R³ (normalmente n+1 é do potencial; o campo cai com n+2).
+  3. `geomagnetico-3-alem-do-dipolo.html` (feita): por que o dipolo é só uma
+     aproximação. De longe, três territórios (campo irregular até 2 raios; o
+     dipolo funciona bem de 2 a 4; além disso, o vento solar deforma), com a
+     magnetopausa e o vento solar em esquema. De perto, cinco passos:
+     - ímã fora do centro (uns 400 km, para o lado do Pacífico; mais fraco no
+       Atlântico Sul): B = 0,31 G ÷ (1 ± d/R_E)³, na superfície, sobre o
+       equador do ímã;
+     - soma de formas simples: dipolo, quadrupolo, octupolo (não há n = 0);
+     - quanto de cada forma: os coeficientes de Gauss, o IGRF;
+     - a queda com a distância: potencial ∝ R^−(n+1) e campo ∝ R^−(n+2) (a
+       pessoa usuária confirmou: n+1 é do potencial; o campo é a derivada);
+     - onde cada modelo vale (volta à visão de longe).
+
+     O campo é a soma das formas simétricas em torno do eixo (`campoEm`), e as
+     linhas são seguidas passo a passo (`seguirLinha`, Runge–Kutta), refeitas
+     só quando um valor muda (`daSoma`, `doDeslocado`). `MISTURA_DA_CENA` diz
+     o que cada cena acrescenta ao desenho; a barra mostra só os controles da
+     cena (`data-cenas`). Para testar: `definir({ R, graus, d, quadrupolo,
+     octupolo })` também é do escopo global.
+     **Assumido, e avisado na tela:** as quantidades de quadrupolo e octupolo
+     são de exemplo (não são os coeficientes da Terra); de cada ordem só
+     aparece a forma mais simples; R_E = 6 371 km; a deformação pelo vento
+     solar (`deformar`), a magnetopausa a 10 raios e a direção do deslocamento
+     do ímã são um esquema. Não troque os valores de exemplo por coeficientes
+     reais sem ela pedir.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
