@@ -47,8 +47,9 @@ pedidas pela pessoa usuária, um commit para cada:
   "Tamanho de todos os cards" em Opções;
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
 - vento solar radial, contornando o primeiro anel do campo da Terra;
-- animações de verdade: `animacoes/magnetopausa.html` e a série do campo
-  geomagnético, em três partes (veja "Contrato das animações");
+- animações de verdade: `animacoes/magnetopausa.html`, a série do campo
+  geomagnético, em três partes, e `animacoes/vento-solar-bz.html` (veja
+  "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados".
 
@@ -501,6 +502,38 @@ janela mudar, atualize o contrato junto. Resumo técnico:
      solar (`deformar`), a magnetopausa a 10 raios e a direção do deslocamento
      do ímã são um esquema. Não troque os valores de exemplo por coeficientes
      reais sem ela pedir.
+- **`vento-solar-bz.html`** (feita; a física é a seção "1. O vento solar e o
+  Bz" do material da pessoa usuária, que cita uma "seção 4" sobre reconexão
+  ainda não enviada): o vento solar, o campo que ele traz (IMF) e por que o
+  sinal do Bz decide se a energia entra.
+  - De longe: o vento chega à Terra trazendo o IMF. A seta laranja muda o Bz
+    que sai agora (dá para arrastar; o comprimento cresce com a raiz do Bz,
+    `alturaDaSeta`). As linhas do IMF andam com o vento e guardam o Bz com que
+    saíram (`linhasDoIMF`): uma mudança só chega à Terra junto com as linhas
+    novas (`bzChegando`, com a "frente" tracejada). Com Bz sul, aparecem as
+    linhas ligadas (`LINHAS_LIGADAS`: o pedaço de fora em laranja, o de dentro
+    em azul) e a energia descendo por elas.
+  - De perto, seis passos, cada um com a sua cena (`CAMERA_DA_CENA`,
+    `MUNDO_NA_CENA`):
+    1. o plasma: um cubinho de 1 cm³ e o tempo de viagem
+       (150 milhões de km ÷ v);
+    2. o campo congelado: linhas presas ao plasma; 31 000 nT ÷ B;
+    3. os eixos do GSM em 3D (arrastar gira) e √(Bx² + By² + Bz²);
+    4. o sinal, na frente da magnetopausa;
+    5. a regra de −10 nT por mais de 3 h, num gráfico de 24 h;
+    6. CME × CIR.
+  - **Assumido, e avisado na tela:**
+    - N conta os prótons (o texto diz "5 partículas/cm³"), e o desenho põe o
+      mesmo número de elétrons;
+    - 150 milhões de km e 31 000 nT são acréscimos;
+    - magnetopausa a 10 raios, linhas, partículas, a ligação dos campos e as
+      cenas da CME e da CIR são esquemas;
+    - a curva do passo 5 é inventada. Num intervalo curto a rampa encurta,
+      para dar para mostrar um pico de poucos minutos.
+  - Para testar: `definir({ bx, by, bz, B, N, v, bzSul, duracao, azimute,
+    elevacao })` também é do escopo global. O teste confere que o pedaço de
+    fora das linhas ligadas não entra na magnetopausa e que o de dentro não
+    sai dela.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de

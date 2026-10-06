@@ -25,6 +25,11 @@
       "arquivo": "geomagnetico-3-alem-do-dipolo.html",
       "titulo": "Campo geomagnético 3: além do dipolo",
       "descricao": "Por que o dipolo é só uma aproximação: o ímã fora do centro e o Atlântico Sul, a soma de formas simples (harmônicos esféricos, IGRF), a queda de cada forma com a distância e onde cada modelo vale."
+    },
+    {
+      "arquivo": "vento-solar-bz.html",
+      "titulo": "Vento solar e o Bz",
+      "descricao": "O vento solar como plasma, o campo do Sol congelado nele (IMF), os três eixos do GSM e por que o sinal do Bz decide se a energia entra na Terra. No fim, a regra de −10 nT por mais de 3 horas e de onde vem o Bz sul forte (CME e CIR)."
     }
   ]
 }

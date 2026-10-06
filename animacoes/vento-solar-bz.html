@@ -1,0 +1,2390 @@
+<!doctype html>
+<!--
+  =============================================================================
+  vento-solar-bz.html: animação do Mapa de Estudos Sol–Terra.
+
+  O que mostra: o vento solar, o campo magnético que ele traz do Sol (o IMF) e
+  por que o sinal do Bz, a parte norte–sul desse campo, decide se a energia do
+  vento solar entra na Terra.
+    • De longe: o vento solar chega à Terra trazendo o IMF. A seta laranja, à
+      esquerda, pode ser arrastada: ela muda o Bz que sai agora, e a mudança
+      viaja com o vento até a Terra (o campo está "congelado" no plasma).
+    • De perto, em seis passos (cada um com a sua cena):
+        1: o vento solar, um plasma de prótons e elétrons;
+        2: o campo congelado no plasma (o IMF);
+        3: a seta do campo em 3D e os três eixos do GSM;
+        4: por que o sinal do Bz importa, no lado da Terra que olha para o Sol;
+        5: a regra prática para o catálogo: Bz abaixo de −10 nT por mais de 3 h;
+        6: de onde vem o Bz sul forte: CME e CIR.
+
+  A física segue a descrição escrita por quem mantém o mapa (a seção "1. O vento
+  solar e o Bz" do material dela):
+    vento solar:  prótons e elétrons, ~400 km/s, ~5 partículas por cm³; um plasma,
+                  que conduz eletricidade muito bem
+    IMF:          o campo do Sol arrastado pelo vento, "congelado" no plasma;
+                  ~5 nT perto da Terra; dentro de uma CME, mais de 30 nT
+    GSM:          x da Terra para o Sol; y para o lado do entardecer; z para o
+                  norte, alinhado com o eixo magnético da Terra
+    o sinal:      o campo da Terra, do lado do Sol, aponta para o norte. Bz norte:
+                  mesmo sentido, não se ligam, o vento contorna a Terra, pouca
+                  energia entra. Bz sul: sentidos opostos, podem se ligar
+                  (reconexão) e a energia entra
+    a regra:      Dst ≤ −100 nT exige Bz abaixo de −10 nT por mais de 3 horas
+                  (Gonzalez e Tsurutani, 1987; Gonzalez et al., 1994)
+    as causas:    CME: as tempestades mais intensas (ex.: −412 nT em maio de
+                  2024); CIR: moderadas, raramente abaixo de −150 nT
+
+  O que a animação precisou assumir (está na seção 2 do script e na tela):
+    • a densidade N conta os prótons (como nos dados do OMNI); o desenho põe o
+      mesmo número de elétrons;
+    • a distância Sol–Terra (150 milhões de km) e a comparação com o campo na
+      superfície (31 000 nT, das animações do campo geomagnético) são acréscimos;
+    • a magnetopausa, as linhas de campo, as partículas, a ligação dos campos e
+      as cenas da CME e da CIR são esquemas; a curva do Bz do passo 5 é inventada.
+
+  Feita no formato de animacoes/magnetopausa.html, seguindo animacoes/CONTRATO.md.
+  =============================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vento solar e o Bz</title>
+  <style>
+    /* Cores: branco e cinzas, mais duas cores com significado:
+       laranja = o que vem do Sol (vento solar e o campo que ele traz);
+       azul = campo magnético da Terra. */
+    :root {
+      --vento: #ffb347;
+      --campo: #86b9ff;
+      --texto: #ececec;
+      --texto-2: #a9a9a9;
+      --texto-3: #747474;
+      --borda: #2b2b2b;
+      --borda-forte: #3d3d3d;
+      --fonte-mat: Cambria, 'Cambria Math', 'STIX Two Text', Georgia, 'Times New Roman', serif;
+      --largura-painel: clamp(300px, 34vw, 420px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: var(--texto);
+      font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; color: inherit; }
+    sub, sup { line-height: 0; }
+    [hidden] { display: none !important; }
+
+    /* O desenho ocupa a área inteira. Por cima dele ficam o título, o painel
+       de explicação (à direita) e a barra de controles (embaixo do desenho). */
+    #tela { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .topo {
+      position: fixed;
+      left: 16px;
+      top: 12px;
+      max-width: calc(100% - var(--largura-painel) - 52px);
+      pointer-events: none;
+      text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 16px #000;
+    }
+    .topo h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    .topo p { margin: 2px 0 0; font-size: 12.5px; color: var(--texto-2); }
+    .curto { display: none; }          /* versão curta de um texto, para telas estreitas (troca com .longo) */
+    .vento { color: var(--vento); }
+    .campo { color: var(--campo); }
+
+    /* ---- Painel de explicação ---- */
+    #painel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      bottom: 12px;
+      width: var(--largura-painel);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+      overflow: hidden;
+    }
+    .visoes {
+      flex: none;
+      display: flex;
+      padding: 3px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #0d0d0d;
+    }
+    .visoes button {
+      flex: 1;
+      height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .visoes button:hover { color: var(--texto); }
+    .visoes button.ativo { background: #ededed; color: #000; }
+    .conteudo { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+    /* Visão de longe: resumo. */
+    #resumo h2 { margin: 2px 0 6px; font-size: 15px; font-weight: 600; }
+    #resumo p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    #resumo p b { color: var(--texto); font-weight: 600; }
+    .dica { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--texto-2); }
+    .leituras { margin: 0; border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .leituras div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 10px; }
+    .leituras div + div { border-top: 1px solid var(--borda); }
+    .leituras dt { font-size: 12px; color: var(--texto-2); }
+    .leituras dd { margin: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+    .leituras dd small { font-size: 11.5px; font-weight: 400; color: var(--texto-2); }
+    #l-chegando { white-space: normal; }        /* com o aviso de mudança, pode quebrar a linha (em painéis estreitos) */
+
+    /* Visão de perto: os passos. */
+    #passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .passo { border: 1px solid var(--borda); border-radius: 10px; background: #0e0e0e; }
+    .passo-titulo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .passo-titulo:hover { color: var(--texto); }
+    .numero {
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      font-size: 11.5px;
+    }
+    .passo.ativo { border-color: #5a5a5a; background: #131313; }
+    .passo.ativo .passo-titulo { color: #fff; cursor: default; }
+    .passo.ativo .numero { background: #ededed; border-color: #ededed; color: #000; }
+    .passo-corpo { display: none; padding: 0 12px 12px; }
+    .passo.ativo .passo-corpo { display: block; }
+
+    /* Fórmulas: letras em itálico, como num livro. */
+    .formula { font-family: var(--fonte-mat); font-size: 19px; line-height: 1.55; white-space: nowrap; }
+    .formula.pequena { font-size: 16px; }
+    .formula small { font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--texto-3); margin: 0 6px 0 4px; }
+    /* Índices e expoentes que não aumentam a altura da linha. */
+    .formula sup, .formula sub { position: relative; vertical-align: baseline; font-size: 0.7em; }
+    .formula sup { top: -0.55em; }
+    .formula sub { top: 0.25em; }
+    /* Ao abrir um passo, a fórmula "se escreve" da esquerda para a direita;
+       logo depois aparecem a conta com os números e o resultado. */
+    @keyframes escrever { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -6px 0 0); } }
+    @keyframes surgir { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .passo.ativo .formula { animation: escrever 0.9s ease-out both; }
+    .passo.ativo .conta { animation: surgir 0.4s ease-out 0.6s both; }
+    .passo.ativo .valor { animation: surgir 0.4s ease-out 0.85s both; }
+    .conta { margin-top: 5px; font-size: 12.5px; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+    .valor { margin-top: 2px; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .conta sup, .valor sup, .legenda sup { font-size: 0.72em; }
+    .conta sup, .valor sup, .conta sub, .valor sub { position: relative; vertical-align: baseline; }
+    .conta sup, .valor sup { top: -0.5em; }
+    .conta sub, .valor sub { top: 0.25em; }
+    .explicacao { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto-2); }
+    .explicacao b { color: var(--texto); font-weight: 600; }
+    /* O que é cada letra, com o valor de agora. */
+    .legenda { margin: 8px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 9px; font-size: 12px; line-height: 1.45; color: var(--texto-2); }
+    .legenda dt { font-family: var(--fonte-mat); font-style: italic; font-size: 14px; line-height: 1.25; color: var(--texto); white-space: nowrap; }
+    .legenda dt sub { font-style: normal; }
+    .legenda dt.unidade { font-family: inherit; font-style: normal; font-size: 12px; line-height: 1.45; }
+    .legenda dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+    /* Rodapé do painel: o convite para ver de perto, ou a troca de passo. */
+    .rodape, .navegacao { flex: none; }
+    .navegacao { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .navegacao .botao { padding: 0 8px; gap: 2px; }
+    #contador-de-passos { font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+    .pontos { display: none; gap: 6px; }
+    .pontos button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid var(--borda-forte);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pontos button:hover { color: #fff; border-color: #6a6a6a; }
+    .pontos button.ativo { background: #ededed; border-color: #ededed; color: #000; cursor: default; }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .botao:hover { background: #1b1b1b; }
+    .botao:disabled { opacity: 0.35; cursor: default; background: transparent; }
+    .botao svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .botao.principal { background: #ededed; border-color: #ededed; color: #000; font-weight: 600; }
+    .botao.principal:hover { background: #fff; }
+    .botao.principal:disabled { background: #ededed; }
+    .botao.largo { width: 100%; height: 36px; }
+    .nota { flex: none; margin: 0; font-size: 11px; line-height: 1.45; color: var(--texto-3); }
+
+    /* ---- Controles: uma barra embaixo do desenho, à esquerda do painel.
+       Ela mostra só os controles da cena aberta ("data-cenas"). ---- */
+    .controles {
+      position: fixed;
+      left: 12px;
+      right: calc(var(--largura-painel) + 32px);
+      bottom: 12px;
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px 20px;
+      padding: 9px 14px 10px;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background: #0b0b0b;
+    }
+    .controle { flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 3px 8px; font-size: 12.5px; color: var(--texto-2); }
+    .controle .nome { white-space: nowrap; overflow: hidden; }
+    .controle .nome i { font-family: var(--fonte-mat); font-size: 15px; color: var(--texto); }
+    .controle .nome i + sub { font-family: var(--fonte-mat); font-size: 11px; color: var(--texto); margin-right: 5px; }
+    .controle .nome small { font-size: 12px; }
+    .controle output { text-align: right; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .controle input { grid-column: 1 / -1; }
+    input[type="range"] { width: 100%; min-width: 0; height: 16px; margin: 0; accent-color: #ededed; cursor: pointer; }
+    .botoes { flex: none; display: flex; gap: 8px; }
+    #bt-pausar { min-width: 84px; }
+
+    /* Só uma das duas partes do conteúdo aparece de cada vez. */
+    body:not(.perto) .so-perto { display: none !important; }
+    body.perto .so-longe { display: none !important; }
+
+    /* Próprio desta animação. */
+    .formula.quebra { white-space: normal; line-height: 1.4; }
+    .junto { white-space: nowrap; }
+    .passo-corpo .conta + .valor { margin-top: 0; }
+    /* Passo 6: as duas causas do Bz sul forte (a tabela do texto). */
+    .causas { margin: 2px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 12.5px; line-height: 1.45; color: var(--texto-2); }
+    .causas li { padding: 8px 10px; border: 1px solid var(--borda); border-radius: 9px; background: #101010; }
+    .causas b { color: var(--texto); font-weight: 600; }
+    .causas .efeito { display: block; margin-top: 3px; color: var(--texto); }
+    @media (min-width: 761px) and (min-height: 381px) {
+      body[data-controles="2"] .controles { max-width: 640px; }
+      body[data-controles="1"] .controles { max-width: 430px; }
+      body[data-controles="0"] .controles { max-width: 120px; }
+    }
+    @media (max-width: 760px), (max-height: 380px) {
+      .leituras .so-largo { display: none; }
+      .causas li { padding: 0; border: 0; background: transparent; }
+      .causas .como, .causas .nome-longo { display: none; }
+      .causas b::after { content: ': '; }
+      .causas .efeito { display: inline; margin: 0; }
+      .causas { gap: 4px; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .leituras div + div { border-top: 0; }
+    }
+
+    /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 6 para trocar ---- */
+    @media (max-height: 700px) {
+      .passo:not(.ativo) { display: none; }
+      .pontos { display: flex; }
+      #contador-de-passos { display: none; }
+    }
+    @media (max-height: 540px) {
+      .dica { display: none; }
+    }
+    @media (max-height: 520px) {
+      .nota { display: none; }
+    }
+    @media (max-height: 460px) {
+      #painel { top: 8px; bottom: 8px; padding: 12px; gap: 10px; }
+      .controles { bottom: 8px; }
+    }
+    /* ---- Janelas mais estreitas: a barra de controles e o painel encolhem ---- */
+    @media (max-width: 1180px) {
+      .controle .nome small { display: none; }
+    }
+    @media (max-width: 1060px) {
+      .navegacao .rotulo { display: none; }
+      .navegacao .botao { width: 34px; padding: 0; }
+    }
+    @media (max-width: 1000px) and (max-height: 700px) {
+      .dica { display: none; }
+    }
+    @media (max-width: 1000px) and (max-height: 640px) {
+      .nota { display: none; }
+    }
+    @media (max-width: 920px) {
+      .controles { gap: 8px 14px; }
+      #bt-pausar { min-width: 76px; }
+    }
+    @media (max-width: 860px) {
+      .longo { display: none; }
+      .curto { display: inline; }
+    }
+
+    /* ---- Telas estreitas (ou muito baixas): tudo num painel compacto, embaixo ---- */
+    @media (max-width: 760px), (max-height: 380px) {
+      :root { --largura-painel: 0px; }
+      .topo { left: 12px; top: 8px; max-width: calc(100% - 24px); }
+      .topo h1 { font-size: 13px; }
+      .topo p { font-size: 11.5px; }
+      #painel {
+        top: auto;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+        max-height: 62%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+      .visoes { grid-column: 1; grid-row: 1; }
+      body:not(.perto) .visoes { grid-column: 1 / -1; }
+      .navegacao { grid-column: 2; grid-row: 1; }
+      .navegacao .botao { width: 32px; padding: 0; }
+      .navegacao .rotulo, .pontos, #contador-de-passos { display: none; }
+      .conteudo { grid-column: 1 / -1; grid-row: 2; }
+      .controles {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 3;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        gap: 8px 10px;
+        align-items: end;
+      }
+      .passo:not(.ativo) { display: none; }
+      .passo, .passo.ativo { border: 0; background: transparent; }
+      .passo-titulo { padding: 0 0 2px; }
+      .passo-corpo { padding: 0; }
+      .numero { display: none; }
+      .formula { font-size: 16px; line-height: 1.35; }
+      .explicacao, .legenda, .conta, .nota, .rodape, #resumo h2, #resumo p { display: none; }
+      .valor { margin-top: 2px; }
+      .leituras { margin: 0; }
+      .leituras div { padding: 5px 8px; }
+      .leituras dd { font-size: 12.5px; }
+      .controle { font-size: 11.5px; gap: 0 4px; }
+      .controle .nome small { display: none; }
+      #bt-pausar { min-width: 0; }
+      #bt-tipico { display: none; }
+    }
+    @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
+      .topo p, .passo-titulo, .leituras div:first-child { display: none; }
+      .leituras div:nth-child(2) { border-top: 0; }
+      .valor { font-size: 12px; }
+    }
+    @media (max-width: 420px) {
+      .passo .formula small { display: none; }
+      .formula { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .passo.ativo .formula, .passo.ativo .conta, .passo.ativo .valor { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="tela"></canvas>
+
+  <div class="topo">
+    <h1>O vento solar e o B<sub>z</sub><span class="longo">: quando a energia do Sol entra na Terra</span></h1>
+    <p id="subtitulo"></p>
+  </div>
+
+  <aside id="painel" aria-label="Explicação e controles">
+    <div class="visoes" role="group" aria-label="Visão">
+      <button id="bt-longe" type="button" class="ativo" aria-pressed="true">De longe</button>
+      <button id="bt-perto" type="button" aria-pressed="false">De perto</button>
+    </div>
+
+    <div class="conteudo">
+      <!-- Visão de longe -->
+      <section id="resumo" class="so-longe">
+        <h2>Norte protege, sul expõe</h2>
+        <p>O <span class="vento">vento solar</span> traz do Sol um campo magnético, o IMF. O <b>B<sub>z</sub></b> é a
+          parte norte–sul dele: quando aponta para o sul, a Terra fica exposta; quando aponta para o norte, fica
+          protegida.</p>
+        <dl class="leituras">
+          <div><dt>B<sub>z</sub> que sai agora</dt><dd id="l-bz"></dd></div>
+          <div><dt>B<sub>z</sub> chegando à Terra</dt><dd id="l-chegando"></dd></div>
+          <div class="so-largo"><dt>Campo da Terra, do lado do Sol</dt><dd class="campo">para o norte</dd></div>
+          <div><dt>O que acontece</dt><dd id="l-resultado"></dd></div>
+        </dl>
+      </section>
+
+      <!-- Visão de perto: seis passos. Em cada um: a fórmula ou a ideia, os números de agora e a explicação. -->
+      <ol id="passos" class="so-perto">
+        <li class="passo" data-passo="0">
+          <button class="passo-titulo" type="button"><span class="numero">1</span>Um plasma que sai do Sol</button>
+          <div class="passo-corpo">
+            <div class="formula pequena vento"><i>v</i> ≈ 400 km/s <small>e</small> <i>N</i> ≈ 5 por cm<sup>3</sup></div>
+            <div class="conta" id="conta-1"></div>
+            <div class="valor" id="valor-1"></div>
+            <p class="explicacao">O vento solar é um fluxo contínuo de prótons e elétrons que sai do Sol. Ele é um
+              <b>plasma</b>, um gás de cargas elétricas, e por isso conduz eletricidade muito bem.</p>
+            <dl class="legenda" id="legenda-1"></dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="1">
+          <button class="passo-titulo" type="button"><span class="numero">2</span>O campo congelado no vento</button>
+          <div class="passo-corpo">
+            <div class="formula pequena vento"><i>B</i> ≈ 5 nT <small>numa CME:</small> <i>B</i> &gt; 30 nT</div>
+            <div class="conta" id="conta-2"></div>
+            <div class="valor" id="valor-2"></div>
+            <p class="explicacao">O campo interplanetário (<b>IMF</b>) é o campo magnético do Sol arrastado pelo vento
+              solar. Como o plasma conduz quase perfeitamente, o campo fica "congelado" nele e viaja junto, como tinta
+              misturada na água de um rio.</p>
+            <dl class="legenda" id="legenda-2"></dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="2">
+          <button class="passo-titulo" type="button"><span class="numero">3</span>Uma seta em 3D: os eixos do GSM</button>
+          <div class="passo-corpo">
+            <div class="formula pequena vento">|<i>B</i>| = √(<i>B</i><sub>x</sub><sup>2</sup> + <i>B</i><sub>y</sub><sup>2</sup> + <i>B</i><sub>z</sub><sup>2</sup>)</div>
+            <div class="conta" id="conta-3"></div>
+            <div class="valor" id="valor-3"></div>
+            <p class="explicacao">O IMF é uma seta em 3D. No sistema GSM (o usado no OMNI), ela é decomposta em três
+              eixos: <b>x</b> aponta da Terra para o Sol; <b>y</b>, para o lado do entardecer; <b>z</b>, para o norte,
+              alinhado com o eixo magnético da Terra. O B<sub>z</sub> é só uma parte da seta.</p>
+            <dl class="legenda" id="legenda-3"></dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="3">
+          <button class="passo-titulo" type="button"><span class="numero">4</span>Por que o sinal importa</button>
+          <div class="passo-corpo">
+            <div class="formula pequena"><i>B</i><sub>z</sub> &gt; 0<small>norte</small> <i>B</i><sub>z</sub> &lt; 0<small>sul</small></div>
+            <div class="conta" id="conta-4"></div>
+            <div class="valor" id="valor-4"></div>
+            <p class="explicacao">O campo da Terra, do lado que olha para o Sol, aponta para o norte. Com
+              B<sub>z</sub> <b>norte</b>, os dois campos apontam no mesmo sentido: eles não se conectam, e o vento
+              solar contorna a Terra; pouca energia entra. Com B<sub>z</sub> <b>sul</b>, os campos apontam em sentidos
+              opostos: eles podem se ligar (é a reconexão), e a energia entra.</p>
+          </div>
+        </li>
+        <li class="passo" data-passo="4">
+          <button class="passo-titulo" type="button"><span class="numero">5</span>A regra para o catálogo</button>
+          <div class="passo-corpo">
+            <div class="formula pequena quebra"><span class="longo">Dst ≤ −100 nT exige </span><span class="junto"><i>B</i><sub>z</sub> &lt; −10 nT</span>
+              <span class="junto">por mais de 3 h</span></div>
+            <div class="conta" id="conta-5"></div>
+            <div class="valor" id="valor-5"></div>
+            <p class="explicacao">Uma tempestade intensa (Dst ≤ −100 nT) exige B<sub>z</sub> sul forte e duradouro,
+              tipicamente abaixo de −10 nT por mais de 3 horas (Gonzalez e Tsurutani, 1987; retomado em Gonzalez et al.,
+              1994). B<sub>z</sub> sul forte por poucos minutos não basta.</p>
+            <dl class="legenda" id="legenda-5"></dl>
+          </div>
+        </li>
+        <li class="passo" data-passo="5">
+          <button class="passo-titulo" type="button"><span class="numero">6</span><span>De onde vem o B<sub>z</sub> sul forte</span></button>
+          <div class="passo-corpo">
+            <ul class="causas">
+              <li><b>CME</b><span class="nome-longo"> (ejeção de massa coronal)</span><span class="como">: nuvem de plasma lançada do Sol, com campo forte
+                e organizado.</span><span class="efeito">As tempestades mais intensas (ex.: −412 nT em maio de 2024).</span></li>
+              <li><b>CIR</b><span class="nome-longo"> (região de interação corrotante)</span><span class="como">: o vento rápido de um buraco coronal
+                alcançando o vento lento à frente.</span><span class="efeito">Tempestades moderadas, raramente abaixo de
+                −150 nT.</span></li>
+            </ul>
+            <p class="explicacao">Os valores das tempestades são do índice Dst.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="rodape so-longe">
+      <p class="dica">Arraste a seta <span class="vento">laranja</span>, à esquerda, para mudar o B<sub>z</sub> (ou use o
+        controle embaixo do desenho). A mudança chega à Terra com o vento.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: o vento, o campo e a regra</button>
+    </div>
+    <div class="navegacao so-perto">
+      <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span class="rotulo">Anterior</span></button>
+      <span id="contador-de-passos"></span>
+      <div class="pontos" role="group" aria-label="Ir para o passo">
+        <button type="button" data-passo="0" title="Passo 1: um plasma que sai do Sol">1</button>
+        <button type="button" data-passo="1" title="Passo 2: o campo congelado no vento">2</button>
+        <button type="button" data-passo="2" title="Passo 3: uma seta em 3D, os eixos do GSM">3</button>
+        <button type="button" data-passo="3" title="Passo 4: por que o sinal importa">4</button>
+        <button type="button" data-passo="4" title="Passo 5: a regra para o catálogo">5</button>
+        <button type="button" data-passo="5" title="Passo 6: de onde vem o Bz sul forte">6</button>
+      </div>
+      <button id="bt-proximo" type="button" class="botao principal" title="Próximo passo" aria-label="Próximo passo">
+        <span class="rotulo">Próximo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+
+    <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
+         Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
+    <div class="controles" role="group" aria-label="Controles">
+      <label class="controle" data-cenas="p3"><span class="nome"><i>B</i><sub>x</sub><small>para o Sol</small></span><output id="o-bx"></output>
+        <input id="c-bx" type="range" min="-40" max="40" step="0.1" value="-2.4"></label>
+      <label class="controle" data-cenas="p3"><span class="nome"><i>B</i><sub>y</sub><small>para o entardecer</small></span><output id="o-by"></output>
+        <input id="c-by" type="range" min="-40" max="40" step="0.1" value="3.2"></label>
+      <label class="controle" data-cenas="longe p3 p4"><span class="nome"><i>B</i><sub>z</sub><small>norte (+) ou sul (−)</small></span><output id="o-bz"></output>
+        <input id="c-bz" type="range" min="-40" max="40" step="0.1" value="-3"></label>
+      <label class="controle" data-cenas="p1"><span class="nome"><i>N</i> <small>densidade</small></span><output id="o-n"></output>
+        <input id="c-n" type="range" min="1" max="20" step="1" value="5"></label>
+      <label class="controle" data-cenas="p1"><span class="nome"><i>v</i> <small>velocidade</small></span><output id="o-v"></output>
+        <input id="c-v" type="range" min="250" max="1000" step="10" value="400"></label>
+      <label class="controle" data-cenas="p2"><span class="nome"><i>B</i> <small>intensidade do IMF</small></span><output id="o-b"></output>
+        <input id="c-b" type="range" min="0.5" max="40" step="0.5" value="5"></label>
+      <label class="controle" data-cenas="p5"><span class="nome"><i>B</i><sub>z</sub><small>no intervalo sul</small></span><output id="o-bzsul"></output>
+        <input id="c-bzsul" type="range" min="-40" max="0" step="1" value="-15"></label>
+      <label class="controle" data-cenas="p5"><span class="nome">duração <small>do intervalo sul</small></span><output id="o-duracao"></output>
+        <input id="c-duracao" type="range" min="0.25" max="12" step="0.25" value="5"></label>
+      <div class="botoes">
+        <button id="bt-tipico" type="button" class="botao" data-cenas="p1 p2">Valores típicos</button>
+        <button id="bt-pausar" type="button" class="botao">Pausar</button>
+      </div>
+    </div>
+
+    <p class="nota" id="nota"></p>
+  </aside>
+
+  <script>
+    'use strict';
+
+    // -------------------------------------------------------------------------
+    // 1. Esc fecha a janela do mapa (trecho obrigatório do contrato).
+    // -------------------------------------------------------------------------
+    window.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 2. Valores e contas. Tudo o que é física está aqui.
+    //    Campos em nanotesla (nT); distâncias do desenho em raios da Terra.
+    // -------------------------------------------------------------------------
+    const VELOCIDADE_TIPICA = 400;         // km/s
+    // Por cm³. O texto fala em "uns 5 partículas/cm³"; aqui N conta os PRÓTONS (como a densidade dos dados do
+    // OMNI), e o desenho põe o mesmo número de elétrons.
+    const DENSIDADE_TIPICA = 5;
+    const CAMPO_TIPICO = 5;                // nT: o IMF perto da Terra
+    const CAMPO_NUMA_CME = 30;             // nT: dentro de uma CME, o IMF pode passar disso
+    // Acréscimos (não estão no texto), só para comparar:
+    const CAMPO_NA_SUPERFICIE = 31000;     // nT: o campo na superfície, no equador (0,31 G, das animações do campo geomagnético)
+    const DISTANCIA_SOL_TERRA = 150e6;     // km: a distância média do Sol à Terra, para o tempo de viagem
+    // A regra prática para o catálogo (Gonzalez e Tsurutani, 1987; Gonzalez et al., 1994).
+    const LIMIAR_DO_BZ = -10;              // nT
+    const HORAS_MINIMAS = 3;               // horas seguidas abaixo do limiar
+    const CAMPO_MAXIMO = 40;               // nT: até onde vão os controles do campo
+    // O começo: |B| = 5 nT (2,4² + 3,2² + 3,0² = 25), com o Bz para o sul.
+    const COMECO = { bx: -2.4, by: 3.2, bz: -3, N: 5, v: 400, bzSul: -15, duracao: 5 };
+
+    const entre = (a, b, t) => a + (b - a) * t;
+    const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+    const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+    const emRadianos = (graus) => (graus * Math.PI) / 180;
+
+    /** Quanto tempo (em segundos) o vento leva do Sol até a Terra, andando a v km/s. */
+    const tempoDeViagem = (v) => DISTANCIA_SOL_TERRA / v;
+    /** O tamanho da seta do campo: √(Bx² + By² + Bz²). */
+    const tamanhoDaSeta = (b) => Math.hypot(b.bx, b.by, b.bz);
+
+    // A curva do Bz do passo 5. É INVENTADA: um intervalo de Bz sul (com o nível e a duração escolhidos),
+    // descendo e subindo em até 1 hora (num intervalo curto, mais depressa: assim dá para ver um pico de
+    // poucos minutos), mais pequenas oscilações, como num dado de verdade.
+    const HORA_DO_MEIO = 11, RAMPA = 1;
+    function bzNaHora(t, bzSul, duracao) {
+      const inicio = HORA_DO_MEIO - duracao / 2, fim = HORA_DO_MEIO + duracao / 2;
+      const rampa = Math.min(RAMPA, Math.max(0.1, duracao / 3));
+      const peso = Math.min(suave((t - inicio + rampa) / rampa), 1 - suave((t - fim) / rampa));
+      const oscilacao = 1.1 * Math.sin(1.7 * t + 0.4) + 0.7 * Math.sin(4.3 * t + 1.9) + 0.45 * Math.sin(9.1 * t + 0.7) + 0.3 * Math.sin(17.3 * t + 2.3);
+      return 1.5 + (bzSul - 1.5) * peso + oscilacao * (1 - 0.4 * peso);
+    }
+    /** O maior trecho SEGUIDO com o Bz abaixo do limiar, olhando minuto a minuto: { inicio, fim, horas }. */
+    function maiorTrechoAbaixo(bzSul, duracao) {
+      let melhor = { inicio: 0, fim: 0, horas: 0 }, comeco = null;
+      for (let minuto = 0; minuto <= 24 * 60; minuto++) {
+        const t = minuto / 60, abaixo = bzNaHora(t, bzSul, duracao) < LIMIAR_DO_BZ;
+        if (abaixo && comeco === null) comeco = t;
+        if (comeco !== null && (!abaixo || minuto === 24 * 60)) {
+          const fim = abaixo ? t : t - 1 / 60, horas = fim - comeco + 1 / 60;
+          if (horas > melhor.horas) melhor = { inicio: comeco, fim, horas };
+          comeco = null;
+        }
+      }
+      return melhor;
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. A magnetosfera (um esquema), as linhas de campo e o vento solar.
+    //    O Sol fica à esquerda (−x do desenho); o norte, em cima. A forma da magnetopausa é a da
+    //    animação da magnetopausa (a mesma conta, em cada ponto), com a frente a 10 raios da Terra.
+    // -------------------------------------------------------------------------
+    const MAGNETOPAUSA = 10;               // raios da Terra, de frente para o Sol (só para o desenho)
+    const COMECA_A_DEFORMAR = 4;           // raios da Terra: até aqui, as linhas da Terra são as de um dipolo
+    const PAREDE = (() => {
+      const x = [], y = [], beta = [], r = [];
+      const direcao = (px, py) => {
+        const c = Math.min(1, Math.hypot(px, py) ** -3);
+        return [Math.sqrt(Math.max(0, 1 - c * c)), c];
+      };
+      const passo = 0.002;
+      let X = -1, Y = 0, L = 0, proximo = 0;
+      while (L <= 6) {
+        if (L >= proximo - 1e-9) {
+          x.push(X * MAGNETOPAUSA);
+          y.push(Y * MAGNETOPAUSA);
+          beta.push(Math.atan2(Y, X));                 // direção vista da Terra: π = para o Sol; 0 = para a cauda
+          r.push(Math.hypot(X, Y) * MAGNETOPAUSA);
+          proximo += 0.02;
+        }
+        const [a1, b1] = direcao(X, Y);
+        const [a2, b2] = direcao(X + (a1 * passo) / 2, Y + (b1 * passo) / 2);
+        X += a2 * passo;
+        Y += b2 * passo;
+        L += passo;
+      }
+      return { x, y, beta, r, n: x.length };
+    })();
+    /** A altura da parede na posição x (0 antes do "nariz"). */
+    function alturaDaParede(x) {
+      const ultimo = PAREDE.n - 1;
+      if (x <= PAREDE.x[0]) return 0;
+      if (x >= PAREDE.x[ultimo]) return PAREDE.y[ultimo];
+      let a = 0, b = ultimo;
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (PAREDE.x[meio] <= x) a = meio; else b = meio;
+      }
+      return entre(PAREDE.y[a], PAREDE.y[b], (x - PAREDE.x[a]) / (PAREDE.x[b] - PAREDE.x[a] || 1));
+    }
+    /** A distância da Terra até a parede na direção "beta" (π = para o Sol; 0 = para a cauda). */
+    function distanciaDaParede(beta) {
+      const ultimo = PAREDE.n - 1;
+      if (beta <= PAREDE.beta[ultimo]) return PAREDE.y[ultimo] / Math.max(Math.sin(beta), 1e-3);
+      let a = 0, b = ultimo;
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (PAREDE.beta[meio] >= beta) a = meio; else b = meio;
+      }
+      return entre(PAREDE.r[a], PAREDE.r[b], (PAREDE.beta[a] - beta) / (PAREDE.beta[a] - PAREDE.beta[b] || 1));
+    }
+    /**
+     * Para onde vai um ponto das linhas da Terra quando o vento solar as deforma (resultado em dX, dY).
+     * Até 4 raios, nada muda; além disso, as linhas são apertadas para caber dentro da parede (do lado
+     * do Sol) e esticadas (do lado da noite). É só um desenho, não um modelo de magnetosfera.
+     */
+    let dX = 0, dY = 0;
+    function deformar(X, Y) {
+      const r = Math.hypot(X, Y), alem = r - COMECA_A_DEFORMAR;
+      if (alem <= 0) {
+        dX = X;
+        dY = Y;
+        return;
+      }
+      const cabe = distanciaDaParede(Math.atan2(Math.abs(Y), X)) - COMECA_A_DEFORMAR;
+      const novo = COMECA_A_DEFORMAR + cabe * (1 - Math.exp(-alem / cabe));
+      dX = (X / r) * novo;
+      dY = (Y / r) * novo;
+      if (X > 0) {
+        const estica = suave(alem / 8) * (X / r);
+        dX *= 1 + 0.5 * estica;
+        dY *= 1 - 0.2 * estica;
+      }
+    }
+    /** A altura em que passa, na posição x, o vento que vinha na altura y0: ele contorna a parede. */
+    const alturaDoVento = (x, y0) => (y0 < 0 ? -1 : 1) * Math.hypot(y0, 1.06 * alturaDaParede(x));
+
+    /**
+     * As linhas do campo da Terra: as do dipolo (r = R₀·cos² λ), já deformadas pelo vento. Os pontos vão
+     * do pé sul ao pé norte, que é o sentido do campo (ele sai da Terra no hemisfério sul e entra no norte).
+     */
+    const R0_DAS_LINHAS = [2, 3, 4.2, 5.6, 7.2, 9, 11.5, 15, 22];
+    function linhaDaTerra(R0, lado) {
+      const pe = Math.acos(1 / Math.sqrt(R0)), n = 96, pontos = new Float32Array(2 * (n + 1));
+      for (let i = 0; i <= n; i++) {
+        const lat = -pe + (2 * pe * i) / n, r = R0 * Math.cos(lat) ** 2;
+        deformar(lado * r * Math.cos(lat), r * Math.sin(lat));
+        pontos[2 * i] = dX;
+        pontos[2 * i + 1] = dY;
+      }
+      return pontos;
+    }
+    const LINHAS_DA_TERRA = R0_DAS_LINHAS.flatMap((R0) => [-1, 1].map((lado) => ({ R0, lado, pontos: linhaDaTerra(R0, lado) })));
+
+    /** Uma curva de Bézier cúbica (pontos x0, y0, x1, y1…). */
+    function bezier(a, b, c, d, n = 36) {
+      const pontos = [];
+      for (let i = 0; i <= n; i++) {
+        const t = i / n, u = 1 - t;
+        pontos.push(u * u * u * a[0] + 3 * u * u * t * b[0] + 3 * u * t * t * c[0] + t * t * t * d[0],
+          u * u * u * a[1] + 3 * u * u * t * b[1] + 3 * u * t * t * c[1] + t * t * t * d[1]);
+      }
+      return pontos;
+    }
+    /**
+     * As linhas "ligadas" (Bz sul): cada uma tem um pedaço de fora, que vem do vento (laranja), e um de
+     * dentro, que desce até a Terra perto do polo (azul). Os pontos vão do vento até a Terra, que é o
+     * caminho da energia. É um esquema da ligação: os detalhes da reconexão não estão aqui.
+     */
+    const LINHAS_LIGADAS = (() => {
+      const MODELOS = [
+        // pé na Terra (latitude; −1 = lado do dia, +1 = lado da noite), onde cruza a magnetopausa e onde o pedaço de fora termina
+        { lat: 72, ladoDoPe: -1, xParede: -9.7, fim: [-12.5, 17], dentro: [[-0.9, 2.8], [0.5, 3.4]], fora: [[-0.6, 2.4], [0.4, -6]] },
+        { lat: 77, ladoDoPe: -1, xParede: -5.2, fim: [-6.5, 17], dentro: [[-0.5, 2.6], [1.6, -0.4]], fora: [[-0.7, 1.8], [0, -4]] },
+        { lat: 84, ladoDoPe: 1, xParede: 2.8, fim: [9.5, 20], dentro: [[0.15, 3], [-1.1, -1.4]], fora: [[0.6, 2.2], [-1, -2]] },
+      ];
+      const linhas = [];
+      for (const m of MODELOS) {
+        for (const sinal of [1, -1]) {
+          const lat = emRadianos(m.lat);
+          const pe = [m.ladoDoPe * Math.cos(lat), Math.sin(lat)];
+          const parede = [m.xParede, alturaDaParede(m.xParede)];              // o ponto em que a linha atravessa a parede
+          const deFora = bezier(m.fim, [m.fim[0] + m.fora[1][0], m.fim[1] + m.fora[1][1]], [parede[0] + m.fora[0][0], parede[1] + m.fora[0][1]], parede);
+          const deDentro = bezier(parede, [parede[0] + m.dentro[1][0], parede[1] + m.dentro[1][1]], [pe[0] + m.dentro[0][0], pe[1] + m.dentro[0][1]], pe);
+          const todos = [...deFora, ...deDentro.slice(2)];
+          for (let i = 1; i < todos.length; i += 2) todos[i] *= sinal;          // o hemisfério sul é o espelho do norte
+          const pontos = Float32Array.from(todos);
+          const n = pontos.length / 2, distancias = new Float32Array(n);
+          for (let i = 1; i < n; i++) distancias[i] = distancias[i - 1] + Math.hypot(pontos[2 * i] - pontos[2 * i - 2], pontos[2 * i + 1] - pontos[2 * i - 1]);
+          linhas.push({ pontos, troca: deFora.length / 2 - 1, distancias, total: distancias[n - 1] });
+        }
+      }
+      return linhas;
+    })();
+    /** O ponto de uma linha ligada a uma distância s do começo (no vento), medida ao longo dela. */
+    function pontoNaLinha(linha, s) {
+      const d = linha.distancias;
+      let a = 0, b = d.length - 1;
+      while (b - a > 1) {
+        const meio = (a + b) >> 1;
+        if (d[meio] <= s) a = meio; else b = meio;
+      }
+      const t = (s - d[a]) / (d[b] - d[a] || 1);
+      return { X: entre(linha.pontos[2 * a], linha.pontos[2 * b], t), Y: entre(linha.pontos[2 * a + 1], linha.pontos[2 * b + 1], t) };
+    }
+
+    // O vento solar no desenho: as partículas e as linhas do IMF andam juntas (o campo está congelado no
+    // plasma), à mesma velocidade. Cada linha do IMF guarda o Bz com que saiu: uma mudança no Bz chega à
+    // Terra só quando as linhas novas chegam.
+    const VENTO_NO_DESENHO = 6;            // raios da Terra por segundo, no desenho (o de verdade é 400 km/s)
+    const ESPACO_ENTRE_LINHAS = 2.2;       // raios da Terra entre as linhas do IMF
+    const ALCANCE_VERTICAL = 18;           // até que altura as linhas do IMF são desenhadas
+    /** O que acontece na frente da Terra com o Bz que chega: 0 = nada se liga; 1 = os campos se ligam com força. */
+    const alvoDaLigacao = (bz) => (bz < -0.05 ? Math.min(1, 0.35 + -bz / 8) : 0);
+
+    // -------------------------------------------------------------------------
+    // 4. Estado da animação.
+    // -------------------------------------------------------------------------
+    const CENAS = ['longe', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+    // Onde a câmera fica em cada cena. Nas cenas 1 e 2 ela entra no vento; na 3, vai até a Terra; na 4,
+    // até a frente da magnetopausa. As cenas 5 e 6 são desenhos à parte (o mundo se apaga).
+    const CAMERA_DA_CENA = { longe: 'longe', p1: 'vento', p2: 'vento', p3: 'terra', p4: 'nariz', p5: 'nariz', p6: 'nariz' };
+    const MUNDO_NA_CENA = { longe: 1, p1: 0, p2: 0, p3: 0, p4: 1, p5: 0, p6: 0 };     // o quanto a magnetosfera aparece
+    const DURACAO_DA_VIAGEM = 1.25;        // segundos que a câmera leva de um lugar a outro
+
+    const estado = {
+      bx: COMECO.bx, by: COMECO.by, bz: COMECO.bz,    // o IMF que sai agora, em nT (sistema GSM)
+      direcao: null,                                    // a direção da seta (para mudar só o tamanho, no passo 2)
+      N: COMECO.N, v: COMECO.v,                         // densidade (prótons por cm³) e velocidade (km/s)
+      bzSul: COMECO.bzSul, duracao: COMECO.duracao,     // a curva do passo 5
+      azimute: 38, elevacao: 22,                        // de onde se olha os eixos do passo 3 (graus)
+      perto: false, passo: 0,                           // visão escolhida e passo aberto
+      cena: 'longe',                                    // a cena que está (ou vai ficar) na tela
+      viagem: 1, partida: null,                         // andamento da viagem da câmera (0 a 1) e de onde ela saiu
+      tempo: 0, pausado: false,
+      andado: 0,                                        // quanto o plasma do passo 1 já andou (em larguras da janela)
+    };
+    const forcaDaCena = { longe: 1, p1: 0, p2: 0, p3: 0, p4: 0, p5: 0, p6: 0 };     // quanto cada cena aparece (0 a 1)
+    const misturas = { mundo: 1, ligacao: 0 };
+
+    let linhasDoIMF = [];                  // { x, bz, frente }: x em raios da Terra
+    const vento = [];                      // partículas do vento solar: { x, y0 }
+
+    /** O Bz que está chegando à frente da Terra: o da linha do IMF mais perto do nariz, ainda antes dele. */
+    function bzChegando() {
+      let maisPerto = null;
+      for (const linha of linhasDoIMF) if (linha.x <= -MAGNETOPAUSA + 0.3 && (!maisPerto || linha.x > maisPerto.x)) maisPerto = linha;
+      return maisPerto ? maisPerto.bz : estado.bz;
+    }
+    /** Há uma mudança de sentido do Bz a caminho (ela ainda não chegou à Terra)? */
+    const mudancaACaminho = () => linhasDoIMF.some((linha) => linha.frente && linha.x < -MAGNETOPAUSA);
+
+    // Guardado: o maior trecho abaixo do limiar só é refeito quando a curva muda.
+    let trechoGuardado = { chave: '', trecho: null };
+    function trechoDoPasso5() {
+      const chave = `${estado.bzSul}|${estado.duracao}`;
+      if (trechoGuardado.chave !== chave) trechoGuardado = { chave, trecho: maiorTrechoAbaixo(estado.bzSul, estado.duracao) };
+      return trechoGuardado.trecho;
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Tela, tamanho e câmeras.
+    // -------------------------------------------------------------------------
+    const tela = document.getElementById('tela');
+    const ctx = tela.getContext('2d');
+    const painel = document.getElementById('painel');
+    const controles = document.querySelector('.controles');
+    let largura = 0, altura = 0;
+    // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
+    // "fundo" é até onde o desenho aparece (ele continua por trás da barra de controles).
+    let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100 };
+    let ESPACO_DO_TITULO = 46;             // altura ocupada pelo título, medida em medirCena()
+
+    function ajustarTamanho() {
+      const escala = window.devicePixelRatio || 1;
+      largura = window.innerWidth;
+      altura = window.innerHeight;
+      tela.width = Math.round(largura * escala);
+      tela.height = Math.round(altura * escala);
+      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      medirCena();
+      desenhar();
+    }
+    function medirCena() {
+      ESPACO_DO_TITULO = Math.round(document.querySelector('.topo').getBoundingClientRect().bottom) + 4;
+      const p = painel.getBoundingClientRect();
+      if (p.left > largura * 0.3) {
+        // Painel ao lado: a barra de controles fica embaixo do desenho.
+        const barra = controles.getBoundingClientRect();
+        const livre = barra.height > 0 && barra.top > altura * 0.4 ? barra.top - 6 : altura;
+        cena = { x: 0, y: 0, w: Math.max(120, p.left - 8), h: Math.max(90, livre), fundo: altura };
+      } else {
+        // Painel embaixo (telas estreitas): os controles ficam dentro dele.
+        const h = Math.max(90, p.top - 4);
+        cena = { x: 0, y: 0, w: largura, h, fundo: h };
+      }
+    }
+    window.addEventListener('resize', ajustarTamanho);
+    const aoMudarDeTamanho = new ResizeObserver(() => { medirCena(); });
+    aoMudarDeTamanho.observe(painel);
+    aoMudarDeTamanho.observe(controles);
+
+    const alturaLivre = () => cena.h - ESPACO_DO_TITULO;
+    /** O tamanho dos eixos do passo 3, em pixels. */
+    const tamanhoDosEixos = () => Math.max(30, Math.min(cena.w * 0.34, alturaLivre() * 0.4));
+    const RAIO_DA_TERRA_NOS_EIXOS = 0.12;   // o raio da Terra, em frações do tamanho dos eixos
+    /**
+     * Onde cada câmera fica: a Terra cai em (cx, cy) da tela, com escala S (pixels por raio da Terra).
+     *   longe: o vento solar à esquerda, a magnetosfera inteira e a cauda à direita;
+     *   vento: dentro do vento, antes da Terra (a cena 1 e 2 é desenhada por cima);
+     *   terra: a Terra, do tamanho dela nos eixos do passo 3;
+     *   nariz: a frente da magnetopausa, de onde o vento chega.
+     */
+    function cameraDe(tipo) {
+      const livre = alturaLivre();
+      const meioX = cena.x + cena.w / 2, meioY = cena.y + ESPACO_DO_TITULO + livre / 2;
+      if (tipo === 'nariz') {
+        const S = Math.max(5, Math.min(cena.w / 16, livre / 13.5));
+        return { S, cx: meioX + 8.4 * S, cy: meioY };
+      }
+      if (tipo === 'vento') {
+        const S = Math.max(20, Math.min(cena.w, livre) / 4);
+        return { S, cx: meioX + 22 * S, cy: meioY };
+      }
+      if (tipo === 'terra') return { S: tamanhoDosEixos() * RAIO_DA_TERRA_NOS_EIXOS, cx: meioX, cy: meioY };
+      const S = Math.max(2.5, Math.min(cena.w / 48, livre / 30));
+      return { S, cx: meioX + 6 * S, cy: meioY };
+    }
+
+    // A projeção do quadro atual. Durante uma viagem, ela vai de onde a câmera estava até a câmera da cena.
+    let projecao = { S: 1, cx: 0, cy: 0 };
+    function atualizarProjecao() {
+      const c = cameraDe(CAMERA_DA_CENA[estado.cena]);
+      if (estado.viagem < 1 && estado.partida) {
+        const e = suave(estado.viagem), de = estado.partida;
+        projecao = { S: de.S * Math.pow(c.S / de.S, e), cx: entre(de.cx, c.cx, e), cy: entre(de.cy, c.cy, e) };
+      } else {
+        projecao = c;
+      }
+    }
+    const telaX = (X) => projecao.cx + projecao.S * X;
+    const telaY = (Y) => projecao.cy - projecao.S * Y;
+    /** A borda esquerda da área do desenho, em raios da Terra. */
+    const bordaEsquerda = () => (cena.x - projecao.cx) / projecao.S;
+    /** Escolhe a cena pela visão e pelo passo; se a câmera muda de lugar, começa a viagem. */
+    function atualizarCena() {
+      const nova = estado.perto ? `p${estado.passo + 1}` : 'longe';
+      if (nova === estado.cena) return;
+      if (CAMERA_DA_CENA[nova] !== CAMERA_DA_CENA[estado.cena]) {
+        estado.partida = { ...projecao };
+        estado.viagem = 0;
+      }
+      estado.cena = nova;
+      mostrarControles();
+    }
+    /** Mostra, na barra, só os controles (e botões) que fazem diferença na cena. */
+    function mostrarControles() {
+      let visiveis = 0;
+      for (const item of document.querySelectorAll('.controles [data-cenas]')) {
+        const mostra = item.dataset.cenas.split(' ').includes(estado.cena);
+        item.hidden = !mostra;
+        if (mostra && item.classList.contains('controle')) visiveis += 1;
+      }
+      document.body.dataset.controles = String(visiveis);
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Ferramentas de desenho.
+    // -------------------------------------------------------------------------
+    const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+    const COR_CAMPO = '134, 185, 255';
+    const COR_VENTO = '255, 179, 71';
+    const AZUL = `rgb(${COR_CAMPO})`;
+    const LARANJA = `rgb(${COR_VENTO})`;
+
+    /** Fundo escuro arredondado atrás de um rótulo, para ele não se misturar com o que passa por trás. */
+    function desenharPlaca(x, y, larguraDoTexto, tamanho, alinhar) {
+      const w = larguraDoTexto + 16, h = tamanho + 10;
+      const esquerda = alinhar === 'center' ? x - w / 2 : alinhar === 'right' ? x - w + 8 : x - 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.66)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda, y - h / 2, w, h, h / 2); else ctx.rect(esquerda, y - h / 2, w, h);
+      ctx.fill();
+    }
+    /** Largura de um texto comum, na tela. */
+    function larguraDoTexto(texto, tamanho, peso = 500) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      return ctx.measureText(texto).width;
+    }
+    /** Texto com contorno preto, legível por cima do desenho. Com "placa", ganha também um fundo escuro. */
+    function escrever(texto, x, y, { tamanho = 12, cor = '#ececec', alinhar = 'left', peso = 500, placa = false } = {}) {
+      ctx.font = `${peso} ${tamanho}px ${FONTE}`;
+      if (placa) desenharPlaca(x, y, ctx.measureText(texto).width, tamanho, alinhar);
+      ctx.textAlign = alinhar;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.strokeText(texto, x, y);
+      ctx.fillStyle = cor;
+      ctx.fillText(texto, x, y);
+    }
+    /**
+     * Várias linhas de texto, uma embaixo da outra, sobre uma placa escura. "x" é a borda (ou o meio) e
+     * "y" é o meio da primeira linha. Cada linha: { texto, tamanho, cor, peso }. Devolve a largura.
+     */
+    const ENTRE_LINHAS = 6;
+    function escreverBloco(linhas, x, y, alinhar = 'left') {
+      let maior = 0;
+      for (const linha of linhas) maior = Math.max(maior, larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500));
+      const total = linhas.reduce((soma, linha) => soma + linha.tamanho + ENTRE_LINHAS, -ENTRE_LINHAS);
+      const esquerda = alinhar === 'center' ? x - maior / 2 : alinhar === 'right' ? x - maior : x;
+      const topo = y - linhas[0].tamanho / 2;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(esquerda - 10, topo - 7, maior + 20, total + 14, 10); else ctx.rect(esquerda - 10, topo - 7, maior + 20, total + 14);
+      ctx.fill();
+      let py = topo;
+      for (const linha of linhas) {
+        escrever(linha.texto, x, py + linha.tamanho / 2, { tamanho: linha.tamanho, cor: linha.cor, alinhar, peso: linha.peso ?? 500 });
+        py += linha.tamanho + ENTRE_LINHAS;
+      }
+      return maior;
+    }
+    /** Altura de um bloco de texto (para saber se ele cabe). */
+    const alturaDoBloco = (linhas) => linhas.reduce((soma, linha) => soma + linha.tamanho + ENTRE_LINHAS, -ENTRE_LINHAS) + 14;
+    /** Linha tracejada de (x1, y1) até (x2, y2). */
+    function tracejado(x1, y1, x2, y2, cor, tracos = [5, 5], espessura = 1) {
+      ctx.strokeStyle = cor;
+      ctx.lineWidth = espessura;
+      ctx.setLineDash(tracos);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    /** Seta de (x1, y1) até (x2, y2), com a ponta em (x2, y2). */
+    function seta(x1, y1, x2, y2, { cor = '#ffffff', espessura = 2, ponta = 8 } = {}) {
+      const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+      if (d < 1) return;
+      const ux = dx / d, uy = dy / d, p = Math.min(ponta, d * 0.6);
+      ctx.strokeStyle = cor;
+      ctx.fillStyle = cor;
+      ctx.lineWidth = espessura;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2 - ux * p * 0.7, y2 - uy * p * 0.7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ux * p - uy * p * 0.5, y2 - uy * p + ux * p * 0.5);
+      ctx.lineTo(x2 - ux * p + uy * p * 0.5, y2 - uy * p - ux * p * 0.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+    /** Ponto marcado: bolinha branca, com ou sem o anel que pulsa. */
+    function desenharPonto(x, y, { anel = false, raio = 5 } = {}) {
+      if (anel) {
+        const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 420);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.25 + 0.3 * pulso})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, raio * 2 + 3 * pulso, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /** O Sol: um disco laranja com brilho. */
+    function desenharSol(x, y, raio, brilho = 1) {
+      const halo = ctx.createRadialGradient(x, y, raio * 0.6, x, y, raio * 3.2);
+      halo.addColorStop(0, `rgba(${COR_VENTO}, ${0.45 * brilho})`);
+      halo.addColorStop(1, `rgba(${COR_VENTO}, 0)`);
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(x, y, raio * 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      const disco = ctx.createRadialGradient(x - raio * 0.3, y - raio * 0.3, raio * 0.1, x, y, raio);
+      disco.addColorStop(0, '#fff1d6');
+      disco.addColorStop(0.5, '#ffc56b');
+      disco.addColorStop(1, '#f08a24');
+      ctx.fillStyle = disco;
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    /** A Terra: um disco cinza com luz de um lado. */
+    function desenharTerra(x, y, raio) {
+      const luz = ctx.createRadialGradient(x - raio * 0.35, y - raio * 0.35, raio * 0.1, x, y, raio);
+      luz.addColorStop(0, '#4f4f4f');
+      luz.addColorStop(1, '#181818');
+      ctx.fillStyle = luz;
+      ctx.beginPath();
+      ctx.arc(x, y, raio, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // As amostras das legendas: cada uma desenha, de x1 a x2 e na altura y, o traço que a legenda explica.
+    const AMOSTRAS = {
+      /** Riscos do vento solar. */
+      vento(x1, x2, y) {
+        ctx.strokeStyle = `rgba(${COR_VENTO}, 0.85)`;
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (const x of [x1, x1 + 14, x1 + 28]) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + 9, y);
+        }
+        ctx.stroke();
+      },
+      /** Linha do IMF, com a setinha do sentido. */
+      imf(x1, x2, y) { AMOSTRAS.linha(x1, x2, y, COR_VENTO); },
+      /** Linha do campo da Terra, com a setinha do sentido. */
+      campo(x1, x2, y) { AMOSTRAS.linha(x1, x2, y, COR_CAMPO); },
+      linha(x1, x2, y, cor) {
+        ctx.strokeStyle = `rgba(${cor}, 0.9)`;
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.moveTo(x1 + 17, y - 3);
+        ctx.lineTo(x1 + 21.5, y);
+        ctx.lineTo(x1 + 17, y + 3);
+        ctx.stroke();
+      },
+      /** A magnetopausa. */
+      parede(x1, x2, y) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+      },
+      /** Uma linha ligada: metade laranja, metade azul, com a energia entrando. */
+      ligada(x1, x2, y) {
+        const meio = (x1 + x2) / 2;
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = `rgba(${COR_VENTO}, 0.9)`;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(meio, y);
+        ctx.stroke();
+        ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.9)`;
+        ctx.beginPath();
+        ctx.moveTo(meio, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+        ctx.fillStyle = '#ffe2b0';
+        ctx.beginPath();
+        ctx.arc(x1 + ((performance.now() / 60) % (x2 - x1)), y, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      },
+    };
+    /** A legenda, embaixo do título, sobre um fundo escuro. Cada item: [amostra, texto]. */
+    function desenharLegenda(itens) {
+      if (alturaLivre() <= 200) return;            // em telas baixas, não há espaço para ela
+      const x = cena.x + 10, y = cena.y + ESPACO_DO_TITULO + 6;
+      const maior = Math.max(...itens.map(([, texto]) => larguraDoTexto(texto, 11.5)));
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, 66 + maior, itens.length * 18 + 10, 9); else ctx.rect(x, y, 66 + maior, itens.length * 18 + 10);
+      ctx.fill();
+      itens.forEach(([amostra, texto], i) => {
+        const alturaDoItem = y + 14 + i * 18;
+        amostra(x + 8, x + 46, alturaDoItem);
+        escrever(texto, x + 54, alturaDoItem, { tamanho: 11.5, cor: '#b4b4b4' });
+      });
+    }
+
+    // Números em português.
+    const numero = (valor, casas = 1) => valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    /** "31 000": número inteiro, com os milhares separados por espaço (que não quebra a linha). */
+    const comMilhar = (valor) => Math.round(Math.abs(valor)).toLocaleString('pt-BR').replace(/\./g, ' ');
+    /** "−3,3", "+5,0" ou "0,0": com o sinal de menos tipográfico. */
+    const comSinal = (valor, casas = 1) => {
+      const arredondado = Number(valor.toFixed(casas));
+      return `${arredondado > 0 ? '+' : arredondado < 0 ? '−' : ''}${numero(Math.abs(arredondado), casas)}`;
+    };
+    /** "−3,3 nT, sul", "+5,0 nT, norte" ou "0,0 nT". */
+    function descreverBz(bz) {
+      const valor = Number(bz.toFixed(1));
+      return `${comSinal(valor)} nT${valor < 0 ? ', sul' : valor > 0 ? ', norte' : ''}`;
+    }
+    /** "4,3 dias", "1,0 dia" etc. */
+    const emDias = (segundos) => `${numero(segundos / 86400, 1)} ${segundos / 86400 >= 1.95 ? 'dias' : 'dia'}`;
+    /** Um tempo medido: "5,4 h"; abaixo de 1 hora, em minutos ("20 min"). */
+    const emHoras = (horas) => (horas < 1 ? `${Math.round(horas * 60)} min` : `${numero(horas, 1)} h`);
+    /** Uma duração escolhida no controle (de 15 em 15 minutos): "5 h", "2,5 h", "2,25 h" ou "45 min". */
+    const duracaoEscolhida = (horas) => (horas < 1 ? `${Math.round(horas * 60)} min`
+      : `${numero(horas, horas % 1 === 0 ? 0 : (horas * 4) % 2 === 0 ? 1 : 2)} h`);
+
+    // Estrelas de fundo (posições fixas, em frações da tela).
+    const ESTRELAS = Array.from({ length: 90 }, (_, i) => {
+      const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.07 + 0.16 * ((i * 37) % 10) / 10 };
+    });
+    /** Números "aleatórios" que se repetem sempre iguais (para as partículas). */
+    function sorteador(semente) {
+      let s = semente;
+      return () => {
+        s = (s * 1664525 + 1013904223) % 4294967296;
+        return s / 4294967296;
+      };
+    }
+
+    const bufferX = new Float32Array(2000), bufferY = new Float32Array(2000);
+    /**
+     * Traça uma linha (pontos do desenho: x0, y0, x1, y1…, em raios da Terra). Com "setinhas", desenha
+     * também as pontas de seta no sentido dos pontos: elas andam ao longo da linha ("andar") ou ficam
+     * paradas nela (as do IMF, que andam junto com o vento).
+     */
+    function tracarPontos(pontos, { cor = COR_CAMPO, forca = 0.4, espessura = 1, setinhas = 0, andar = true, fase = 0, distancia = 104 } = {}) {
+      const n = Math.min(pontos.length / 2, bufferX.length);
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        bufferX[i] = telaX(pontos[2 * i]);
+        bufferY[i] = telaY(pontos[2 * i + 1]);
+        if (i === 0) ctx.moveTo(bufferX[i], bufferY[i]); else ctx.lineTo(bufferX[i], bufferY[i]);
+      }
+      ctx.strokeStyle = `rgba(${cor}, ${forca})`;
+      ctx.lineWidth = espessura;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+      if (setinhas <= 0.01) return;
+      let falta = ((andar ? estado.tempo * 22 : 0) + fase) % distancia;
+      ctx.strokeStyle = `rgba(${cor}, ${setinhas})`;
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = 'round';
+      for (let i = 1; i < n; i++) {
+        const dx = bufferX[i] - bufferX[i - 1], dy = bufferY[i] - bufferY[i - 1];
+        const trecho = Math.hypot(dx, dy);
+        if (trecho < 1e-6) continue;
+        const ux = dx / trecho, uy = dy / trecho;
+        let andado = falta;
+        while (andado <= trecho) {
+          const x = bufferX[i - 1] + ux * andado, y = bufferY[i - 1] + uy * andado;
+          if (x > cena.x - 8 && x < cena.x + cena.w + 8 && y > cena.y - 8 && y < cena.fundo + 8) {
+            ctx.beginPath();
+            ctx.moveTo(x - ux * 4.5 - uy * 3, y - uy * 4.5 + ux * 3);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x - ux * 4.5 + uy * 3, y - uy * 4.5 - ux * 3);
+            ctx.stroke();
+          }
+          andado += distancia;
+        }
+        falta = andado - trecho;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. O vento solar e o IMF andando (no mundo).
+    // -------------------------------------------------------------------------
+    function limitesDoVento() {
+      return { esquerda: bordaEsquerda() - 0.5, meiaAltura: Math.max(projecao.cy - cena.y, cena.fundo - projecao.cy) / projecao.S + 0.5 };
+    }
+    function renascerNoVento(p, limites, emQualquerLugar) {
+      p.y0 = (Math.random() * 2 - 1) * limites.meiaAltura;
+      p.x = emQualquerLugar ? entre(limites.esquerda, 30, Math.random()) : limites.esquerda - Math.random() * 1.5;
+    }
+    function atualizarVento(dt) {
+      const limites = limitesDoVento();
+      while (vento.length < 90) {
+        const p = { x: 0, y0: 0 };
+        renascerNoVento(p, limites, true);
+        vento.push(p);
+      }
+      for (const p of vento) {
+        p.x += VENTO_NO_DESENHO * dt;
+        if (p.x < limites.esquerda - 2 || Math.abs(alturaDoVento(p.x, p.y0)) > limites.meiaAltura || p.x > 32) renascerNoVento(p, limites, false);
+      }
+    }
+    /**
+     * As linhas do IMF andam com o vento. Linhas novas entram pela esquerda com o Bz de agora; uma linha
+     * que sai com o sentido trocado (norte ↔ sul) é marcada como "frente" da mudança.
+     */
+    let ultimaCriada = null;
+    function atualizarLinhasDoIMF(dt) {
+      const esquerda = bordaEsquerda() - 1.5;
+      for (const linha of linhasDoIMF) linha.x += VENTO_NO_DESENHO * dt;
+      linhasDoIMF = linhasDoIMF.filter((linha) => linha.x > esquerda - ESPACO_ENTRE_LINHAS && linha.x < 40);
+      let maisAEsquerda = linhasDoIMF.length ? Math.min(...linhasDoIMF.map((linha) => linha.x)) : 34;
+      while (maisAEsquerda - ESPACO_ENTRE_LINHAS > esquerda) {
+        maisAEsquerda -= ESPACO_ENTRE_LINHAS;
+        const sentido = (bz) => Math.sign(Number(bz.toFixed(1)));
+        const frente = ultimaCriada !== null && linhasDoIMF.length > 0 && sentido(ultimaCriada.bz) !== sentido(estado.bz);
+        const nova = { x: maisAEsquerda, bz: estado.bz, frente };
+        linhasDoIMF.push(nova);
+        ultimaCriada = nova;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. O mundo: a magnetosfera, o IMF, o vento e, com Bz sul, os campos ligados.
+    // -------------------------------------------------------------------------
+    const pontosDoIMF = new Float32Array(2 * 220);
+    /** Uma linha do IMF: reta no vento; depois do nariz, contorna a magnetopausa. Com Bz sul, ela se gasta no meio. */
+    function tracarLinhaDoIMF(linha) {
+      const forca = Math.min(1, Math.abs(linha.bz) / 8);
+      if (forca < 0.02) return;
+      const nariz = -MAGNETOPAUSA, sul = linha.bz < 0, passou = linha.x > nariz - 0.05;
+      const apaga = sul ? 1 - suave((linha.x - nariz) / 6) : 1 - suave((linha.x - 22) / 10);
+      if (apaga < 0.01) return;
+      // Com Bz sul, o pedaço do meio vira linha ligada (desenhada à parte): o vão cresce depois do nariz.
+      const vao = sul && passou ? Math.min(ALCANCE_VERTICAL, 0.5 + 1.8 * (linha.x - nariz)) : 0;
+      const opcoes = { cor: COR_VENTO, forca: (0.2 + 0.5 * forca) * apaga, espessura: 1 + 0.9 * forca, setinhas: 0.85 * apaga, andar: false, distancia: 92 };
+      const metades = passou ? [[-ALCANCE_VERTICAL, -Math.max(vao, 0.02)], [Math.max(vao, 0.02), ALCANCE_VERTICAL]] : [[-ALCANCE_VERTICAL, ALCANCE_VERTICAL]];
+      for (const [de, ate] of metades) {
+        if (ate - de < 0.3) continue;
+        const passos = Math.min(200, Math.ceil((ate - de) / 0.4));
+        for (let i = 0; i <= passos; i++) {
+          // O sentido dos pontos é o do campo: de baixo para cima com Bz norte; de cima para baixo com Bz sul.
+          const y0 = sul ? ate - ((ate - de) * i) / passos : de + ((ate - de) * i) / passos;
+          pontosDoIMF[2 * i] = linha.x;
+          pontosDoIMF[2 * i + 1] = alturaDoVento(linha.x, y0);
+        }
+        tracarPontos(pontosDoIMF.subarray(0, 2 * (passos + 1)), opcoes);
+      }
+    }
+
+    function desenharMundo(alfa) {
+      if (alfa < 0.01) return;
+      const S = projecao.S;
+      const terra = { x: telaX(0), y: telaY(0) };
+      const ligacao = misturas.ligacao;
+      ctx.globalAlpha = alfa;
+
+      // Brilho em volta da Terra.
+      const forcaDoBrilho = limitar(90 / S, 0.3, 1);
+      ctx.save();
+      ctx.translate(terra.x, terra.y);
+      ctx.scale(1, Math.cbrt(2));
+      const brilho = ctx.createRadialGradient(0, 0, S * 0.8, 0, 0, S * 6);
+      brilho.addColorStop(0, `rgba(${COR_CAMPO}, ${0.22 * forcaDoBrilho})`);
+      brilho.addColorStop(0.3, `rgba(${COR_CAMPO}, ${0.07 * forcaDoBrilho})`);
+      brilho.addColorStop(1, `rgba(${COR_CAMPO}, 0)`);
+      ctx.fillStyle = brilho;
+      ctx.beginPath();
+      ctx.arc(0, 0, S * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // As linhas fechadas da Terra. Com os campos ligados, a de fora do lado do dia se abre (some).
+      for (const linha of LINHAS_DA_TERRA) {
+        const abre = linha.lado < 0 && linha.R0 > 10 ? ligacao : 0;
+        tracarPontos(linha.pontos, { forca: 0.48 * (1 - abre), setinhas: 0.6 * (1 - abre), fase: (linha.R0 * 37 + (linha.lado > 0 ? 0 : 53)) % 104 });
+      }
+
+      // Bz sul: as linhas ligadas (de fora, laranja; de dentro, azul) e a energia descendo por elas.
+      if (ligacao > 0.01) {
+        for (const linha of LINHAS_LIGADAS) {
+          const n = linha.pontos.length / 2;
+          for (const [de, ate, cor] of [[0, linha.troca, COR_VENTO], [linha.troca, n - 1, COR_CAMPO]]) {
+            ctx.beginPath();
+            for (let i = de; i <= ate; i++) {
+              const x = telaX(linha.pontos[2 * i]), y = telaY(linha.pontos[2 * i + 1]);
+              if (i === de) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = `rgba(${cor}, ${0.75 * ligacao})`;
+            ctx.lineWidth = 1.5;
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+          }
+          const pontinhos = 4;
+          ctx.fillStyle = `rgba(255, 226, 176, ${0.95 * ligacao})`;
+          for (let k = 0; k < pontinhos; k++) {
+            const s = ((estado.tempo * 0.17 + k / pontinhos) % 1) * linha.total;
+            const p = pontoNaLinha(linha, s);
+            ctx.beginPath();
+            ctx.arc(telaX(p.X), telaY(p.Y), Math.max(1.6, Math.min(3, S * 0.11)), 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // As linhas do IMF, que andam com o vento.
+      for (const linha of linhasDoIMF) tracarLinhaDoIMF(linha);
+
+      // A magnetopausa.
+      const limite = (cena.fundo - terra.y) / S + 1;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
+      ctx.lineWidth = 1.4;
+      for (const sinal of [1, -1]) {
+        ctx.beginPath();
+        for (let i = 0; i < PAREDE.n && PAREDE.y[i] <= limite + 2; i++) {
+          if (i === 0) ctx.moveTo(telaX(PAREDE.x[i]), telaY(0)); else ctx.lineTo(telaX(PAREDE.x[i]), telaY(sinal * PAREDE.y[i]));
+        }
+        ctx.stroke();
+      }
+
+      // O vento solar: riscos curtos, que contornam a magnetopausa.
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = `rgba(${COR_VENTO}, 0.7)`;
+      ctx.beginPath();
+      for (const p of vento) {
+        const y = alturaDoVento(p.x, p.y0), subida = y - alturaDoVento(p.x - 0.1, p.y0);
+        const comprimento = Math.min(0.6, 18 / S) / Math.hypot(0.1, subida);
+        ctx.moveTo(telaX(p.x), telaY(y));
+        ctx.lineTo(telaX(p.x - 0.1 * comprimento), telaY(y - subida * comprimento));
+      }
+      ctx.stroke();
+
+      desenharTerra(terra.x, terra.y, S);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. Visão de longe: o Sol, a seta do Bz (dá para arrastar) e o que acontece na Terra.
+    // -------------------------------------------------------------------------
+    /** Onde fica a seta do Bz que sai agora: logo depois da borda esquerda, na altura do equador. */
+    const lugarDaSeta = () => ({ X: bordaEsquerda() + 3.4, Y: 0 });
+    // O comprimento da seta cresce com a raiz do Bz: assim um Bz pequeno ainda tem uma seta visível, e
+    // os 40 nT do controle chegam perto da borda do desenho.
+    // Em cima, a seta não pode entrar na legenda (que tem até 3 linhas na visão de longe).
+    const topoDaSeta = () => cena.y + ESPACO_DO_TITULO + (alturaLivre() > 200 ? 6 + 3 * 18 + 10 + 22 : 10);
+    const alturaMaximaDaSeta = () => Math.max(1, Math.min(alturaLivre() / 2 - 24, projecao.cy - topoDaSeta()) / projecao.S);
+    const alturaDaSeta = (bz) => Math.sign(bz) * alturaMaximaDaSeta() * Math.sqrt(Math.min(1, Math.abs(bz) / CAMPO_MAXIMO));
+    const bzDaAltura = (Y) => Math.sign(Y) * CAMPO_MAXIMO * Math.min(1, Math.abs(Y) / alturaMaximaDaSeta()) ** 2;
+    /** O que está acontecendo na Terra, em palavras (para o desenho e para o painel). */
+    function resultadoNaTerra(bz) {
+      const valor = Number(bz.toFixed(1));
+      if (valor < 0) return { curto: 'os campos se ligam', longo: 'sentidos opostos: os campos se ligam', energia: 'Terra exposta: a energia entra' };
+      if (valor > 0) return { curto: 'não se ligam', longo: 'mesmo sentido: os campos não se ligam', energia: 'Terra protegida: pouca energia entra' };
+      return { curto: 'sem parte norte–sul', longo: 'Bz = 0: o campo não tem parte norte–sul', energia: 'nada a ligar' };
+    }
+    /** As linhas tracejadas onde o sentido do Bz muda (a mudança anda com o vento). */
+    function desenharFrentes(comNomes) {
+      for (const linha of linhasDoIMF) {
+        if (!linha.frente || linha.x > -MAGNETOPAUSA) continue;
+        const x = telaX(linha.x + ESPACO_ENTRE_LINHAS / 2);
+        if (x < cena.x || x > cena.x + cena.w) continue;
+        tracejado(x, cena.y + ESPACO_DO_TITULO + 10, x, cena.y + cena.h - 6, 'rgba(255, 255, 255, 0.55)', [3, 5], 1.2);
+        if (comNomes) escrever('o novo Bz chega com o vento', x + 6, cena.y + cena.h - 22, { tamanho: 11.5, cor: '#d8d8d8', placa: true });
+      }
+    }
+
+    function desenharDeLonge(alfa) {
+      const S = projecao.S;
+      const comNomes = alturaLivre() >= 170;
+      ctx.globalAlpha = alfa;
+
+      // O Sol fica bem longe, à esquerda: aqui aparece só o brilho dele.
+      const meioY = cena.y + ESPACO_DO_TITULO + alturaLivre() / 2;
+      const brilho = ctx.createRadialGradient(cena.x - 30, meioY, 0, cena.x - 30, meioY, Math.max(80, alturaLivre() * 0.55));
+      brilho.addColorStop(0, `rgba(${COR_VENTO}, 0.35)`);
+      brilho.addColorStop(1, `rgba(${COR_VENTO}, 0)`);
+      ctx.fillStyle = brilho;
+      ctx.fillRect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+
+      desenharFrentes(comNomes);
+
+      // A seta do Bz que sai agora (dá para arrastar para cima e para baixo).
+      const lugar = lugarDaSeta();
+      const x = telaX(lugar.X), y0 = telaY(0);
+      const maximo = alturaMaximaDaSeta();
+      const ponta = telaY(alturaDaSeta(estado.bz));
+      tracejado(x, telaY(maximo), x, telaY(-maximo), 'rgba(255, 255, 255, 0.18)', [2, 4]);
+      if (comNomes) {
+        escrever('norte', x, telaY(maximo) - 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        escrever('sul', x, telaY(-maximo) + 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+      }
+      if (Math.abs(ponta - y0) > 3) seta(x, y0, x, ponta, { cor: LARANJA, espessura: 3.2, ponta: 11 });
+      desenharPonto(x, ponta, { anel: true, raio: 4.5 });
+      if (comNomes) {
+        const embaixo = ponta > y0;                          // com o Bz sul, o rótulo vai embaixo da ponta
+        escreverBloco([
+          { texto: 'Bz que sai agora', tamanho: 11.5, cor: '#c8c8c8' },
+          { texto: descreverBz(estado.bz), tamanho: 13.5, cor: LARANJA, peso: 600 },
+        ], x + 16, ponta + (embaixo ? 14 : -30));
+      }
+
+      if (comNomes) {
+        // Os nomes, presos às coisas.
+        escrever('magnetopausa', telaX(-3.4), telaY(alturaDaParede(-3.4)) - 12, { tamanho: 12, cor: '#ffffff', alinhar: 'center', placa: true });
+        escrever('campo da Terra', telaX(4.2), telaY(5.6), { tamanho: 12, cor: AZUL, alinhar: 'center', placa: true });
+        // O que está acontecendo na frente da Terra, no alto, à direita.
+        const chegando = bzChegando(), r = resultadoNaTerra(chegando);
+        const linhas = [
+          { texto: `Bz chegando à Terra: ${descreverBz(chegando)}`, tamanho: 12, cor: '#c8c8c8' },
+          { texto: r.longo, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+          { texto: r.energia, tamanho: 12.5, cor: chegando < -0.05 ? LARANJA : AZUL, peso: 600 },
+        ];
+        // No alto, à direita; se não couber ao lado da legenda (telas estreitas), embaixo.
+        const larguraDaLegenda = 66 + larguraDoTexto('campos ligados: a energia entra', 11.5) + 10;
+        const larguraDoResultado = Math.max(...linhas.map((linha) => larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500))) + 20;
+        if (larguraDaLegenda + larguraDoResultado + 24 <= cena.w) escreverBloco(linhas, cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
+        else escreverBloco(linhas, cena.x + cena.w - 16, cena.y + cena.h - alturaDoBloco(linhas) - 2, 'right');
+      }
+
+      // A legenda: só o que não tem nome no próprio desenho.
+      desenharLegenda([
+        [AMOSTRAS.vento, 'vento solar (o Sol fica à esquerda)'],
+        [AMOSTRAS.imf, 'campo que o vento traz (IMF)'],
+        ...(misturas.ligacao > 0.2 ? [[AMOSTRAS.ligada, 'campos ligados: a energia entra']] : []),
+      ]);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. Passos 1 e 2: uma janela dentro do vento solar (um esquema, fora de escala).
+    // -------------------------------------------------------------------------
+    const MAXIMO_DE_PARTICULAS = 1400;
+    const PARTICULAS = (() => {
+      const sortear = sorteador(20241011);
+      return Array.from({ length: MAXIMO_DE_PARTICULAS }, () => ({ u: sortear(), v: sortear(), proton: sortear() < 0.5 }));
+    })();
+    // O cubinho de 1 cm³ (em frações da janela: posição de partida e lado), e o arranjo das partículas dentro dele.
+    const CUBO = { u: 0.12, v: 0.36 };
+    const DENTRO_DO_CUBO = (() => {
+      const sortear = sorteador(7);
+      return Array.from({ length: 40 }, () => ({ a: 0.1 + 0.8 * sortear(), b: 0.1 + 0.8 * sortear() }));
+    })();
+
+    function janelaDoVento() {
+      const comNomes = alturaLivre() >= 170;
+      const topo = cena.y + ESPACO_DO_TITULO + 4, embaixo = comNomes ? 34 : 6;
+      return { x: cena.x + 14, y: topo, w: cena.w - 28, h: Math.max(40, cena.h - ESPACO_DO_TITULO - 4 - embaixo - 6), comNomes };
+    }
+
+    function desenharJanela(alfa, comCampo) {
+      const j = janelaDoVento();
+      ctx.globalAlpha = alfa;
+      ctx.fillStyle = 'rgba(8, 8, 8, 0.94)';
+      ctx.strokeStyle = '#2b2b2b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(j.x, j.y, j.w, j.h, 12); else ctx.rect(j.x, j.y, j.w, j.h);
+      ctx.fill();
+      ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(j.x + 1, j.y + 1, j.w - 2, j.h - 2);
+      ctx.clip();
+
+      // O cubinho de 1 cm³ (um esquema): o lado dele na tela.
+      const lado = Math.max(26, Math.min(j.h * 0.34, 130));
+      const ladoU = lado / j.w, ladoV = lado / j.h;
+      const andado = estado.andado;
+      const posicaoU = (u) => ((u + andado) % 1 + 1) % 1;
+      // Quantas partículas cabem na janela com N prótons (e N elétrons) por cubinho.
+      const proporcao = (j.w * j.h) / (lado * lado);
+      const quantas = Math.min(MAXIMO_DE_PARTICULAS, Math.round(2 * estado.N * proporcao));
+      const dentroDoCubo = (p) => p.u >= CUBO.u && p.u <= CUBO.u + ladoU && p.v >= CUBO.v && p.v <= CUBO.v + ladoV;
+      const raioP = Math.max(2, Math.min(3.6, lado / 26)), raioE = raioP * 0.55;
+      for (let i = 0; i < quantas; i++) {
+        const p = PARTICULAS[i];
+        if (!comCampo && dentroDoCubo(p)) continue;        // dentro do cubinho, as partículas são contadas à parte
+        const x = j.x + posicaoU(p.u) * j.w, y = j.y + p.v * j.h;
+        ctx.fillStyle = p.proton ? `rgba(${COR_VENTO}, 0.85)` : 'rgba(235, 235, 235, 0.8)';
+        ctx.beginPath();
+        ctx.arc(x, y, p.proton ? raioP : raioE, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (!comCampo) {
+        // O cubinho anda com o plasma, com N prótons e N elétrons dentro.
+        const uDoCubo = posicaoU(CUBO.u);
+        const cx = j.x + uDoCubo * j.w, cy = j.y + CUBO.v * j.h;
+        const inteiro = uDoCubo + ladoU <= 1;
+        for (let k = 0; k < 2 * estado.N; k++) {
+          const q = DENTRO_DO_CUBO[k];
+          const x = j.x + posicaoU(CUBO.u + q.a * ladoU) * j.w, y = cy + q.b * lado;
+          const proton = k % 2 === 0;
+          ctx.fillStyle = proton ? LARANJA : '#f0f0f0';
+          ctx.beginPath();
+          ctx.arc(x, y, proton ? raioP * 1.15 : raioE * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        if (inteiro) {
+          const fundo = lado * 0.22;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(cx, cy, lado, lado);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.strokeRect(cx + fundo, cy - fundo, lado, lado);
+          ctx.beginPath();
+          for (const [a, b] of [[0, 0], [lado, 0], [0, lado], [lado, lado]]) {
+            ctx.moveTo(cx + a, cy + b);
+            ctx.lineTo(cx + a + fundo, cy + b - fundo);
+          }
+          ctx.stroke();
+          if (j.comNomes) {
+            escrever('1 cm³', cx + lado / 2 + fundo / 2, cy - fundo - 12, { tamanho: 12, peso: 600, alinhar: 'center', placa: true });
+            escrever(`${estado.N} ${estado.N === 1 ? 'próton' : 'prótons'} e ${estado.N} ${estado.N === 1 ? 'elétron' : 'elétrons'}`,
+              cx + lado / 2, cy + lado + 14, { tamanho: 11.5, cor: '#d8d8d8', alinhar: 'center', placa: true });
+          }
+        }
+      } else {
+        // As linhas do IMF, presas ao plasma: andam com ele, como tinta na água de um rio.
+        const B = tamanhoDaSeta(estado);
+        const quantasLinhas = Math.round(limitar(B / 1.6, 1, 18));
+        const sentido = Math.sign(Number(estado.bz.toFixed(1)));
+        for (let k = 0; k < quantasLinhas; k++) {
+          const u = posicaoU((k + 0.5) / quantasLinhas);
+          const xBase = j.x + u * j.w;
+          const fase = k * 1.7;
+          ctx.strokeStyle = `rgba(${COR_VENTO}, ${0.45 + 0.4 * Math.min(1, B / 20)})`;
+          ctx.lineWidth = 1.2 + Math.min(1.2, B / 25);
+          ctx.beginPath();
+          const pontos = 40;
+          for (let i = 0; i <= pontos; i++) {
+            const v = i / pontos;
+            const x = xBase + 6 * Math.sin(v * 7.5 + fase), y = j.y + v * j.h;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          // A setinha do sentido (para cima com Bz norte; para baixo com Bz sul).
+          if (sentido !== 0) {
+            for (const v of [0.22, 0.62]) {
+              const x = xBase + 6 * Math.sin(v * 7.5 + fase), y = j.y + v * j.h;
+              seta(x, y + sentido * 6, x, y - sentido * 6, { cor: LARANJA, espessura: 1.3, ponta: 6 });
+            }
+          }
+          // Duas partículas marcadas em cada linha: elas andam junto com a linha.
+          for (const v of [0.4, 0.82]) {
+            const x = xBase + 6 * Math.sin(v * 7.5 + fase), y = j.y + v * j.h;
+            ctx.fillStyle = LARANJA;
+            ctx.beginPath();
+            ctx.arc(x, y, raioP * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(x, y, raioP * 1.2 + 3, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+
+      // Embaixo da janela: a legenda e a velocidade.
+      if (j.comNomes) {
+        const y = j.y + j.h + 16;
+        let x = j.x + 6;
+        ctx.fillStyle = LARANJA;
+        ctx.beginPath();
+        ctx.arc(x + 4, y, raioP, 0, Math.PI * 2);
+        ctx.fill();
+        escrever('próton (carga +)', x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        x += 24 + larguraDoTexto('próton (carga +)', 11.5);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.beginPath();
+        ctx.arc(x + 4, y, raioE, 0, Math.PI * 2);
+        ctx.fill();
+        escrever('elétron (carga −)', x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        x += 24 + larguraDoTexto('elétron (carga −)', 11.5);
+        if (comCampo) {
+          ctx.strokeStyle = LARANJA;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + 18, y);
+          ctx.stroke();
+          escrever('linha do IMF', x + 24, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        }
+        const direita = j.x + j.w - 6;
+        const texto = `${comMilhar(estado.v)} km/s`;
+        escrever(texto, direita, y, { tamanho: 12, peso: 600, alinhar: 'right' });
+        seta(direita - larguraDoTexto(texto, 12, 600) - 40, y, direita - larguraDoTexto(texto, 12, 600) - 10, y, { cor: '#ffffff', espessura: 1.6, ponta: 7 });
+        if (!comCampo && j.w > 520) escrever('esquema: as partículas de verdade são muito menores que as bolinhas', j.x + j.w / 2, j.y + 14,
+          { tamanho: 11, cor: '#8f8f8f', alinhar: 'center' });
+        if (comCampo && j.w > 520) escrever('as partículas marcadas andam junto com a linha: o campo está "congelado" no plasma', j.x + j.w / 2, j.y + 14,
+          { tamanho: 11, cor: '#bdbdbd', alinhar: 'center', placa: true });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Passo 3: a seta do campo em 3D e os eixos do GSM.
+    //     x = para o Sol; y = para o lado do entardecer; z = para o norte.
+    // -------------------------------------------------------------------------
+    /** Projeta um ponto (x, y, z), em unidades do tamanho dos eixos, na tela. "d" > 0: mais perto de quem olha. */
+    function projetar(x, y, z, centro, L) {
+      const fi = emRadianos(estado.azimute), e = emRadianos(estado.elevacao);
+      const x1 = x * Math.cos(fi) - y * Math.sin(fi), y1 = x * Math.sin(fi) + y * Math.cos(fi);
+      return { x: centro.x - L * x1, y: centro.y - L * (z * Math.cos(e) - y1 * Math.sin(e)), d: y1 * Math.cos(e) + z * Math.sin(e) };
+    }
+    // Quantos nT cabem no comprimento de um eixo: o primeiro valor "redondo" com folga para a seta.
+    const ESCALAS_DOS_EIXOS = [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 80];
+    const escalaDosEixos = (B) => ESCALAS_DOS_EIXOS.find((valor) => valor >= B * 1.1) ?? 80;
+    /** Rótulo logo depois da ponta "q" de uma seta que sai de "origem", para fora dela. */
+    function rotuloNaPonta(texto, origem, q, opcoes) {
+      const dx = q.x - origem.x, dy = q.y - origem.y, d = Math.hypot(dx, dy);
+      if (d < 4) return;
+      const ux = dx / d, uy = dy / d;
+      const alinhar = ux > 0.35 ? 'left' : ux < -0.35 ? 'right' : 'center';
+      escrever(texto, q.x + ux * 12, q.y + uy * 12 + (alinhar === 'center' ? Math.sign(uy || 1) * 6 : 0), { ...opcoes, alinhar, placa: true });
+    }
+    function desenharEixos(alfa) {
+      const L = tamanhoDosEixos();
+      const centro = { x: cena.x + cena.w / 2, y: cena.y + ESPACO_DO_TITULO + alturaLivre() / 2 };
+      const comNomes = alturaLivre() >= 170;
+      const p = (x, y, z) => projetar(x, y, z, centro, L);
+      const B = tamanhoDaSeta(estado);
+      const escala = escalaDosEixos(B);
+      const tip = { x: estado.bx / escala, y: estado.by / escala, z: estado.bz / escala };
+      ctx.globalAlpha = alfa;
+
+      const EIXOS = [
+        { v: [1, 0, 0], nome: 'x: para o Sol' },
+        { v: [0, 1, 0], nome: 'y: para o entardecer' },
+        { v: [0, 0, 1], nome: 'z: para o norte (eixo magnético)' },
+      ];
+      // A metade de trás dos eixos (tracejada) vem antes da Terra; a da frente, depois.
+      const desenharEixo = (eixo, frente) => {
+        const a = p(0, 0, 0), b = p(...eixo.v.map((c) => c * 1.12)), c = p(...eixo.v.map((c) => -c * 0.6));
+        const pontaNaFrente = b.d >= 0;
+        if (frente === pontaNaFrente) seta(a.x, a.y, b.x, b.y, { cor: 'rgba(255, 255, 255, 0.85)', espessura: 1.4, ponta: 9 });
+        if (frente !== pontaNaFrente) tracejado(a.x, a.y, c.x, c.y, 'rgba(255, 255, 255, 0.3)', [3, 4], 1.2);
+      };
+      for (const eixo of EIXOS) desenharEixo(eixo, false);
+      const terra = p(0, 0, 0);
+      desenharTerra(terra.x, terra.y, L * RAIO_DA_TERRA_NOS_EIXOS);
+      for (const eixo of EIXOS) desenharEixo(eixo, true);
+      // O Sol, depois do fim do eixo x.
+      const sol = p(1.42, 0, 0);
+      desenharSol(sol.x, sol.y, Math.max(5, L * 0.055), 0.8);
+
+      // As três partes da seta, nos eixos, e as linhas que ligam a ponta a elas.
+      const pxy = p(tip.x, tip.y, 0), ponta = p(tip.x, tip.y, tip.z);
+      const nx = p(tip.x, 0, 0), ny = p(0, tip.y, 0), nz = p(0, 0, tip.z);
+      tracejado(ponta.x, ponta.y, pxy.x, pxy.y, `rgba(${COR_VENTO}, 0.5)`, [3, 4]);
+      tracejado(pxy.x, pxy.y, nx.x, nx.y, `rgba(${COR_VENTO}, 0.35)`, [3, 4]);
+      tracejado(pxy.x, pxy.y, ny.x, ny.y, `rgba(${COR_VENTO}, 0.35)`, [3, 4]);
+      tracejado(ponta.x, ponta.y, nz.x, nz.y, `rgba(${COR_VENTO}, 0.35)`, [3, 4]);
+      const parte = (q, valor, destaque) => {
+        if (Math.abs(valor) < 0.05) return;
+        seta(terra.x, terra.y, q.x, q.y, { cor: destaque ? '#ffd394' : `rgba(${COR_VENTO}, 0.85)`, espessura: destaque ? 3 : 1.8, ponta: destaque ? 10 : 7 });
+      };
+      parte(nx, estado.bx, false);
+      parte(ny, estado.by, false);
+      parte(nz, estado.bz, true);
+      // A seta inteira.
+      if (B > 0.05) seta(terra.x, terra.y, ponta.x, ponta.y, { cor: LARANJA, espessura: 3.4, ponta: 12 });
+
+      if (comNomes) {
+        // Os nomes dos eixos: o do z em cima da ponta; os do x e do y, embaixo.
+        for (const eixo of EIXOS) {
+          const q = p(...eixo.v.map((c) => c * 1.12));
+          escrever(eixo.nome, q.x, q.y + (eixo.v[2] ? -16 : 18), { tamanho: 12, cor: '#d8d8d8', alinhar: 'center', placa: true });
+        }
+        // Os valores das três partes (na ponta de cada uma) e o tamanho da seta inteira.
+        if (Math.abs(estado.bx) >= 0.05) rotuloNaPonta(`Bx = ${comSinal(estado.bx)} nT`, terra, nx, { tamanho: 11.5, cor: LARANJA });
+        if (Math.abs(estado.by) >= 0.05) rotuloNaPonta(`By = ${comSinal(estado.by)} nT`, terra, ny, { tamanho: 11.5, cor: LARANJA });
+        if (Math.abs(estado.bz) >= 0.05) rotuloNaPonta(`Bz = ${comSinal(estado.bz)} nT`, terra, nz, { tamanho: 13, cor: '#ffd394', peso: 700 });
+        if (B > 0.05) rotuloNaPonta(`IMF: |B| = ${numero(B, 1)} nT`, terra, ponta, { tamanho: 12.5, cor: LARANJA, peso: 600 });
+        escrever(`cada eixo: ${comMilhar(escala)} nT · arraste o desenho para girar`, cena.x + cena.w / 2, cena.y + cena.h - 14,
+          { tamanho: 11, cor: '#8f8f8f', alinhar: 'center' });
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. Passo 4: na frente da magnetopausa, o sentido dos dois campos.
+    // -------------------------------------------------------------------------
+    function desenharNariz(alfa) {
+      const S = projecao.S;
+      if (alturaLivre() < 170) return;
+      const chegando = bzChegando(), sentido = Math.sign(Number(chegando.toFixed(1)));
+      ctx.globalAlpha = alfa;
+      // O campo da Terra, logo dentro da parede: para o norte.
+      const xDentro = telaX(-8.55), xFora = telaX(-11.5), meio = telaY(0), meia = Math.max(16, 1.2 * S);
+      seta(xDentro, meio + meia, xDentro, meio - meia, { cor: AZUL, espessura: 3, ponta: 11 });
+      escrever('campo da Terra: norte', xDentro + 12, meio - meia * 0.4, { tamanho: 12, cor: AZUL, peso: 600, placa: true });
+      // O IMF que chega, logo fora da parede.
+      if (sentido !== 0) seta(xFora, meio + sentido * meia, xFora, meio - sentido * meia, { cor: LARANJA, espessura: 3, ponta: 11 });
+      escrever(sentido < 0 ? 'IMF: Bz sul' : sentido > 0 ? 'IMF: Bz norte' : 'IMF: Bz = 0', xFora - 12, meio + meia * 0.4,
+        { tamanho: 12, cor: LARANJA, peso: 600, alinhar: 'right', placa: true });
+      // Com Bz sul, os campos se ligam ali.
+      if (misturas.ligacao > 0.3) {
+        const x = telaX(-MAGNETOPAUSA), r = 6;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - r, meio - r);
+        ctx.lineTo(x + r, meio + r);
+        ctx.moveTo(x - r, meio + r);
+        ctx.lineTo(x + r, meio - r);
+        ctx.stroke();
+      }
+      // O resultado, embaixo, à esquerda.
+      const r = resultadoNaTerra(chegando);
+      const linhas = [
+        { texto: r.longo, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+        { texto: sentido < 0 ? 'a energia entra' : sentido > 0 ? 'o vento contorna a Terra: pouca energia entra' : 'nada a ligar',
+          tamanho: 12.5, cor: sentido < 0 ? LARANJA : AZUL, peso: 600 },
+      ];
+      escreverBloco(linhas, cena.x + 18, cena.y + cena.h - 18 - alturaDoBloco(linhas) + 14);
+      desenharLegenda([
+        [AMOSTRAS.imf, 'campo que o vento traz (IMF)'],
+        [AMOSTRAS.campo, 'campo da Terra'],
+        [AMOSTRAS.parede, 'magnetopausa'],
+        [AMOSTRAS.ligada, 'campos ligados: a energia entra'],
+      ]);
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 13. Passo 5: o gráfico do Bz ao longo de um dia (curva inventada) e a regra.
+    // -------------------------------------------------------------------------
+    let ultimoGrafico = null;                // onde o gráfico ficou (para arrastar nele)
+    function desenharGrafico(alfa) {
+      const comNomes = alturaLivre() >= 170;
+      const esquerda = cena.x + (comNomes ? 60 : 30), direita = cena.x + cena.w - 22;
+      const topo = cena.y + ESPACO_DO_TITULO + (comNomes ? 34 : 8), base = cena.y + cena.h - (comNomes ? 36 : 14);
+      if (base - topo < 30 || direita - esquerda < 60) return;
+      const yMin = Math.min(-40, estado.bzSul - 6), yMax = 15;
+      const naTelaX = (t) => esquerda + ((direita - esquerda) * t) / 24;
+      const naTelaY = (bz) => base - ((base - topo) * (bz - yMin)) / (yMax - yMin);
+      ultimoGrafico = { esquerda, direita, topo, base, yMin, yMax };
+      const trecho = trechoDoPasso5();
+      ctx.globalAlpha = alfa;
+
+      // Fundo, grade e eixos.
+      ctx.fillStyle = 'rgba(6, 6, 6, 0.9)';
+      ctx.fillRect(esquerda, topo, direita - esquerda, base - topo);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let bz = Math.ceil(yMin / 10) * 10; bz <= yMax; bz += 10) {
+        ctx.moveTo(esquerda, naTelaY(bz));
+        ctx.lineTo(direita, naTelaY(bz));
+      }
+      for (let t = 3; t < 24; t += 3) {
+        ctx.moveTo(naTelaX(t), topo);
+        ctx.lineTo(naTelaX(t), base);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.beginPath();
+      ctx.moveTo(esquerda, naTelaY(0));
+      ctx.lineTo(direita, naTelaY(0));
+      ctx.stroke();
+      if (comNomes) {
+        for (let bz = Math.ceil(yMin / 10) * 10; bz <= yMax; bz += 10) {
+          escrever(bz === 0 ? '0' : comSinal(bz, 0), esquerda - 8, naTelaY(bz), { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
+        }
+        for (let t = 0; t <= 24; t += 3) escrever(`${t} h`, naTelaX(t), base + 13, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        escrever('Bz (nT)', esquerda - 8, topo - 14, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
+        escrever('norte', direita - 6, naTelaY(0) - 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
+        escrever('sul', direita - 6, naTelaY(0) + 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
+      }
+
+      // O que ficou abaixo de −10 nT: pintado (mais forte no maior trecho seguido).
+      const passo = 1 / 30;
+      for (const [maior, forca] of [[false, 0.16], [true, 0.4]]) {
+        ctx.fillStyle = `rgba(${COR_VENTO}, ${forca})`;
+        ctx.beginPath();
+        let aberto = false;
+        for (let t = 0; t <= 24 + 1e-9; t += passo) {
+          const bz = bzNaHora(t, estado.bzSul, estado.duracao);
+          const dentro = bz < LIMIAR_DO_BZ && (!maior || (t >= trecho.inicio - 1e-6 && t <= trecho.fim + 1e-6));
+          if (dentro && !aberto) { ctx.moveTo(naTelaX(t), naTelaY(LIMIAR_DO_BZ)); aberto = true; }
+          if (dentro) ctx.lineTo(naTelaX(t), naTelaY(bz));
+          if (!dentro && aberto) { ctx.lineTo(naTelaX(t), naTelaY(LIMIAR_DO_BZ)); ctx.closePath(); aberto = false; }
+        }
+        if (aberto) { ctx.lineTo(naTelaX(24), naTelaY(LIMIAR_DO_BZ)); ctx.closePath(); }
+        ctx.fill();
+      }
+      // O limiar de −10 nT.
+      tracejado(esquerda, naTelaY(LIMIAR_DO_BZ), direita, naTelaY(LIMIAR_DO_BZ), 'rgba(255, 255, 255, 0.8)', [6, 4], 1.3);
+      if (comNomes) escrever('−10 nT', direita - 4, naTelaY(LIMIAR_DO_BZ) - 10, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'right', placa: true });
+      // A curva.
+      ctx.strokeStyle = LARANJA;
+      ctx.lineWidth = 1.7;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (let t = 0; t <= 24 + 1e-9; t += passo) {
+        const x = naTelaX(t), y = naTelaY(bzNaHora(t, estado.bzSul, estado.duracao));
+        if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // A medida do maior trecho seguido, comparada com 3 h.
+      if (trecho.horas > 0) {
+        const x1 = naTelaX(trecho.inicio), x2 = naTelaX(trecho.fim + 1 / 60), y = naTelaY(LIMIAR_DO_BZ) - (comNomes ? 26 : 10);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.moveTo(x1, y - 5);
+        ctx.lineTo(x1, y + 5);
+        ctx.moveTo(x2, y - 5);
+        ctx.lineTo(x2, y + 5);
+        ctx.stroke();
+        // A régua de 3 h, para comparar.
+        const x3 = naTelaX(trecho.inicio + HORAS_MINIMAS);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y + 9);
+        ctx.lineTo(x3, y + 9);
+        ctx.moveTo(x3, y + 5);
+        ctx.lineTo(x3, y + 13);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (comNomes) {
+          const atende = trecho.horas > HORAS_MINIMAS;
+          escrever(`${emHoras(trecho.horas)} seguidas abaixo de −10 nT`, (x1 + x2) / 2, y - 13,
+            { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
+          escrever('3 h', x3 + 6, y + 9, { tamanho: 10.5, cor: '#a9a9a9' });
+          // O veredito, no alto do gráfico.
+          escreverBloco([
+            { texto: atende ? '✓ mais de 3 h: atende à condição' : '✗ menos de 3 h: não basta', tamanho: 12.5, cor: atende ? '#ffffff' : '#c8c8c8', peso: 600 },
+            { texto: atende ? 'pode haver tempestade intensa (Dst ≤ −100 nT)' : 'Bz sul forte por pouco tempo não basta', tamanho: 11.5, cor: '#a9a9a9' },
+          ], esquerda + 14, topo + 18);
+        }
+      } else if (comNomes) {
+        escreverBloco([
+          { texto: '✗ o Bz não passou de −10 nT', tamanho: 12.5, cor: '#c8c8c8', peso: 600 },
+          { texto: 'não atende à condição', tamanho: 11.5, cor: '#a9a9a9' },
+        ], esquerda + 14, topo + 18);
+      }
+      if (comNomes) escrever('curva inventada · arraste para mudar o nível e a duração do Bz sul', (esquerda + direita) / 2, base + 27,
+        { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 14. Passo 6: de onde vem o Bz sul forte (dois esquemas lado a lado).
+    // -------------------------------------------------------------------------
+    // O vento da cena da CIR: cada risco sai do Sol numa direção; é rápido se saiu de perto do buraco coronal.
+    const VENTO_DA_CIR = (() => {
+      const sortear = sorteador(99);
+      return Array.from({ length: 120 }, () => ({ angulo: sortear() * Math.PI * 2, r: sortear(), rapido: sortear() < 0.25 }));
+    })();
+    const GIRO_DO_SOL = 0.35;              // radianos por segundo, no desenho
+    const FEIXE_RAPIDO = 0.5;              // meia largura do feixe rápido, em radianos
+    function atualizarCIR(dt) {
+      const giro = estado.tempo * GIRO_DO_SOL;
+      for (const q of VENTO_DA_CIR) {
+        q.r += (q.rapido ? 0.5 : 0.22) * dt;
+        if (q.r > 1) {
+          // Nasce de novo na borda do Sol; é rápido se sai de perto do buraco coronal.
+          q.r = 0;
+          const diferenca = Math.atan2(Math.sin(q.angulo - giro), Math.cos(q.angulo - giro));
+          q.rapido = Math.abs(diferenca) < FEIXE_RAPIDO;
+        }
+      }
+    }
+
+    function desenharFontes(alfa) {
+      const comNomes = alturaLivre() >= 170;
+      const topo = cena.y + ESPACO_DO_TITULO + 4, alturaUtil = cena.h - ESPACO_DO_TITULO - 10;
+      const ladoALado = cena.w >= 520;
+      const caixas = ladoALado
+        ? [{ x: cena.x + 10, y: topo, w: cena.w / 2 - 15, h: alturaUtil }, { x: cena.x + cena.w / 2 + 5, y: topo, w: cena.w / 2 - 15, h: alturaUtil }]
+        : [{ x: cena.x + 10, y: topo, w: cena.w - 20, h: alturaUtil / 2 - 4 }, { x: cena.x + 10, y: topo + alturaUtil / 2 + 4, w: cena.w - 20, h: alturaUtil / 2 - 4 }];
+      ctx.globalAlpha = alfa;
+      for (const caixa of caixas) {
+        ctx.fillStyle = 'rgba(8, 8, 8, 0.9)';
+        ctx.strokeStyle = '#2b2b2b';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(caixa.x, caixa.y, caixa.w, caixa.h, 12); else ctx.rect(caixa.x, caixa.y, caixa.w, caixa.h);
+        ctx.fill();
+        ctx.stroke();
+      }
+      const textoEmbaixo = comNomes ? 54 : 0;
+      desenharCME(caixas[0], textoEmbaixo, comNomes);
+      desenharCIR(caixas[1], textoEmbaixo, comNomes);
+      ctx.globalAlpha = 1;
+    }
+
+    /** A CME: uma nuvem de plasma, com o campo organizado em laços, indo do Sol até a Terra. */
+    function desenharCME(caixa, textoEmbaixo, comNomes) {
+      const meioY = caixa.y + (caixa.h - textoEmbaixo) / 2 + (comNomes ? 10 : 0);
+      const raioDoSol = Math.max(8, Math.min(caixa.h * 0.09, caixa.w * 0.06));
+      const xSol = caixa.x + raioDoSol * 1.6, xTerra = caixa.x + caixa.w - 22;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(caixa.x + 1, caixa.y + 1, caixa.w - 2, caixa.h - 2 - textoEmbaixo);   // o desenho não invade o texto de baixo
+      ctx.clip();
+      desenharSol(xSol, meioY, raioDoSol, 0.9);
+      // A nuvem anda do Sol até a Terra e cresce no caminho; depois, outra sai.
+      const p = (estado.tempo * 0.13) % 1;
+      const raio = raioDoSol * (0.7 + 2.6 * p);
+      const x = entre(xSol + raioDoSol, xTerra - 10, p) - raio * 0.2;
+      const some = 1 - suave((p - 0.86) / 0.14);
+      // A frente comprimida (um arco mais claro).
+      ctx.strokeStyle = `rgba(${COR_VENTO}, ${0.3 * some})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(x, meioY, raio * 1.25, raio * 1.35, 0, -Math.PI / 2.6, Math.PI / 2.6);
+      ctx.stroke();
+      // Os laços do campo, com o sentido girando de forma organizada.
+      for (let k = 1; k <= 3; k++) {
+        const a = raio * (0.32 * k), b = raio * (0.36 * k);
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${(0.45 + 0.15 * k) * some})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(x, meioY, a, b, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        for (let m = 0; m < 2; m++) {
+          const ang = estado.tempo * 1.2 + (m * Math.PI) + k;
+          const px = x + a * Math.cos(ang), py = meioY + b * Math.sin(ang);
+          const tx = -a * Math.sin(ang), ty = b * Math.cos(ang), d = Math.hypot(tx, ty) || 1;
+          seta(px - (tx / d) * 6, py - (ty / d) * 6, px + (tx / d) * 3, py + (ty / d) * 3, { cor: `rgba(${COR_VENTO}, ${some})`, espessura: 1.4, ponta: 6 });
+        }
+      }
+      // A Terra, à direita.
+      ctx.fillStyle = AZUL;
+      ctx.beginPath();
+      ctx.arc(xTerra, meioY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if (comNomes) {
+        escrever('CME', caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
+        escrever('ejeção de massa coronal', caixa.x + 14 + larguraDoTexto('CME', 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever('Terra', xTerra, meioY + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
+        const y = caixa.y + caixa.h - textoEmbaixo + 12;
+        escrever('nuvem de plasma com campo forte e organizado', caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        escrever('as tempestades mais intensas', caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
+        escrever('ex.: −412 nT em maio de 2024', caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
+      }
+    }
+
+    /** A CIR, vista de cima: o vento rápido de um buraco coronal alcança o vento lento à frente; tudo gira com o Sol. */
+    function desenharCIR(caixa, textoEmbaixo, comNomes) {
+      const alturaDoDesenho = caixa.h - textoEmbaixo - (comNomes ? 26 : 0);
+      const cy = caixa.y + (comNomes ? 26 : 0) + alturaDoDesenho / 2;
+      const raioDoSol = Math.max(7, Math.min(alturaDoDesenho * 0.07, caixa.w * 0.05));
+      const cx = caixa.x + caixa.w * 0.36;
+      const alcance = Math.min(caixa.w * 0.6, alturaDoDesenho * 0.62);
+      const giro = estado.tempo * GIRO_DO_SOL;                 // o Sol gira (e o buraco coronal junto)
+      const ESPIRAL = 2.6;                                     // quanto a frente do vento rápido se enrola
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(caixa.x + 1, caixa.y + 1, caixa.w - 2, caixa.h - 2 - textoEmbaixo);   // o desenho não invade o texto de baixo
+      ctx.clip();
+      // O vento: riscos que saem do Sol. Os que saem do buraco coronal são mais rápidos (e mais longos).
+      ctx.lineCap = 'round';
+      for (const q of VENTO_DA_CIR) {
+        const r = raioDoSol + q.r * alcance;
+        const x = cx + r * Math.cos(q.angulo), y = cy - r * Math.sin(q.angulo);
+        const comprimento = q.rapido ? 10 : 4;
+        ctx.strokeStyle = `rgba(${COR_VENTO}, ${q.rapido ? 0.8 : 0.45})`;
+        ctx.lineWidth = q.rapido ? 1.4 : 1.1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - comprimento * Math.cos(q.angulo), y + comprimento * Math.sin(q.angulo));
+        ctx.stroke();
+      }
+      // A região comprimida (a CIR): uma faixa em espiral, na frente do feixe rápido, que gira com o Sol.
+      ctx.strokeStyle = `rgba(${COR_VENTO}, 0.5)`;
+      ctx.lineWidth = Math.max(4, alcance * 0.06);
+      ctx.beginPath();
+      for (let i = 0; i <= 60; i++) {
+        const f = i / 60, r = raioDoSol + f * alcance, ang = giro + FEIXE_RAPIDO - ESPIRAL * f;
+        const x = cx + r * Math.cos(ang), y = cy - r * Math.sin(ang);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      desenharSol(cx, cy, raioDoSol, 0.9);
+      // O buraco coronal: uma mancha escura no Sol, girando com ele.
+      ctx.fillStyle = 'rgba(40, 20, 0, 0.85)';
+      ctx.beginPath();
+      ctx.arc(cx + raioDoSol * 0.55 * Math.cos(giro), cy - raioDoSol * 0.55 * Math.sin(giro), raioDoSol * 0.38, 0, Math.PI * 2);
+      ctx.fill();
+      // A Terra, à direita.
+      const xTerra = cx + alcance * 0.85;
+      ctx.fillStyle = AZUL;
+      ctx.beginPath();
+      ctx.arc(xTerra, cy, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if (comNomes) {
+        escrever('CIR', caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
+        escrever('região de interação corrotante', caixa.x + 14 + larguraDoTexto('CIR', 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever('Terra', xTerra, cy + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
+        const y = caixa.y + caixa.h - textoEmbaixo + 12;
+        escrever('o vento rápido de um buraco coronal alcança o lento', caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        escrever('tempestades moderadas', caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
+        escrever('raramente abaixo de −150 nT', caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 15. O quadro inteiro.
+    // -------------------------------------------------------------------------
+    function desenhar() {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, largura, altura);
+      atualizarProjecao();
+      for (const estrela of ESTRELAS) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${estrela.brilho})`;
+        ctx.fillRect(Math.round(estrela.u * largura), Math.round(estrela.v * altura), 1, 1);
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      ctx.clip();
+      desenharMundo(misturas.mundo);
+      // Em cima, o desenho some por trás do título (os textos, desenhados depois, ficam nítidos).
+      const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
+      sombra.addColorStop(0, '#000');
+      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), '#000');
+      sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = sombra;
+      ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
+      if (forcaDaCena.longe > 0.01) desenharDeLonge(forcaDaCena.longe);
+      const janela = Math.max(forcaDaCena.p1, forcaDaCena.p2);
+      if (janela > 0.01) desenharJanela(janela, forcaDaCena.p2 > forcaDaCena.p1);
+      if (forcaDaCena.p3 > 0.01) desenharEixos(forcaDaCena.p3);
+      if (forcaDaCena.p4 > 0.01) desenharNariz(forcaDaCena.p4);
+      if (forcaDaCena.p5 > 0.01) desenharGrafico(forcaDaCena.p5);
+      if (forcaDaCena.p6 > 0.01) desenharFontes(forcaDaCena.p6);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 16. Painel: textos e números que mudam.
+    // -------------------------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+    const textos = new Map();          // o que já está escrito em cada lugar (para não reescrever à toa)
+    function por(id, html) {
+      if (textos.get(id) === html) return;
+      textos.set(id, html);
+      el(id).innerHTML = html;         // só textos fixos e números desta página
+    }
+
+    por('nota', `Fora de escala: o Sol fica bem longe, à esquerda. O desenho é um corte de lado, com o norte em cima:
+      nele aparece só o B<sub>z</sub>. Magnetopausa, linhas, partículas, a ligação dos campos e as cenas da CME e da CIR
+      são esquemas; a curva do passo 5 é inventada. Acréscimos: 150 milhões de km do Sol à Terra e
+      ${comMilhar(CAMPO_NA_SUPERFICIE)} nT na superfície da Terra, para comparar.`);
+    const SUBTITULOS = {
+      longe: 'De longe: o vento solar chega à Terra trazendo o campo do Sol.<span class="longo"> Fora de escala.</span>',
+      p1: 'De perto: o vento solar, um plasma de prótons e elétrons.<span class="longo"> Fora de escala.</span>',
+      p2: 'De perto: o campo do Sol viaja congelado no vento (o IMF).',
+      p3: 'De perto: a seta do campo e os três eixos do GSM.<span class="longo"> Arraste para girar.</span>',
+      p4: 'De perto: o lado da Terra que olha para o Sol.',
+      p5: 'De perto: quanto e por quanto tempo o B<sub>z</sub> precisa ficar no sul.<span class="longo"> Curva inventada.</span>',
+      p6: 'De perto: de onde vem o B<sub>z</sub> sul forte.<span class="longo"> Esquema.</span>',
+    };
+    /** O valor de um campo, com sinal, em HTML ("−3,3 nT"). */
+    const nT = (valor) => `${comSinal(valor)} nT`;
+
+    function atualizarPainel() {
+      const B = tamanhoDaSeta(estado);
+      const chegando = bzChegando();
+      const resultado = resultadoNaTerra(chegando);
+      por('subtitulo', SUBTITULOS[estado.cena]);
+      por('o-bx', nT(estado.bx));
+      por('o-by', nT(estado.by));
+      por('o-bz', nT(estado.bz));
+      por('o-n', `${estado.N} por cm<sup>3</sup>`);
+      por('o-v', `${comMilhar(estado.v)} km/s`);
+      por('o-b', `${numero(B, 1)} nT`);
+      por('o-bzsul', `${comSinal(estado.bzSul, 0)} nT`);
+      por('o-duracao', duracaoEscolhida(estado.duracao));
+
+      // Visão de longe.
+      por('l-bz', descreverBz(estado.bz));
+      por('l-chegando', mudancaACaminho() ? `${descreverBz(chegando)} <small>(o novo vem a caminho)</small>` : descreverBz(chegando));
+      por('l-resultado', resultado.curto);
+
+      // Passo 1: o tempo de viagem do Sol até a Terra.
+      const t = tempoDeViagem(estado.v);
+      por('conta-1', `tempo = ${comMilhar(DISTANCIA_SOL_TERRA)} km ÷ ${comMilhar(estado.v)} km/s = ${comMilhar(t)} s`);
+      por('valor-1', `≈ <b>${emDias(t)}</b> do Sol até a Terra (${comMilhar(t / 3600)} horas)`);
+      por('legenda-1', `<dt>v</dt><dd>velocidade do vento: agora ${comMilhar(estado.v)} km/s (típico: ${VELOCIDADE_TIPICA})</dd>
+        <dt>N</dt><dd>densidade: ${estado.N} ${estado.N === 1 ? 'próton' : 'prótons'} por cm³ (e quase o mesmo número de elétrons; típico: ${DENSIDADE_TIPICA})</dd>
+        <dt class="unidade">150 mi km</dt><dd>distância média do Sol à Terra (acréscimo, para a conta)</dd>`);
+
+      // Passo 2: o IMF, comparado com o campo na superfície da Terra.
+      const mostrado = Number(B.toFixed(1));       // a conta usa o valor mostrado, para dar para refazer à mão
+      por('conta-2', B > 0.05 ? `${comMilhar(CAMPO_NA_SUPERFICIE)} nT ÷ ${numero(mostrado, 1)} nT = ${comMilhar(CAMPO_NA_SUPERFICIE / mostrado)}` : 'sem campo, não há o que comparar');
+      por('valor-2', B > 0.05
+        ? `o IMF é <b>${comMilhar(CAMPO_NA_SUPERFICIE / mostrado)} vezes</b> mais fraco que o campo na superfície da Terra${B > CAMPO_NUMA_CME ? ' (forte como dentro de uma CME)' : ''}`
+        : '');
+      por('legenda-2', `<dt>B</dt><dd>intensidade do IMF: agora ${numero(B, 1)} nT (típico perto da Terra: ${CAMPO_TIPICO} nT; numa CME, mais de ${CAMPO_NUMA_CME} nT)</dd>
+        <dt class="unidade">${comMilhar(CAMPO_NA_SUPERFICIE)} nT</dt><dd>o campo na superfície da Terra, no equador (das animações do campo geomagnético)</dd>`);
+
+      // Passo 3: o tamanho da seta, pelas três partes.
+      const parte = (valor) => (valor < 0 ? `(${comSinal(valor)})` : numero(valor, 1));
+      const soma = estado.bx ** 2 + estado.by ** 2 + estado.bz ** 2;
+      por('conta-3', `√(${parte(estado.bx)}<sup>2</sup> + ${parte(estado.by)}<sup>2</sup> + ${parte(estado.bz)}<sup>2</sup>) = √${numero(soma, 2)}`);
+      por('valor-3', `|B| = <b>${numero(B, 1)} nT</b>; o B<sub>z</sub> é só uma parte: ${descreverBz(estado.bz)}`);
+      por('legenda-3', `<dt>B<sub>x</sub></dt><dd>para o Sol: ${nT(estado.bx)}</dd><dt>B<sub>y</sub></dt><dd>para o lado do entardecer: ${nT(estado.by)}</dd>
+        <dt>B<sub>z</sub></dt><dd>para o norte (+) ou para o sul (−): ${nT(estado.bz)}</dd><dt>|B|</dt><dd>o tamanho da seta</dd>`);
+
+      // Passo 4: o sentido dos dois campos, na frente da Terra.
+      por('conta-4', `campo da Terra, do lado do Sol: para o norte (+) · B<sub>z</sub> chegando: ${descreverBz(chegando)}`);
+      por('valor-4', chegando < -0.05 ? 'sentidos opostos: <b>podem se ligar, e a energia entra</b>'
+        : chegando > 0.05 ? 'mesmo sentido: <b>não se ligam; pouca energia entra</b>' : 'B<sub>z</sub> = 0: o campo não tem parte norte–sul');
+
+      // Passo 5: a regra.
+      const trecho = trechoDoPasso5();
+      por('conta-5', `maior trecho seguido com B<sub>z</sub> abaixo de −10 nT: ${emHoras(trecho.horas)}`);
+      por('valor-5', trecho.horas > HORAS_MINIMAS ? 'mais de 3 h: <b>atende à condição</b> de uma tempestade intensa'
+        : trecho.horas > 0 ? 'menos de 3 h: <b>não basta</b>' : 'o B<sub>z</sub> não passou de −10 nT: <b>não atende</b>');
+      por('legenda-5', `<dt>Dst</dt><dd>o índice das tempestades: quanto mais negativo, mais intensa</dd>
+        <dt class="unidade">a curva</dt><dd>inventada, só para mostrar a regra: B<sub>z</sub> de ${comSinal(estado.bzSul, 0)} nT por ${duracaoEscolhida(estado.duracao)}, com pequenas oscilações</dd>`);
+
+      por('contador-de-passos', `Passo ${estado.passo + 1} de 6`);
+    }
+
+    function mostrarPasso(novo) {
+      estado.passo = limitar(novo, 0, 5);
+      for (const item of document.querySelectorAll('.passo')) item.classList.toggle('ativo', Number(item.dataset.passo) === estado.passo);
+      for (const marca of document.querySelectorAll('.pontos button')) {
+        const atual = Number(marca.dataset.passo) === estado.passo;
+        marca.classList.toggle('ativo', atual);
+        if (atual) marca.setAttribute('aria-current', 'step'); else marca.removeAttribute('aria-current');
+      }
+      el('bt-anterior').disabled = estado.passo === 0;
+      el('bt-proximo').disabled = estado.passo === 5;
+      document.querySelector('.conteudo').scrollTop = 0;
+      atualizarCena();
+      atualizarPainel();
+      medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+    }
+    function mostrarVisao(perto) {
+      if (estado.perto === perto) return;
+      estado.perto = perto;
+      document.body.classList.toggle('perto', perto);
+      el('bt-longe').classList.toggle('ativo', !perto);
+      el('bt-perto').classList.toggle('ativo', perto);
+      el('bt-longe').setAttribute('aria-pressed', String(!perto));
+      el('bt-perto').setAttribute('aria-pressed', String(perto));
+      atualizarCena();
+      atualizarPainel();
+      medirCena();
+    }
+
+    // -------------------------------------------------------------------------
+    // 17. Controles.
+    // -------------------------------------------------------------------------
+    el('bt-longe').addEventListener('click', () => mostrarVisao(false));
+    el('bt-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-ver-de-perto').addEventListener('click', () => mostrarVisao(true));
+    el('bt-anterior').addEventListener('click', () => mostrarPasso(estado.passo - 1));
+    el('bt-proximo').addEventListener('click', () => mostrarPasso(estado.passo + 1));
+    for (const item of document.querySelectorAll('.passo')) {
+      item.querySelector('.passo-titulo').addEventListener('click', () => mostrarPasso(Number(item.dataset.passo)));
+    }
+    for (const marca of document.querySelectorAll('.pontos button')) {
+      marca.addEventListener('click', () => mostrarPasso(Number(marca.dataset.passo)));
+    }
+
+    /**
+     * Muda um ou mais valores (dentro dos limites de cada um) e põe os controles de acordo. "B" muda só o
+     * tamanho da seta do IMF, sem mudar a direção dela.
+     */
+    function definir({ bx = estado.bx, by = estado.by, bz = estado.bz, B, N = estado.N, v = estado.v, bzSul = estado.bzSul, duracao = estado.duracao,
+      azimute = estado.azimute, elevacao = estado.elevacao } = {}) {
+      let novo = { bx, by, bz };
+      if (B !== undefined) {
+        const d = estado.direcao ?? { bx: 0, by: 0, bz: -1 };
+        novo = { bx: d.bx * B, by: d.by * B, bz: d.bz * B };
+      }
+      const componente = (valor) => limitar(Math.round(valor * 10) / 10, -CAMPO_MAXIMO, CAMPO_MAXIMO);
+      estado.bx = componente(novo.bx);
+      estado.by = componente(novo.by);
+      estado.bz = componente(novo.bz);
+      const tamanho = tamanhoDaSeta(estado);
+      if (tamanho > 0.05) estado.direcao = { bx: estado.bx / tamanho, by: estado.by / tamanho, bz: estado.bz / tamanho };
+      estado.N = limitar(Math.round(N), 1, 20);
+      estado.v = limitar(Math.round(v / 10) * 10, 250, 1000);
+      estado.bzSul = limitar(Math.round(bzSul), -40, 0);
+      estado.duracao = limitar(Math.round(duracao * 4) / 4, 0.25, 12);
+      estado.azimute = ((azimute % 360) + 360) % 360;
+      estado.elevacao = limitar(elevacao, 4, 75);
+      el('c-bx').value = estado.bx;
+      el('c-by').value = estado.by;
+      el('c-bz').value = estado.bz;
+      el('c-b').value = Math.max(0.5, Math.round(tamanho * 2) / 2);
+      el('c-n').value = estado.N;
+      el('c-v').value = estado.v;
+      el('c-bzsul').value = estado.bzSul;
+      el('c-duracao').value = estado.duracao;
+      atualizarPainel();
+      if (estado.pausado) desenhar();
+    }
+    el('c-bx').addEventListener('input', () => definir({ bx: Number(el('c-bx').value) }));
+    el('c-by').addEventListener('input', () => definir({ by: Number(el('c-by').value) }));
+    el('c-bz').addEventListener('input', () => definir({ bz: Number(el('c-bz').value) }));
+    el('c-b').addEventListener('input', () => definir({ B: Number(el('c-b').value) }));
+    el('c-n').addEventListener('input', () => definir({ N: Number(el('c-n').value) }));
+    el('c-v').addEventListener('input', () => definir({ v: Number(el('c-v').value) }));
+    el('c-bzsul').addEventListener('input', () => definir({ bzSul: Number(el('c-bzsul').value) }));
+    el('c-duracao').addEventListener('input', () => definir({ duracao: Number(el('c-duracao').value) }));
+    el('bt-tipico').addEventListener('click', () => definir({ N: DENSIDADE_TIPICA, v: VELOCIDADE_TIPICA, B: CAMPO_TIPICO }));
+    function alternarPausa() {
+      estado.pausado = !estado.pausado;
+      el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
+    }
+    el('bt-pausar').addEventListener('click', alternarPausa);
+    // Teclado (opcional; só depois de clicar na animação): setas trocam de passo, Espaço pausa.
+    window.addEventListener('keydown', (evento) => {
+      if (evento.target !== document.body) return;
+      if (evento.key === ' ') { evento.preventDefault(); alternarPausa(); }
+      else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
+      else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
+    });
+
+    // Arrastar no desenho: a seta do Bz (de longe), os eixos (passo 3, para girar) ou a curva (passo 5).
+    let arrasto = null;
+    /** O lugar do desenho que fica embaixo do ponteiro, em raios da Terra. */
+    const lugarDoPonteiro = (evento) => ({ X: (evento.clientX - projecao.cx) / projecao.S, Y: (projecao.cy - evento.clientY) / projecao.S });
+    /** O que dá para arrastar ali: 'seta', 'girar', 'curva' ou nada. */
+    function oQueHaAli(evento) {
+      if (estado.viagem < 1) return null;
+      if (estado.cena === 'longe') {
+        const { X, Y } = lugarDoPonteiro(evento), lugar = lugarDaSeta();
+        return Math.abs(X - lugar.X) * projecao.S < 26 && Math.abs(Y) * projecao.S < alturaLivre() / 2 ? 'seta' : null;
+      }
+      if (estado.cena === 'p3') return evento.clientX < cena.x + cena.w && evento.clientY < cena.y + cena.h ? 'girar' : null;
+      if (estado.cena === 'p5' && ultimoGrafico) {
+        const g = ultimoGrafico;
+        return evento.clientX >= g.esquerda && evento.clientX <= g.direita && evento.clientY >= g.topo && evento.clientY <= g.base ? 'curva' : null;
+      }
+      return null;
+    }
+    function arrastarPara(evento) {
+      if (arrasto.tipo === 'seta') {
+        definir({ bz: bzDaAltura(lugarDoPonteiro(evento).Y) });
+      } else if (arrasto.tipo === 'girar') {
+        definir({ azimute: arrasto.azimute - (evento.clientX - arrasto.x) * 0.5, elevacao: arrasto.elevacao + (evento.clientY - arrasto.y) * 0.35 });
+      } else {
+        // A altura do ponteiro dá o nível do Bz sul; a distância até o meio do dia dá a duração.
+        const g = ultimoGrafico;
+        const bz = g.yMin + ((g.base - evento.clientY) * (g.yMax - g.yMin)) / (g.base - g.topo);
+        const t = ((evento.clientX - g.esquerda) * 24) / (g.direita - g.esquerda);
+        definir({ bzSul: bz, duracao: 2 * Math.abs(t - HORA_DO_MEIO) });
+      }
+    }
+    tela.addEventListener('pointerdown', (evento) => {
+      const tipo = oQueHaAli(evento);
+      if (!tipo) return;
+      arrasto = { tipo, x: evento.clientX, y: evento.clientY, azimute: estado.azimute, elevacao: estado.elevacao };
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+      if (tipo !== 'girar') arrastarPara(evento);
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (arrasto) {
+        arrastarPara(evento);
+        return;
+      }
+      const tipo = oQueHaAli(evento);
+      tela.style.cursor = tipo === 'seta' ? 'ns-resize' : tipo === 'girar' ? 'grab' : tipo === 'curva' ? 'crosshair' : '';
+    });
+    tela.addEventListener('pointerup', () => { arrasto = null; });
+    tela.addEventListener('pointercancel', () => { arrasto = null; });
+
+    // -------------------------------------------------------------------------
+    // 18. Laço da animação.
+    // -------------------------------------------------------------------------
+    let anterior = performance.now();
+    function quadro(agora) {
+      const intervalo = Math.min((agora - anterior) / 1000, 0.1);
+      anterior = agora;
+      // A viagem da câmera e as trocas de cena continuam mesmo na pausa (são respostas aos controles).
+      if (estado.viagem < 1) estado.viagem = Math.min(1, estado.viagem + intervalo / DURACAO_DA_VIAGEM);
+      for (const nome of CENAS) {
+        const alvo = nome === estado.cena && estado.viagem >= 0.5 ? 1 : 0;
+        forcaDaCena[nome] += limitar(alvo - forcaDaCena[nome], -intervalo / 0.4, intervalo / 0.4);
+      }
+      misturas.mundo += limitar(MUNDO_NA_CENA[estado.cena] - misturas.mundo, -intervalo / 0.7, intervalo / 0.7);
+      if (!estado.pausado) {
+        estado.tempo += intervalo;
+        atualizarVento(intervalo);
+        atualizarLinhasDoIMF(intervalo);
+        estado.andado += (estado.v / VELOCIDADE_TIPICA) * 0.045 * intervalo;
+        if (forcaDaCena.p6 > 0.01) atualizarCIR(intervalo);
+      }
+      // A Terra responde ao Bz que está chegando (devagar, para a troca ficar visível).
+      misturas.ligacao += limitar(alvoDaLigacao(bzChegando()) - misturas.ligacao, -intervalo / 0.8, intervalo / 0.8);
+      desenhar();
+      atualizarPainel();
+      requestAnimationFrame(quadro);
+    }
+
+    // Início.
+    mostrarControles();
+    definir(COMECO);
+    mostrarPasso(0);
+    ajustarTamanho();
+    atualizarLinhasDoIMF(0);
+    misturas.ligacao = alvoDaLigacao(bzChegando());
+    requestAnimationFrame(quadro);
+  </script>
+</body>
+</html>
