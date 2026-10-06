@@ -35,7 +35,7 @@ export function gerarDadosDeTeste(quantidade = 150) {
     card.x = Math.round(130 + sortear() * (zona.largura - 260));
     card.y = Math.round((sortear() - 0.5) * 3200);
     if (i % 7 === 0) card.linkDocs = 'https://docs.google.com/';
-    if (i % 11 === 0) card.animacao = 'demonstracao.html';
+    if (i % 11 === 0) card.animacoes = i % 22 === 0 ? ['demonstracao.html', 'magnetopausa.html'] : ['demonstracao.html'];
     if (i % 4 === 0) card.tags = ['teste'];
     dados.cards.push(card);
   }

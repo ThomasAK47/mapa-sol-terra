@@ -66,6 +66,11 @@ Não há mais nada para instalar.
 
 Um card criado e deixado vazio é descartado sozinho ao fechar o painel.
 
+Com o zoom afastado, cada card mostra só o título, maior, para continuar legível;
+a descrição volta quando o card fica grande o bastante na tela. Isso depende
+também do tamanho do card: um card ampliado mostra tudo com o zoom mais
+afastado. O ajuste acontece quando o zoom para.
+
 Se o zoom e o movimento do touchpad se confundirem no seu equipamento, ajuste em
 **Opções**, o botão no canto superior direito.
 
@@ -181,17 +186,21 @@ disso vai para o arquivo.
 
 ## Animações
 
-Um card pode ter uma animação: um arquivo da pasta `animacoes/` que abre numa
-janela grande.
+Um card pode ter uma ou mais animações: arquivos da pasta `animacoes/` que
+abrem numa janela grande. Um card com animação mostra um botão **▶** na borda
+de cima (com o número delas, quando são várias), em qualquer zoom.
 
 | Ação | Como |
 |---|---|
-| Escolher a animação do card | Campo **Animação** no painel do card |
-| Abrir | Ícone ▷ no card, ou botão **Abrir** no painel |
+| Pôr uma animação no card | Campo **Animações** no painel do card: escolha na lista "Escolher uma animação…" (ou "Acrescentar outra animação…") |
+| Mudar a ordem | Botão de seta para cima, ao lado da animação |
+| Tirar uma animação do card | Botão × ao lado dela (Ctrl+Z desfaz) |
+| Abrir | Botão ▶ no card (abre a primeira), ou o botão ▷ ao lado de cada uma, no painel |
+| Trocar de animação, com a janela aberta | Botões 1, 2, 3… no alto da janela |
 | Recomeçar do início | Botão de seta circular, no alto da janela |
 | Fechar | Botão ×, tecla Esc, ou clique fora da janela |
 
-- A lista do campo **Animação** vem do arquivo `animacoes/manifesto.json`.
+- A lista do campo **Animações** vem do arquivo `animacoes/manifesto.json`.
 - A animação roda isolada: ela não enxerga nem altera os dados do mapa.
 - Com a janela aberta, os atalhos do mapa (Delete, Ctrl+Z…) ficam desligados.
 
@@ -202,7 +211,7 @@ janela grande.
 2. Salve o arquivo HTML na pasta `animacoes/`, com o nome indicado.
 3. Acrescente o trecho em `animacoes/manifesto.json`. O passo a passo está na
    seção "Registrar no manifesto" do contrato.
-4. Volte ao mapa: a lista do campo **Animação** se atualiza sozinha.
+4. Volte ao mapa: a lista do campo **Animações** se atualiza sozinha.
 
 ## GitHub: guardar e publicar
 
@@ -294,7 +303,7 @@ Depois disso:
 - **O mapa está lento**: desligue os efeitos, no botão com o ícone de vento.
 - **Uma animação nova não aparece na lista**: confira o `animacoes/manifesto.json`.
   Se ele tiver um erro de digitação (como uma vírgula faltando), o campo
-  **Animação** do painel diz em que linha.
+  **Animações** do painel diz em que linha.
 - **"O arquivo … não foi encontrado"** ao abrir uma animação: o nome no
   manifesto e o nome do arquivo na pasta `animacoes/` precisam ser iguais, letra
   por letra.

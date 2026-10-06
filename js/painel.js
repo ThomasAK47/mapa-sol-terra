@@ -5,12 +5,14 @@
 //   • Modo somente leitura: só o conteúdo, sem campos.
 // O painel também mostra a família do card (card pai e filhos, com o botão
 // de recolher/expandir) e lista as conexões; um clique abre cada uma.
-// O campo "Animação" oferece as animações de animacoes/manifesto.json.
+// O campo "Animações" oferece as animações de animacoes/manifesto.json. Um
+// card pode ter várias, em ordem (a janela abre na primeira e mostra botões
+// 1, 2, 3… para trocar).
 // =============================================================================
 
 import {
-  abrirLinkDocs, alternarRecolhido, centralizarCard, definirAnimacao, definirPai, descartarSeVazio,
-  excluirCard, expandirAte, moverCardParaZona,
+  abrirLinkDocs, acrescentarAnimacao, alternarRecolhido, centralizarCard, definirPai, descartarSeVazio,
+  excluirCard, expandirAte, moverCardParaZona, removerAnimacao, subirAnimacao,
 } from './acoes.js';
 import { aoMudarManifesto, infoDaAnimacao, manifestoAtual } from './animacoes.js';
 import { areaUtil, definirMargemDireita, mundoParaTela } from './camera.js';
@@ -279,55 +281,84 @@ function atualizarDicaDoLink(valor, dica, botaoAbrir) {
 
 // --- Animação ---------------------------------------------------------------------
 
-/** Campo "Animação": a lista do manifesto e o botão para abrir. */
+/**
+ * Campo "Animações": as animações do card, em ordem (cada uma com os botões
+ * abrir, subir e tirar), e uma lista do manifesto para acrescentar outra.
+ */
 function construirCampoAnimacao(id) {
+  const rotulo = el('label', { class: 'campo-rotulo', for: 'painel-animacao' }, 'Animações');
+  const itens = el('div', { class: 'lista-animacoes' });
   const seletor = el('select', { id: 'painel-animacao', class: 'entrada' });
-  seletor.addEventListener('change', () => definirAnimacao(id, seletor.value || null));
-  const abrir = el('button', {
-    class: 'botao botao-contorno botao-pequeno', type: 'button', title: 'Abrir a animação',
-    onclick: () => abrirAnimacaoDoCard(id),
-  }, icone('animacao'), 'Abrir');
+  seletor.addEventListener('change', () => {
+    const arquivo = seletor.value;
+    seletor.value = '';
+    if (arquivo) acrescentarAnimacao(id, arquivo);
+  });
   const dica = el('div', { class: 'dica' });
   const avisos = el('div', { class: 'avisos-manifesto' });
-  const caixa = el('div', { class: 'campo' },
-    el('label', { class: 'campo-rotulo', for: 'painel-animacao' }, 'Animação'),
-    el('div', { class: 'linha' }, seletor, abrir),
-    dica,
-    avisos,
-  );
-  return { caixa, seletor, abrir, dica, avisos, assinatura: null };
+  const caixa = el('div', { class: 'campo' }, rotulo, itens, seletor, dica, avisos);
+  return { caixa, rotulo, itens, seletor, dica, avisos, assinatura: null };
 }
 
 /**
- * Preenche o campo com as animações do manifesto. A animação atual do card
- * continua na lista mesmo que tenha saído do manifesto (nada some sem aviso).
+ * Preenche o campo com as animações do card e a lista do manifesto. Uma
+ * animação que saiu do manifesto continua no card, com um aviso (nada some
+ * sem aviso).
  */
 function preencherCampoAnimacao(campo, card) {
   const manifesto = manifestoAtual();
-  const atual = card.animacao ?? '';
-  // Só refaz a lista quando algo mudou (a cada tecla digitada no painel, esta
+  const doCard = card.animacoes;
+  // Só refaz o campo quando algo mudou (a cada tecla digitada no painel, esta
   // função é chamada de novo).
-  const assinatura = `${atual}\u0001${manifesto ? JSON.stringify([manifesto.lista, manifesto.avisos, manifesto.erro]) : ''}`;
+  const assinatura = `${doCard.join('\u0002')}\u0001${manifesto ? JSON.stringify([manifesto.lista, manifesto.avisos, manifesto.erro]) : ''}`;
   if (assinatura === campo.assinatura) return;
   campo.assinatura = assinatura;
 
   const lista = manifesto?.lista ?? [];
-  const noManifesto = Boolean(atual && manifesto?.porArquivo.has(atual));
   const listaConfiavel = Boolean(manifesto && !manifesto.erro);
-  const opcoes = [el('option', { value: '' }, '(nenhuma)')];
-  for (const item of lista) {
-    opcoes.push(el('option', { value: item.arquivo, title: item.descricao || null }, item.titulo));
-  }
-  if (atual && !noManifesto) {
-    opcoes.push(el('option', { value: atual }, listaConfiavel ? `${atual} (fora do manifesto)` : atual));
-  }
-  campo.seletor.replaceChildren(...opcoes);
-  campo.seletor.value = atual;
-  campo.abrir.disabled = !atual;
+  campo.rotulo.textContent = doCard.length > 1 ? `Animações (${doCard.length})` : 'Animações';
 
-  campo.dica.textContent = noManifesto
-    ? manifesto.porArquivo.get(atual).descricao
-    : atual && listaConfiavel ? 'Esta animação não está em animacoes/manifesto.json.' : '';
+  // As animações do card.
+  campo.itens.hidden = doCard.length === 0;
+  campo.itens.replaceChildren(...doCard.map((arquivo, indice) => {
+    const info = manifesto?.porArquivo.get(arquivo);
+    const fora = !info && listaConfiavel;
+    const nome = info?.titulo ?? arquivo;
+    return el('div', { class: 'item-animacao', title: info?.descricao || null },
+      el('span', { class: 'numero', 'aria-hidden': 'true' }, String(indice + 1)),
+      el('span', { class: `nome${fora ? ' fora' : ''}` }, nome, fora && el('small', {}, 'não está em animacoes/manifesto.json')),
+      el('span', { class: 'acoes' },
+        el('button', {
+          class: 'botao icone botao-pequeno', type: 'button', title: 'Abrir esta animação', 'aria-label': `Abrir a animação ${nome}`,
+          onclick: () => abrirAnimacaoDoCard(card.id, indice),
+        }, icone('animacao')),
+        el('button', {
+          class: 'botao icone botao-pequeno', type: 'button', title: 'Passar para cima (muda a ordem)',
+          'aria-label': `Passar ${nome} para cima`, disabled: indice === 0,
+          onclick: () => subirAnimacao(card.id, indice),
+        }, icone('subir')),
+        el('button', {
+          class: 'botao icone botao-pequeno', type: 'button', title: 'Tirar esta animação do card',
+          'aria-label': `Tirar ${nome} do card`,
+          onclick: () => removerAnimacao(card.id, indice),
+        }, icone('fechar')),
+      ),
+    );
+  }));
+
+  // A lista para acrescentar: as animações do manifesto que o card ainda não tem.
+  const disponiveis = lista.filter((item) => !doCard.includes(item.arquivo));
+  const convite = doCard.length === 0 ? 'Escolher uma animação…' : 'Acrescentar outra animação…';
+  campo.seletor.replaceChildren(
+    el('option', { value: '' }, disponiveis.length || !listaConfiavel ? convite : 'Todas as animações já estão neste card'),
+    ...disponiveis.map((item) => el('option', { value: item.arquivo, title: item.descricao || null }, item.titulo)),
+  );
+  campo.seletor.value = '';
+  campo.seletor.disabled = disponiveis.length === 0;
+
+  campo.dica.textContent = doCard.length > 1
+    ? 'O ▶ do card abre a primeira. Na janela, os botões 1, 2, 3… trocam de animação.'
+    : '';
   campo.dica.hidden = !campo.dica.textContent;
 
   // Problemas do manifesto (ex.: erro de formatação), para a pessoa corrigir.
@@ -536,7 +567,7 @@ function construirLeitura(card) {
         el('a', { class: 'botao botao-contorno', href: link, target: '_blank', rel: 'noopener noreferrer' },
           icone('documento'), 'Abrir no Google Docs', icone('externo')),
       ),
-      card.animacao && animacaoDaLeitura(card),
+      card.animacoes.length > 0 && animacoesDaLeitura(card),
       card.pai && buscarCard(card.pai) && el('div', { class: 'campo' },
         el('span', { class: 'campo-rotulo' }, 'Card pai'),
         el('div', { class: 'lista-familia' }, botaoDeCard(card.pai)),
@@ -548,15 +579,21 @@ function construirLeitura(card) {
   ];
 }
 
-/** Botão "Abrir a animação", com o título e a descrição do manifesto. */
-function animacaoDaLeitura(card) {
-  const info = infoDaAnimacao(card.animacao);
+/** As animações do card: um botão para cada, com o título e a descrição do manifesto. */
+function animacoesDaLeitura(card) {
+  const lista = card.animacoes;
   return el('div', { class: 'campo' },
-    el('div', {},
-      el('button', { class: 'botao botao-contorno', type: 'button', onclick: () => abrirAnimacaoDoCard(card.id) },
-        icone('animacao'), 'Abrir a animação'),
-    ),
-    info && el('div', { class: 'dica' }, info.descricao ? `${info.titulo}: ${info.descricao}` : info.titulo),
+    el('span', { class: 'campo-rotulo' }, lista.length > 1 ? `Animações (${lista.length})` : 'Animação'),
+    el('div', { class: 'lista-animacoes' }, lista.map((arquivo, indice) => {
+      const info = infoDaAnimacao(arquivo);
+      return el('button', {
+        class: 'item-animacao item-animacao-botao', type: 'button', title: 'Abrir esta animação',
+        onclick: () => abrirAnimacaoDoCard(card.id, indice),
+      },
+      el('span', { class: 'numero', 'aria-hidden': 'true' }, lista.length > 1 ? String(indice + 1) : icone('animacao')),
+      el('span', { class: 'nome' }, info?.titulo ?? arquivo, info?.descricao && el('small', {}, info.descricao)),
+      );
+    })),
   );
 }
 

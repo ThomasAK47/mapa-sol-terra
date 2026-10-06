@@ -73,6 +73,10 @@ Ajustes em relação à proposta original:
    sem trocá-los de zona; Sol e Terra se reposicionam sozinhos. Ao arrastar, a
    zona é atualizada pela posição.
 3. **`animacao` guarda o nome do arquivo** (ex.: `"demonstracao.html"`).
+   *Mudou depois, a pedido (2026-10-06): no formato 2, o campo é
+   `"animacoes"`, uma lista de nomes em ordem (um card pode ter várias, como a
+   série do campo geomagnético). A migração 1 → 2 converte os arquivos
+   antigos sozinha.*
 4. **Conexões têm `criadoEm` e `atualizadoEm`.**
 5. **Gravação pensada para o git:** arquivo indentado, em UTF-8, posições
    inteiras. Mover um card não altera `atualizadoEm`; só mudanças de conteúdo

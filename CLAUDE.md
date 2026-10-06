@@ -48,7 +48,9 @@ pedidas pela pessoa usuária, um commit para cada:
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
 - vento solar radial, contornando o primeiro anel do campo da Terra;
 - animações de verdade: `animacoes/magnetopausa.html` e a série do campo
-  geomagnético, em três partes (veja "Contrato das animações").
+  geomagnético, em três partes (veja "Contrato das animações");
+- cards legíveis com o zoom afastado e várias animações por card (formato 2
+  dos dados): veja "Legibilidade dos cards" e "Modelo de dados".
 
 O que vem depois também é decidido por ela:
 
@@ -82,24 +84,24 @@ O que vem depois também é decidido por ela:
 |---|---|
 | `js/principal.js` | Inicialização: modo (edição / leitura / teste), carga dos dados, câmera inicial |
 | `js/estado.js` | Dados em memória. **Único caminho de alteração** (`alterar`, gestos). Desfazer/refazer (100 ações), seleção |
-| `js/modelo.js` | Versão do formato, `migrar()`, `normalizar()` (reparo + avisos), geometria das zonas, operações de zona como funções puras (`definirLarguraDaZona`, `inserirZonaDepois`, `unirZonaComVizinha`) |
+| `js/modelo.js` | Versão do formato (2), `migrar()` (1 → 2: `animacao` vira a lista `animacoes`), `normalizar()` (reparo + avisos), geometria das zonas, operações de zona como funções puras (`definirLarguraDaZona`, `inserirZonaDepois`, `unirZonaComVizinha`) |
 | `js/zonas.js` | Edição das zonas no modo de edição: janelinha embaixo do nome (nome, descrição, "Nova zona à direita", excluir) e arrasto das marcas de largura (um gesto = uma ação no desfazer). Usa delegação de eventos em `#rotulos-zonas` |
 | `js/persistencia.js` | Leitura, salvamento automático, reserva no localStorage, conflito, exportar/importar |
 | `js/camera.js` | Pan/zoom, roda/touchpad/pinça (sensibilidades em constantes no topo; `GANHO_DA_PINCA = 1.5`, a pedido), área útil, posição guardada |
 | `js/fundo.js` | Canvas: estrelas, coroa do Sol (`desenharCoroa`), vento solar, Sol, Terra com linhas de campo, limites das zonas. Cria e posiciona os nomes das zonas e as marcas de largura (`.rotulo-zona`, `.alca-zona`, com `data-zona`). Redesenha a cada mudança da câmera, quando uma zona muda e, com os efeitos ligados, a cada passo do relógio dos efeitos |
 | `js/ceu.js` | Estrelas (estáticas, com paralaxe de 4% só no arrasto) e partículas de vento solar (espaço do mapa; saem do Sol em todas as direções e contornam o primeiro anel do campo da Terra). Só decoração |
 | `js/efeitos.js` | Liga/desliga os efeitos (`definirEfeitos`, guardado no localStorage; padrão desligado se o sistema pede menos movimento), classe `efeitos-ligados` no `<body>`, relógio a 30 passos/s (`tempoDosEfeitos`, `aoPassoDosEfeitos`), parado com a janela de animação aberta |
-| `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, aplica o tamanho final no `transform` de cada card, botão "+N"/"−", classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica o tamanho final), faixa de zoom (`data-detalhe`), alça de conexão (uma, embaixo) e alça de tamanho (canto inferior direito), ritmo da flutuação de cada card (`--flut-duracao`, `--flut-atraso`, classe `flut-a/b/c`, a partir do id). Chama `aoRenderizarCards` no fim |
+| `js/cards.js` | Desenho dos cards (reconciliação por id): esconde os que estão em pai recolhido, aplica o tamanho final no `transform` de cada card, botão "+N"/"−", botão ▶ das animações (com o número delas), classes de foco e de busca, tamanhos medidos (`tamanhoDoCard` já aplica o tamanho final), faixa de zoom do mapa (`data-detalhe` no `#palco`) e faixa de cada card (`data-faixa`, título da faixa "compacto"; veja "Legibilidade dos cards"), alça de conexão (uma, embaixo) e alça de tamanho (canto inferior direito), ritmo da flutuação de cada card (`--flut-duracao`, `--flut-atraso`, classe `flut-a/b/c`, a partir do id). Chama `aoRenderizarCards` no fim |
 | `js/conexoes.js` | Linhas pai → filho; conexões como curvas SVG (Bézier quadrática, leque por par de cards **visíveis**), setas, textos no meio; conexões de cards escondidos redirecionadas ao representante (tracejadas; várias viram "N conexões", com `data-expandir`); linha provisória; espessura constante na tela |
 | `js/hierarquia.js` | `hierarquia()` em cache: filhos, nível, representante visível, visíveis, total de descendentes, tamanho final de cada card (`escala`). `descendentes`, `podeSerPai`, `ancestraisRecolhidos`, `estaRecolhido` (considera o recolhimento local da vitrine e as expansões temporárias da busca) |
 | `js/busca.js` | Campo de busca: `filtrarCards` (função pura), resultados na ordem do mapa, Enter/Shift+Enter/Esc, expansão temporária de pais recolhidos |
 | `js/editor-conexao.js` | Janelinha presa ao meio da conexão: texto, inverter, com/sem seta, excluir (ou só leitura) |
 | `js/foco.js` | `focoAtual()`: card selecionado + vizinhos (pelas pontas visíveis) + pai e filhos (`familia`), ou a conexão aberta no editor. Fica suspenso durante a busca |
 | `js/interacao.js` | Ponteiro: pan, arrastar card, arrastar a alça de conexão (nova conexão), arrastar a alça de tamanho (o card cresce em volta do centro; duplo clique volta a 100%), clique, duplo clique, pinça, mapa andando sozinho perto da borda |
-| `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, campo "Animação" (lista do manifesto; a escolha atual continua na lista mesmo fora dele) ou botão "Abrir a animação" na leitura, conexões do card |
+| `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, campo "Animações" (as do card em ordem, cada uma com abrir/subir/tirar, e uma lista do manifesto para acrescentar; uma animação fora do manifesto continua no card, com aviso) ou um botão por animação na leitura, conexões do card |
 | `js/animacoes.js` | Manifesto (`animacoes/manifesto.json`): leitura ao iniciar e quando a janela volta ao foco, `validarManifesto` (função pura, avisos em português), `arquivoDeAnimacaoValido` (regra do nome), `infoDaAnimacao`, `aoMudarManifesto` |
-| `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
-| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `definirAnimacao`, `definirEscalaDoCard`, `definirEscalaDosCards`), zonas (`editarZona`, `criarZonaDepoisDe`, `excluirZona`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
+| `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard(id, indice)`, `abrirAnimacao`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", botões 1, 2, 3… quando o card tem várias animações (cada troca descarrega a anterior), fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
+| `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `acrescentarAnimacao`, `removerAnimacao`, `subirAnimacao`, `definirEscalaDoCard`, `definirEscalaDosCards`), zonas (`editarZona`, `criarZonaDepoisDe`, `excluirZona`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
 | `js/barra.js` | Barra de ferramentas, indicador de salvamento, botão de efeitos (`#bt-efeitos`), menu de opções (barra "Tamanho de todos os cards", modo da roda), atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
 | `js/teste.js` | Modo `?teste=N` (dados fictícios), medidor de quadros, `medirPanZoom()` |
@@ -142,7 +144,7 @@ avisam os módulos com `estado.avisarMudancaVisual()` (notificação `'visual'`,
 não salva nem entra no desfazer). Caches como `hierarquia()` usam
 `versaoDosDados()`, que muda a cada notificação, exceto `'selecao'`.
 
-## Modelo de dados (versão 1)
+## Modelo de dados (versão 2)
 
 - **Zonas:** `{ id, nome, detalhe, ordem, largura }`, dispostas lado a lado pela
   `ordem`, a partir de x = 0. São editáveis pelo app (`js/zonas.js`):
@@ -154,7 +156,15 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
     cards passam para a vizinha, e nenhuma posição absoluta muda.
 - **Raiz:** `{ versao, escalaDosCards, zonas, cards, conexoes }`.
   `escalaDosCards` é o tamanho de todos os cards (1 = normal; de 0,5 a 2).
-- **Card:** `{ id, titulo, descricao, zona, x, y, pai, recolhido, escala, tags, animacao, linkDocs, criadoEm, atualizadoEm }`.
+- **Card:** `{ id, titulo, descricao, zona, x, y, pai, recolhido, escala, tags, animacoes, linkDocs, criadoEm, atualizadoEm }`.
+  - **`animacoes`** é a lista de animações do card (nomes de arquivo da pasta
+    `animacoes/`), na ordem em que a janela as mostra (1, 2, 3…). Na versão 1
+    era um campo só, `animacao` (um nome ou `null`); `MIGRACOES[1]` faz a
+    troca, e o app guarda o arquivo antigo em `data/backups`
+    (`…-antes-de-migrar.json`) antes da primeira gravação no formato 2.
+    `normalizar()` tira nomes repetidos e itens que não são texto (com
+    aviso) e aceita também um nome solto ou o campo antigo, de um arquivo
+    editado à mão.
   - **`x` é relativo ao início da zona** e `(x, y)` é o **centro** do card. Use
     `posicaoAbsoluta` / `definirPosicaoAbsoluta`.
   - **`escala`** é o tamanho próprio do card (1 = normal; de 0,5 a 3) e vale
@@ -176,6 +186,33 @@ não salva nem entra no desfazer). Caches como `hierarquia()` usam
   - `mapa-sol-terra:roda`: comportamento da roda;
   - `mapa-sol-terra:efeitos`: efeitos animados ligados (`true`) ou não;
   - `mapa-sol-terra:reserva`: alterações não gravadas.
+
+## Legibilidade dos cards
+
+Pedido da pessoa usuária: o texto só aparecia com muito zoom (mesmo com os
+cards no tamanho 2×), e o ícone da animação ficava escondido. Em `js/cards.js`:
+
+- **Faixa de cada card, pelo tamanho REAL dele na tela** (zoom × tamanho do
+  card), atributo `data-faixa`:
+  - `completo` (a partir de 0,7): título, descrição e o ícone do Docs;
+  - `compacto` (abaixo disso, quando a descrição teria menos de ~9 px na
+    tela): só o título, que cresce dentro do card para ficar com uns 12 px na
+    tela, até o maior tamanho que cabe na largura do card sem quebrar palavras
+    e em até 3 linhas (`tamanhoMaximoDoTitulo`, medido num canvas); daí em
+    diante, ele diminui com o zoom, como o resto do mapa.
+- **Botão ▶ das animações** (`.card-animacao`): sentado na borda de cima do
+  card, à esquerda, em qualquer zoom, com o número de animações quando são
+  várias. Quando ficaria menor que 20 px na tela, ganha `scale` (cresce para
+  cima, sem cobrir o título).
+- **Desempenho:** esses ajustes mudam o tamanho dos cards (medir de novo,
+  redesenhar as conexões) e qualquer mudança de estilo dentro de `#mundo`
+  obriga a repintar o mapa. Feitos a cada quadro, derrubavam o zoom com 150
+  cards para 16 a 30 qps. Por isso só acontecem quando o zoom para
+  (`ESPERA_PARA_AJUSTAR`, 300 ms sem mudar; mover sem zoom não ajusta nada).
+  O ajuste custa um quadro (~50 ms com 150 cards e 300 conexões); durante o
+  gesto, a fluidez é a mesma de antes. Não volte a ajustar a cada quadro.
+- A faixa do mapa todo (`data-detalhe` no `#palco`) continua valendo para as
+  alças, os textos das conexões e a flutuação.
 
 ## Servidor (`iniciar.py`, só biblioteca padrão)
 
@@ -484,10 +521,16 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - O manifesto é relido no evento `focus` da janela. Sem resposta do servidor,
     a lista anterior é mantida.
 - **Nome do arquivo:** `^[a-z0-9][a-z0-9_-]*\.html$` (`arquivoDeAnimacaoValido`).
-  - A regra vale para o manifesto e também para `card.animacao` na hora de
-    abrir, porque o JSON pode ter sido editado à mão.
+  - A regra vale para o manifesto e também para cada nome de
+    `card.animacoes` na hora de abrir, porque o JSON pode ter sido editado à
+    mão.
   - Nenhum nome vira endereço sem essa conferência.
-  - `normalizar()` não mexe em `card.animacao`.
+  - `normalizar()` não confere os nomes de `card.animacoes` (só tira os
+    repetidos e o que não é texto).
+- **Várias animações num card:** o ▶ do card abre a primeira; o painel abre
+  qualquer uma. Com mais de uma, o cabeçalho da janela mostra botões 1, 2,
+  3… e o subtítulo diz "animação 2 de 3". A animação não sabe que faz parte
+  de uma lista (o contrato não mudou).
 - **Janela:** `<dialog id="janela-animacao">` com `showModal()`.
   - O iframe tem `sandbox="allow-scripts"` (atributo definido antes do `src`) e
     `referrerpolicy="no-referrer"`. Ele é criado ao abrir e removido ao fechar.

@@ -433,13 +433,51 @@ body.somente-leitura .alca-tamanho,
 .card-acao:hover { background: #efefef; color: var(--card-texto); }
 .card-acao .ico { width: 15px; height: 15px; }
 
-/* Nível de detalhe conforme o zoom (definido em js/cards.js). O texto some,
-   mas o tamanho do card continua o mesmo. */
-#palco[data-detalhe="medio"] .card-descricao,
-#palco[data-detalhe="medio"] .card-icones,
-#palco[data-detalhe="baixo"] .card-descricao,
-#palco[data-detalhe="baixo"] .card-icones { visibility: hidden; }
-#palco[data-detalhe="baixo"] .card-titulo { color: #c4c4c4; }
+/* Faixa de detalhe de cada card (js/cards.js), pelo tamanho REAL dele na
+   tela: na faixa "compacto" a descrição ficaria pequena demais para ler, e o
+   card mostra só o título, maior (o tamanho da letra vem do script, direto no
+   título). */
+.card[data-faixa="compacto"] .card-descricao,
+.card[data-faixa="compacto"] .card-icones { display: none; }
+.card[data-faixa="compacto"] .card-titulo { line-height: 1.15; }
+
+/* Botão ▶ das animações, sentado na borda de cima do card, à esquerda (o
+   "+N" fica no canto da direita). Aparece em qualquer zoom; quando ficaria
+   pequeno demais na tela, js/cards.js o aumenta (propriedade "scale"). Ele
+   cresce para cima e para a direita, a partir do canto de baixo à esquerda
+   dele (transform-origin), e assim nunca cobre o título. Com várias
+   animações, mostra quantas são. */
+.card .card-animacao {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  transform-origin: 0 100%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: auto;
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1.5px solid #fff;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  translate: 0 -60%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+.card .card-animacao.varias { padding: 0 8px 0 7px; }
+.card .card-animacao .ico { width: 11px; height: 11px; fill: currentColor; stroke-width: 1.4; }
+.card .card-animacao.varias .ico { margin-left: 1px; }
+.card .card-animacao:not(.varias) .ico { margin-left: 2px; } /* o triângulo parece centrado */
+.card .card-animacao:hover { background: #fff; border-color: #111; color: #111; }
 
 /* ---------------------------------------------------------------------------
    Rótulos das zonas (presos ao topo da tela)
@@ -914,7 +952,47 @@ select.entrada { cursor: pointer; }
 }
 .item-conexao .texto.vazio { color: var(--texto-3); font-style: italic; }
 
-/* Problemas em animacoes/manifesto.json, mostrados no campo "Animação". */
+/* Animações do card, em ordem (painel). Na edição, cada linha tem os botões
+   abrir, subir e tirar; na leitura, a linha inteira é um botão. */
+.lista-animacoes { display: flex; flex-direction: column; gap: 6px; }
+.item-animacao {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  width: 100%;
+  padding: 5px 5px 5px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie-2);
+  color: var(--texto);
+  text-align: left;
+}
+.item-animacao .numero {
+  justify-self: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-3);
+  font-variant-numeric: tabular-nums;
+}
+.item-animacao .numero .ico { width: 15px; height: 15px; }
+.item-animacao .nome { padding: 3px 0; font-size: 12.5px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.item-animacao .nome small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--texto-2);
+}
+.item-animacao .nome.fora { color: var(--texto-2); font-style: italic; }
+.item-animacao .nome.fora small { font-style: normal; color: var(--texto); }
+.item-animacao .acoes { display: flex; gap: 0; }
+.item-animacao-botao { grid-template-columns: 16px minmax(0, 1fr); padding: 7px 10px; cursor: pointer; }
+.item-animacao-botao:hover { border-color: #5a5a5a; }
+.item-animacao-botao:hover .numero { color: #fff; }
+
+/* Problemas em animacoes/manifesto.json, mostrados no campo "Animações". */
 .avisos-manifesto { display: flex; flex-direction: column; gap: 4px; }
 .avisos-manifesto .dica { color: var(--texto); }
 
@@ -1131,6 +1209,24 @@ select.entrada { cursor: pointer; }
 }
 .janela-animacao-titulo { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 .janela-animacao-subtitulo { font-size: 12.5px; color: var(--texto-3); overflow: hidden; text-overflow: ellipsis; }
+
+/* Card com várias animações: botões 1, 2, 3… (a da tela fica acesa). */
+.janela-animacao-partes { flex: none; display: flex; gap: 4px; margin-right: 6px; }
+.janela-animacao-parte {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texto-2);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.janela-animacao-parte:hover { border-color: #6d6d6d; color: #fff; }
+.janela-animacao-parte[aria-current="true"] { background: #fff; border-color: #fff; color: #000; cursor: default; }
 
 .janela-animacao-area { position: relative; flex: 1; min-height: 0; background: #000; }
 .janela-animacao-iframe {

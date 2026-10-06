@@ -90,8 +90,11 @@ async function iniciarApp() {
   estado.iniciar(dados);
   renderizarAgora();
 
-  // 4. Câmera: volta para onde estava na última visita ou enquadra tudo.
+  // 4. Câmera: volta para onde estava na última visita ou enquadra tudo. Depois,
+  //    os cards se ajustam ao zoom escolhido (o que cada um mostra depende do
+  //    tamanho dele na tela) antes de a tela aparecer.
   if (!camera.restaurarCamera()) acoes.enquadrarTudo({ animar: false });
+  renderizarAgora();
 
   window.__mapaIniciado = true;
   document.body.classList.remove('carregando');

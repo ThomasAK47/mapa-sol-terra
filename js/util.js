@@ -76,6 +76,9 @@ const ICONES = {
   lixeira: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   documento: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
   animacao: '<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/>',
+  // Triângulo do botão ▶ dos cards (o CSS o preenche; veja .card-animacao).
+  tocar: '<path d="M8.5 6.2v11.6L18 12z"/>',
+  subir: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   externo: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   inverter: '<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>',
   menos: '<path d="M6 12h12"/>',

@@ -16,8 +16,12 @@
 
 import { agoraISO, gerarId, limitar, plural, semAcentos } from './util.js';
 
-/** Versão atual do formato. Ao mudar o formato: some 1 e crie a migração. */
-export const VERSAO_ATUAL = 1;
+/**
+ * Versão atual do formato. Ao mudar o formato: some 1 e crie a migração.
+ *   1 — formato inicial (cada card com uma animação, no campo "animacao");
+ *   2 — cada card com uma LISTA de animações, em ordem ("animacoes").
+ */
+export const VERSAO_ATUAL = 2;
 
 export const LARGURA_ZONA_PADRAO = 1200;
 export const LARGURA_ZONA_MINIMA = 300;
@@ -57,7 +61,7 @@ export function novoCard(id, agora = agoraISO()) {
   return {
     id, titulo: '', descricao: '', zona: '', x: 0, y: 0,
     pai: null, recolhido: false, escala: 1, tags: [],
-    animacao: null, linkDocs: null,
+    animacoes: [], linkDocs: null,
     criadoEm: agora, atualizadoEm: agora,
   };
 }
@@ -65,17 +69,22 @@ export function novoCard(id, agora = agoraISO()) {
 // -----------------------------------------------------------------------------
 // Migração
 // -----------------------------------------------------------------------------
-// Cada entrada converte os dados da versão N para a N+1. Uma futura versão 2
-// seria registrada assim:
-//
-//   1: (dados) => {
-//     for (const card of dados.cards) card.novoCampo = null;
-//     dados.versao = 2;
-//   },
-//
-// Um arquivo antigo passa por todas as conversões em sequência, e nenhum dado
-// se perde quando o formato muda.
-const MIGRACOES = {};
+// Cada entrada converte os dados da versão N para a N+1. Um arquivo antigo
+// passa por todas as conversões em sequência, e nenhum dado se perde quando o
+// formato muda. (O app guarda uma cópia do arquivo antigo em data/backups
+// antes de gravar o primeiro arquivo convertido: veja js/principal.js.)
+const MIGRACOES = {
+  // 1 → 2: a animação única ("animacao": "x.html" ou null) vira uma lista
+  // ("animacoes": ["x.html"] ou []), para um card poder ter várias.
+  1: (dados) => {
+    for (const card of Array.isArray(dados.cards) ? dados.cards : []) {
+      if (!card || typeof card !== 'object' || Array.isArray(card)) continue;
+      if (!('animacoes' in card)) card.animacoes = card.animacao == null ? [] : [card.animacao];
+      delete card.animacao;
+    }
+    dados.versao = 2;
+  },
+};
 
 /** Erro para arquivos gravados por uma versão mais nova do app. */
 export class ErroVersaoFutura extends Error {
@@ -126,6 +135,32 @@ function normalizarTags(tags) {
 }
 
 /**
+ * Lista de animações de um card: nomes de arquivo, em ordem, sem repetição.
+ * Aceita também um nome solto ("x.html") e o campo antigo "animacao" (de um
+ * arquivo editado à mão). Os nomes não são conferidos aqui: a regra do nome
+ * é aplicada na hora de abrir (js/janela-animacao.js), com uma explicação.
+ * Devolve { lista, repetidas, invalidas } (as duas contagens viram avisos).
+ */
+function normalizarAnimacoes(animacoes, animacaoAntiga) {
+  const brutos = Array.isArray(animacoes) ? [...animacoes] : animacoes == null ? [] : [animacoes];
+  if (animacaoAntiga != null) brutos.push(animacaoAntiga);
+  const lista = [];
+  let repetidas = 0;
+  let invalidas = 0;
+  for (const valor of brutos) {
+    if (valor == null || (typeof valor === 'string' && !valor.trim())) continue; // vazio: nada a guardar
+    if (typeof valor !== 'string') {
+      invalidas++;
+      continue;
+    }
+    const nome = valor.trim();
+    if (lista.includes(nome)) repetidas++;
+    else lista.push(nome);
+  }
+  return { lista, repetidas, invalidas };
+}
+
+/**
  * Confere e repara os dados (já migrados). Devolve { dados, avisos }, onde
  * "avisos" lista em português tudo o que precisou ser consertado.
  * Campos desconhecidos (acrescentados à mão) são preservados.
@@ -173,13 +208,16 @@ export function normalizar(bruto) {
   const indiceDaZona = new Map(zonasOk.map((zona, i) => [zona.id, i]));
   const idsCards = new Set();
   const cardsOk = [];
-  const conta = { idNovo: 0, semZona: 0, paiInvalido: 0, ciclo: 0, foraDaZona: 0 };
+  const conta = { idNovo: 0, semZona: 0, paiInvalido: 0, ciclo: 0, foraDaZona: 0, animacoesRepetidas: 0, animacoesInvalidas: 0 };
   for (const card of Array.isArray(cards) ? cards : []) {
     if (!card || typeof card !== 'object') continue;
     const {
       id, titulo, descricao, zona, x, y, pai, recolhido, escala, tags,
-      animacao, linkDocs, criadoEm, atualizadoEm, ...extras
+      animacoes, animacao, linkDocs, criadoEm, atualizadoEm, ...extras
     } = card;
+    const listaDeAnimacoes = normalizarAnimacoes(animacoes, animacao);
+    conta.animacoesRepetidas += listaDeAnimacoes.repetidas;
+    conta.animacoesInvalidas += listaDeAnimacoes.invalidas;
     let idOk = comoTexto(id).trim();
     if (!idOk || idsCards.has(idOk)) {
       idOk = gerarId('c', idsCards);
@@ -203,7 +241,7 @@ export function normalizar(bruto) {
       recolhido: recolhido === true,
       escala: normalizarEscala(escala, ESCALA_CARD_MIN, ESCALA_CARD_MAX),
       tags: normalizarTags(tags),
-      animacao: comoTextoOuNulo(animacao),
+      animacoes: listaDeAnimacoes.lista,
       linkDocs: comoTextoOuNulo(linkDocs),
       criadoEm: criado,
       atualizadoEm: comoData(atualizadoEm) ?? criado,
@@ -284,6 +322,12 @@ export function normalizar(bruto) {
   if (conta.paiInvalido) avisos.push(`${plural(conta.paiInvalido, 'card apontava', 'cards apontavam')} para um card pai inexistente e ${conta.paiInvalido === 1 ? 'ficou' : 'ficaram'} sem pai.`);
   if (conta.ciclo) avisos.push(`${plural(conta.ciclo, 'ciclo de parentesco foi desfeito', 'ciclos de parentesco foram desfeitos')} (um card não pode ser ancestral de si mesmo).`);
   if (conta.foraDaZona) avisos.push(`${plural(conta.foraDaZona, 'card foi reposicionado', 'cards foram reposicionados')} para caber na largura da zona.`);
+  if (conta.animacoesRepetidas) {
+    avisos.push(`${plural(conta.animacoesRepetidas, 'animação repetida no mesmo card foi retirada', 'animações repetidas no mesmo card foram retiradas')} (fica uma de cada).`);
+  }
+  if (conta.animacoesInvalidas) {
+    avisos.push(`${plural(conta.animacoesInvalidas, 'item da lista de animações não era um nome de arquivo e foi retirado', 'itens das listas de animações não eram nomes de arquivo e foram retirados')}.`);
+  }
   if (conexoesInvalidas) {
     avisos.push(conexoesInvalidas === 1
       ? '1 conexão inválida foi removida (ela ligava um card inexistente, ou um card a ele mesmo).'

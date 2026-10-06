@@ -203,13 +203,18 @@ comentada deste esqueleto.
 ## 6. Registrar no manifesto
 
 O arquivo `animacoes/manifesto.json` lista as animações que aparecem no campo
-**Animação** do painel do card. Cada item tem três campos:
+**Animações** do painel do card. Cada item tem três campos:
 
 | Campo | O que é |
 |---|---|
 | `arquivo` | O nome do arquivo, exatamente igual (minúsculas, com `.html`) |
-| `titulo` | Nome curto. Aparece na lista do painel e no alto da janela |
-| `descricao` | Uma frase. Aparece no painel, embaixo da lista |
+| `titulo` | Nome curto. Aparece no painel e no alto da janela |
+| `descricao` | Uma frase. Aparece no painel (na vitrine, e ao passar o mouse sobre a animação no modo de edição) |
+
+Um card pode ter várias animações (uma série, por exemplo). Elas abrem na
+ordem do painel, e a janela mostra botões 1, 2, 3… para trocar de uma para
+outra. Cada animação continua sendo um arquivo independente: ela não sabe que
+faz parte de uma lista.
 
 **Passo a passo:**
 
@@ -218,8 +223,8 @@ O arquivo `animacoes/manifesto.json` lista as animações que aparecem no campo
 3. Acrescente o item novo dentro da lista `"animacoes": [ … ]`. **Ponha uma
    vírgula depois do `}` do item anterior.**
 4. Salve o arquivo e volte ao mapa: a lista se atualiza sozinha (ou aperte F5).
-5. No painel do card, escolha a animação no campo **Animação** e clique em
-   **Abrir**.
+5. No painel do card, escolha a animação na lista do campo **Animações** e
+   clique no botão ▷ ao lado dela (ou no ▶ do card).
 
 Exemplo com duas animações (repare na vírgula entre os itens):
 
@@ -240,14 +245,14 @@ Exemplo com duas animações (repare na vírgula entre os itens):
 }
 ```
 
-- Se o manifesto tiver um erro de digitação, o campo **Animação** do painel
+- Se o manifesto tiver um erro de digitação, o campo **Animações** do painel
   mostra a linha do problema. O resto do mapa continua funcionando.
 - Outros campos, como o `"leia-me"`, são ignorados.
 
 ## 7. Como testar
 
-1. Abra o mapa com o `iniciar.bat`, escolha a animação num card e clique em
-   **Abrir**.
+1. Abra o mapa com o `iniciar.bat`, ponha a animação num card (campo
+   **Animações** do painel) e clique no ▶ do card.
 2. Confira:
    - a animação aparece rápido, com fundo preto e nada cortado;
    - ao redimensionar a janela do navegador, ela se ajusta;

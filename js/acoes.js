@@ -39,7 +39,8 @@ export function criarCard(X, Y) {
 
 /** true se o card não tem nada escrito. */
 function cardVazio(card) {
-  return !card.titulo.trim() && !card.descricao.trim() && card.tags.length === 0 && !card.linkDocs && !card.animacao;
+  return !card.titulo.trim() && !card.descricao.trim() && card.tags.length === 0 && !card.linkDocs &&
+    card.animacoes.length === 0;
 }
 
 /**
@@ -152,18 +153,42 @@ export function definirEscalaDosCards(escala) {
   }, { agrupar: 'escala-dos-cards' });
 }
 
-/**
- * Associa ao card uma animação (o nome de um arquivo da pasta animacoes/),
- * ou nenhuma (null).
- */
-export function definirAnimacao(id, arquivo) {
+// Animações do card: uma lista de nomes de arquivo da pasta animacoes/, na
+// ordem em que aparecem na janela (1, 2, 3…).
+
+/** Acrescenta uma animação no fim da lista do card (se ainda não estiver nela). */
+export function acrescentarAnimacao(id, arquivo) {
   const card = buscarCard(id);
-  const valor = arquivo || null;
-  if (!card || card.animacao === valor) return;
-  alterar(valor ? 'Escolher animação' : 'Remover animação', (d) => {
+  if (!card || !arquivo || card.animacoes.includes(arquivo)) return;
+  alterar('Acrescentar animação', (d) => {
     const alvo = d.cards.find((c) => c.id === id);
     if (!alvo) return;
-    alvo.animacao = valor;
+    alvo.animacoes.push(arquivo);
+    alvo.atualizadoEm = agoraISO();
+  });
+}
+
+/** Tira do card a animação da posição "indice" (0 = a primeira). */
+export function removerAnimacao(id, indice) {
+  const card = buscarCard(id);
+  if (!card || indice < 0 || indice >= card.animacoes.length) return;
+  alterar('Remover animação', (d) => {
+    const alvo = d.cards.find((c) => c.id === id);
+    if (!alvo) return;
+    alvo.animacoes.splice(indice, 1);
+    alvo.atualizadoEm = agoraISO();
+  });
+}
+
+/** Troca a animação da posição "indice" com a de cima (indice − 1). */
+export function subirAnimacao(id, indice) {
+  const card = buscarCard(id);
+  if (!card || indice < 1 || indice >= card.animacoes.length) return;
+  alterar('Mudar a ordem das animações', (d) => {
+    const alvo = d.cards.find((c) => c.id === id);
+    if (!alvo) return;
+    const lista = alvo.animacoes;
+    [lista[indice - 1], lista[indice]] = [lista[indice], lista[indice - 1]];
     alvo.atualizadoEm = agoraISO();
   });
 }
