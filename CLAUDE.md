@@ -48,8 +48,8 @@ pedidas pela pessoa usuária, um commit para cada:
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
 - vento solar radial, contornando o primeiro anel do campo da Terra;
 - animações de verdade: `animacoes/magnetopausa.html`, a série do campo
-  geomagnético, em três partes, e `animacoes/vento-solar-bz.html` (veja
-  "Contrato das animações");
+  geomagnético, em três partes, `animacoes/vento-solar-bz.html` e
+  `animacoes/corrente-de-anel.html` (veja "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados".
 
@@ -534,6 +534,45 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     elevacao })` também é do escopo global. O teste confere que o pedaço de
     fora das linhas ligadas não entra na magnetopausa e que o de dentro não
     sai dela.
+- **`corrente-de-anel.html`** (feita; a física é a seção 5.8.3, "The ring
+  current", do livro da pessoa usuária, colada de um PDF em inglês): a
+  corrente de leste para oeste em volta da Terra que enfraquece o campo no
+  chão nas tempestades.
+  - **Fórmulas que vieram estragadas do PDF**, lidas assim (conferido com as
+    contas do próprio texto e avisado na tela):
+    - eq. 5.45: ΔB(nT) = 2π·I(A)/(10·r(km)), o campo no centro de um anel,
+      B = μ₀I/2r;
+    - o fator das correntes induzidas no solo ("§") lido como 1,5;
+    - eq. 5.46: ΔB(nT) ≈ I(A)/r(km);
+    - eq. 5.47: ΔB(nT) ≈ 2,6 × 10⁻¹⁴·E(J), com o expoente negativo.
+  - Uma corrente só: o estado guarda `I` e `r`. A queda (passo 1) e a energia
+    total (passo 5) são calculadas a partir deles; mexer nelas muda `I`
+    (`definir({ queda })`, `definir({ E })`).
+  - De longe: a Terra vista de cima do polo norte (Sol à esquerda), prótons
+    derivando no sentido horário (oeste) e elétrons no anti-horário (leste),
+    com a deriva proporcional à energia. O satélite pode ser arrastado: dentro
+    do anel, o campo cai; fora, sobe.
+  - De perto, sete passos, com três câmeras (`CAMERA_DA_CENA`: `cima`,
+    `lado` e `faixa`):
+    1. o magnetômetro numa tempestade (gráfico; a curva é um esquema);
+    2. o corte de lado: a corrente sai do desenho à direita (⊙) e entra à
+       esquerda (⊗), e as voltas do campo dela;
+    3. a conta das eq. 5.45 e 5.46;
+    4. as duas derivas, de perto da faixa;
+    5. a energia total (eq. 5.47);
+    6. a inflação, quando a energia das partículas passa a do campo
+       (B²/2μ₀ a 5 raios = 2,4 × 10⁻⁸ J/m³; o texto diz 2 × 10⁻⁸);
+    7. a plasmapausa e o arco SAR (630 nm), que acende quando a borda de
+       dentro da corrente chega a ela (dá para arrastar a borda).
+  - **Assumido, e avisado na tela:** R_E = 6 371 km; 31 000 nT no equador
+    (para o passo 6); a plasmapausa a 4 raios; a curva da tempestade, as
+    partículas, as linhas, a inflação e o arco são esquemas. A razão do
+    passo 6 é entre densidades de energia, como no texto (o β, a rigor, é
+    uma razão de pressões).
+  - Os sentidos do campo da corrente (sul dentro do anel, norte fora) foram
+    conferidos no teste com a lei de Biot–Savart.
+  - Para testar: `definir({ I, r, queda, E, energia, densidade, borda, satR,
+    satAngulo })` também é do escopo global.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
