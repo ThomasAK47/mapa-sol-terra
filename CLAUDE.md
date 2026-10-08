@@ -583,35 +583,66 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     parecem ter perdido algarismos: a tela mostra como vieram, com aviso, e só
     a razão (× 1 000) entra na conta. A legenda da fig. 5.3 (espectro), que
     veio no meio do texto colado, é de outra seção e ficou de fora.
-  - Cada cena tem o seu "mundo" (`MUNDO_DA_CENA`): o disco em Hα (de longe e
-    passo 1, com a câmera viajando até a região ativa), o corte da atmosfera
-    (passo 2), o campo de lado (bipolo no passo 3; modelo do ponto neutro nos
-    passos 5 e 6), o gráfico (passo 4) e o caminho do Sol à Terra (passo 7).
-    Os mundos trocam por transparência (`misturas`); cada um tem a sua
-    projeção (`usar(mundo)`, `tx`, `ty`).
-  - As texturas do Sol (`TEXTURA_DO_DISCO`, `TEXTURA_DA_REGIAO`) são feitas
-    uma vez, com números "aleatórios" que se repetem (`sorteador`).
+  - **Refeita a pedido da pessoa usuária** (a primeira versão ficou "apagada" e
+    simples demais): o Sol vivo e brilhante, e cada passo com mais conteúdo.
+  - Cada cena tem o seu "mundo" (`MUNDO_DA_CENA`): o Sol (de longe e passo
+    1), o corte da atmosfera em 3D (passo 2), o campo de lado (bipolo no
+    passo 3; modelo do ponto neutro nos passos 5 e 6), o gráfico (passo 4) e
+    o caminho do Sol à Terra (passo 7). Os mundos trocam por transparência
+    (`misturas`). Os planos usam `usar(tipo)`, `tx`, `ty`; o corte usa a
+    vista oblíqua `ox`, `oy`.
+  - **O Sol:** a região ativa fica num ponto da esfera (`estado.lon`,
+    `estado.lat`; dá para arrastar). A região é desenhada no plano dela, com a
+    transformação `transformarParaRegiao(vista)` (Mm, com x = u e y = −v); os
+    laços, o plasma e os prótons são pontos 3D (`pontoNoSol`), escondidos
+    atrás do disco (`visivelNoSol`). `vistaDoSol()` junta tudo: `estado.ver`
+    vai de 0 (o disco inteiro) a 1 (passo 1); a câmera se aproxima e a região
+    "se desdobra" até ficar de frente.
+  - As texturas (`TEXTURA_DO_DISCO`, `TEXTURA_DOS_BRILHOS`,
+    `TEXTURA_DA_REGIAO` e a versão pequena) são feitas uma vez, com números
+    "aleatórios" que se repetem (`sorteador`). Os brilhos somam luz
+    (`aditivo`), exceto o miolo das fitas, que vai por cima (somando, ele
+    "estourava" em branco).
+  - **De longe:** o clarão do gatilho (`clarao`), as duas fitas que se
+    afastam (`geometriaDasFitas`: duas elipses de W × 3W que somam a área do
+    brilho; a curva das fitas não muda a área), os laços que acendem
+    (quentes → frios, `corDoLaco`), a bolha de plasma e os prótons, a lupa
+    (telas largas) e o gráfico pequeno do painel (`#mini`: o brilho e a
+    energia guardada no ciclo). O botão "Soltar um flare" leva o ciclo para
+    logo antes do gatilho.
   - Os sete passos:
-    1. a classe pela área em Hα (S, 1 a 4) e as manchas e plages;
-    2. a compressão: 10¹⁴ km³ ÷ (1 milésimo do disco × 20 km) ≈ 3 300, da
-       mesma ordem dos × 1 000 da densidade; frio (10⁴ K) e quente
-       (10⁷–10⁸ K);
-    3. B²/2μ₀ × 10¹⁴ km³ contra os 4 × 10²⁵ J (com 500 G sobra 2,5 vezes;
-       só passa a partir de ~320 G);
-    4. P = E/t: juntar em um dia × soltar em 300 s (288 vezes mais rápido);
-    5. o ponto neutro acima das manchas N e S (linhas de sentidos opostos que
-       se encontram);
-    6. o que sai: prótons e plasma para fora; elétrons para baixo (raios X de
-       frenagem e Hα nos pés); coroa aquecida (raios X moles e UV);
-    7. o que chega à Terra, com a luz em 8,3 min.
+    1. a região de frente: manchas, plage, as fitas, a área medida (tracejada,
+       no máximo do brilho), a escala de 20 000 km, o disco inteiro pequeno e
+       a classe pela área em Hα (S, 1 a 4);
+    2. o cubo de 10¹⁴ km³ vira uma camada de 1 milésimo do disco × 20 km
+       (≈ 3 300 vezes menor, da ordem dos × 1 000 da densidade), com
+       espículas, laços quentes, o termômetro (10⁴ K e 10⁷–10⁸ K) e uma lupa
+       com a espessura;
+    3. o mapa de B² (escala de 10, `MAPA_DE_ENERGIA`) e B²/2μ₀ × 10¹⁴ km³
+       contra os 4 × 10²⁵ J, com a régua do campo e o mínimo
+       (`CAMPO_MINIMO_G`, ~320 G);
+    4. P = E/t: o gráfico de um dia, o detalhe dos segundos e as duas
+       potências numa escala de 10 (288 vezes);
+    5. e 6. a reconexão animada (`estadoDoModelo(t)`): seis pares de linhas
+       esticadas se aproximam do ponto neutro e se encontram, uma de cada vez;
+       embaixo nasce um laço pontudo e quente que se arredonda e esfria;
+       em cima, uma linha em U sobe com o plasma. Elétrons descem pelas pernas
+       do laço novo e acendem os pés (raios X e Hα: as fitas se afastam);
+       prótons sobem; no passo 6, surtos de rádio. Tocar na legenda do passo 6
+       destaca um produto (`destacar(produto)`, `zonasDaLegenda`);
+    7. o que chega à Terra: o relógio da luz (0 a 8,3 min), o vento solar de
+       fundo (mais forte onde passa a bolha), a magnetosfera que se aperta e a
+       baixa ionosfera que acende.
   - **Assumido, e avisado na tela:** o raio do Sol (696 000 km); os limites
     usuais das classes (100, 250, 600 e 1 200 milionésimos do hemisfério),
     convertidos para milésimos do disco (`LIMITES_DAS_CLASSES`); 500 G e
     300 s como exemplos de "centenas de gauss" e "poucas centenas de
-    segundos"; 150 milhões de km e 300 000 km/s. As texturas, o modelo, as
-    partículas e os tempos das cenas são esquemas; o tempo é acelerado.
-  - Para testar: `definir({ area, espessura, B, liberacao })` também é do
-    escopo global; `estado.tempo` escolhe o momento do ciclo.
+    segundos"; 150 milhões de km e 300 000 km/s. A textura do Sol, as
+    proeminências, o tamanho das manchas, as fitas, os laços, o modelo, as
+    partículas e os tempos das cenas são desenhos; o tempo é acelerado.
+  - Para testar: `definir({ area, espessura, B, liberacao, lon, lat })`,
+    `destacar(produto)` e `soltarFlare()` também são do escopo global;
+    `estado.tempo` escolhe o momento dos ciclos.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de

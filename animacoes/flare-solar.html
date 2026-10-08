@@ -6,16 +6,19 @@
   O que mostra: o flare solar, um aumento súbito do brilho de uma área pequena
   do Sol, que solta em poucos minutos a energia que o campo magnético juntou
   durante cerca de um dia.
-    • De longe: o Sol visto na luz Hα, com uma região ativa (manchas e plages)
-      onde o flare acende e apaga, em tempo acelerado.
+    • De longe: o Sol visto na luz Hα, vivo (halo, proeminências, a superfície
+      mudando devagar). Na região ativa, que dá para arrastar pelo disco, o
+      flare acende com um clarão, duas fitas se afastam, laços se acendem e
+      plasma e prótons saem do Sol (perto da borda, tudo aparece de lado). Uma
+      lupa mostra a região de cima; o botão "Soltar um flare" dispara um na hora.
     • De perto, em sete passos (cada um com a sua cena):
-        1: onde aparece e como se classifica (área em Hα);
-        2: o brilho visível: plasma frio e comprimido (e o plasma quente);
-        3: a energia: guardada no campo, B²/2μ₀ × volume;
+        1: a região de frente: manchas, plage, a área medida e a classe;
+        2: o plasma comprimido (um cubo vira camada fina), frio e quente;
+        3: a energia guardada no campo, B²/2μ₀ × volume, com o mapa de B²;
         4: um dia para juntar, poucos minutos para soltar (potência);
-        5: o modelo do ponto neutro (fig. 5.4 do livro);
-        6: o que sai do flare, e de onde;
-        7: o que chega à Terra.
+        5: o ponto neutro: as linhas se encontram e se reconectam (fig. 5.4);
+        6: o que sai do flare, e de onde (toque na legenda para destacar);
+        7: o que chega à Terra, com o relógio da luz.
 
   A física segue a seção 5.2.2 do livro que a pessoa usuária estuda (The
   phenomenon of the solar flare), colada de um PDF. Leituras do PDF:
@@ -32,8 +35,9 @@
     • 500 G como exemplo de "centenas de gauss" e 300 s como exemplo de
       "poucas centenas de segundos" (os dois podem ser mudados);
     • a luz leva 8,3 min do Sol à Terra (150 milhões de km);
-    • as texturas do Sol, o modelo do ponto neutro, as partículas e os tempos
-      das cenas são esquemas; o tempo é acelerado.
+    • a textura do Sol, as proeminências, o tamanho das manchas, as fitas, os
+      laços, o modelo do ponto neutro, as partículas e os tempos das cenas são
+      desenhos e esquemas; o tempo é acelerado.
 
   Feita no formato de animacoes/magnetopausa.html, seguindo animacoes/CONTRATO.md.
   =============================================================================
@@ -294,6 +298,14 @@
     .fr > span:first-child { padding: 0 0.22em 0.04em; border-bottom: 1px solid currentColor; }
     .fr > span:last-child { padding: 0.04em 0.22em 0; }
     .halfa { color: #ff7a5c; }
+    /* De longe: o gráfico pequeno do brilho e da energia guardada. */
+    .mini { margin: 10px 0 0; }
+    #mini { display: block; width: 100%; height: 54px; border-radius: 8px; }
+    .mini-legenda { display: flex; justify-content: space-between; gap: 8px; margin: 5px 0 0; font-size: 12px; color: var(--texto-2); }
+    .mini-legenda .chaves { white-space: nowrap; }
+    .mini-legenda .chaves span + span { margin-left: 10px; }
+    .cor-brilho { color: #ffe2c8; }
+    .cor-energia { color: var(--campo); }
     /* Passo 6: os produtos do flare, um por linha. */
     ul.explicacao { padding-left: 16px; line-height: 1.42; }
     ul.explicacao li + li { margin-top: 2px; }
@@ -307,6 +319,7 @@
     }
     @media (max-height: 420px) and (max-width: 760px), (max-height: 380px) {
       .leituras div + div { border-top: 0; }
+      .mini { display: none; }
     }
 
     /* ---- Janelas baixas: só o passo aberto aparece, com os números 1 a 7 para trocar ---- */
@@ -434,13 +447,15 @@
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
         <h2>Um brilho súbito no Sol</h2>
-        <p>Um flare é um aumento súbito do brilho de uma área pequena do Sol, perto das manchas solares. Em poucos
-          minutos ele solta a energia que o <b>campo magnético</b> juntou durante cerca de um dia, como luz e
-          partículas que afetam a alta atmosfera da Terra. O mecanismo ainda é incerto.</p>
+        <p>Um brilho súbito numa área pequena do Sol, perto das manchas: em minutos, sai como luz e partículas a
+          energia que o <b>campo magnético</b> juntou em cerca de um dia.</p>
+        <div class="mini so-largo">
+          <canvas id="mini" aria-hidden="true"></canvas>
+          <p class="mini-legenda"><span id="l-agora"></span><span class="chaves"><span class="cor-brilho">brilho</span><span class="cor-energia">energia</span></span></p>
+        </div>
         <dl class="leituras">
           <div><dt>Classe (área em H<i>α</i>)</dt><dd id="l-classe"></dd></div>
-          <div class="so-largo"><dt>Energia (luz + partículas)</dt><dd id="l-energia"></dd></div>
-          <div><dt>Agora</dt><dd id="l-agora"></dd></div>
+          <div><dt>A região</dt><dd id="l-posicao"></dd></div>
         </dl>
       </section>
 
@@ -539,8 +554,8 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">O flare se repete a cada 12 s (tempo acelerado). A área do brilho muda no controle embaixo do desenho.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem a energia e o que ela produz</button>
+      <p class="dica">Arraste a região ativa pelo disco: perto da borda, os laços e o plasma lançado aparecem de lado.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem e o que produz</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -571,6 +586,7 @@
       <label class="controle" data-cenas="p4"><span class="nome"><i>t</i> <small>tempo para soltar</small></span><output id="o-liberacao"></output>
         <input id="c-liberacao" type="range" min="100" max="900" step="10" value="300"></label>
       <div class="botoes">
+        <button id="bt-soltar" type="button" class="botao principal" data-cenas="longe p1">Soltar um flare</button>
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
       </div>
     </div>
@@ -592,10 +608,14 @@
     // 2. Valores e contas. Tudo o que é física está aqui.
     // -------------------------------------------------------------------------
     const RAIO_DO_SOL_KM = 696000;            // acréscimo: para a área do disco visível
+    const RAIO_DO_SOL_MM = RAIO_DO_SOL_KM / 1000;   // em milhares de km (Mm), a unidade dos desenhos de perto
     const VOLUME_ANTES_KM3 = 1e14;            // o volume que o plasma ocupava antes de ser comprimido
     // Densidades de elétrons por m³, como vieram do PDF. Parecem baixas demais para o Sol (o PDF pode ter perdido
     // algarismos); a animação só usa a razão entre elas (× 1 000).
     const DENSIDADE_ANTES = 1e4, DENSIDADE_DEPOIS = 1e7, DENSIDADE_QUENTE = 1e2;
+    const TEMPERATURA_FRIA = 1e4;             // K: o flare visto na luz visível
+    const TEMPERATURA_QUENTE = [1e7, 1e8];    // K: o plasma de alta energia
+    const ALTURA_DO_BRILHO_KM = 5000;         // a maior parte do brilho visível fica abaixo disso
     const ENERGIA_LUZ = 1e25;                 // J, em radiação eletromagnética
     const ENERGIA_PARTICULAS = 3e25;          // J, em partículas ("provavelmente")
     const ENERGIA_DO_FLARE = ENERGIA_LUZ + ENERGIA_PARTICULAS;
@@ -629,39 +649,91 @@
     const densidadeDeEnergia = (gauss) => (gauss * TESLA_POR_GAUSS) ** 2 / (2 * MU0);
     /** A energia magnética no volume de 10¹⁴ km³. */
     const energiaDoCampo = (gauss) => densidadeDeEnergia(gauss) * VOLUME_ANTES_M3;
+    /** O campo a partir do qual a energia no volume chega aos 4 × 10²⁵ J do flare (uns 320 G). */
+    const CAMPO_MINIMO_G = Math.sqrt((ENERGIA_DO_FLARE / VOLUME_ANTES_M3) * 2 * MU0) / TESLA_POR_GAUSS;
     const potencia = (energia, segundos) => energia / segundos;
     const TEMPO_DA_LUZ = DISTANCIA_SOL_TERRA_KM / VELOCIDADE_DA_LUZ_KM_S;
 
-    // O brilho do flare de longe e no passo 1, num ciclo de 12 s (tempo acelerado; a forma é um esquema):
-    // calmo, sobe depressa, apaga devagar.
-    const CICLO_DO_FLARE = 12;
+    // -------------------------------------------------------------------------
+    // 3. Os tempos de cada cena. São esquemas: o tempo é acelerado.
+    // -------------------------------------------------------------------------
+    // O flare de longe e no passo 1: o campo junta energia; no gatilho, o brilho sobe depressa e depois apaga devagar.
+    const CICLO_DO_FLARE = 16, GATILHO = 6, PICO = GATILHO + 0.7;
     function brilhoDoFlare(t) {
-      if (t < 2.5) return 0;
-      if (t < 3.3) return suave((t - 2.5) / 0.8);
-      return Math.exp(-(t - 3.3) / 2.4) * (1 - suave((t - 9.5) / 1.5));
+      if (t < GATILHO) return 0;
+      if (t < PICO) return suave((t - GATILHO) / 0.7);
+      return Math.exp(-(t - PICO) / 3.2) * (1 - suave((t - 14.2) / 1.6));
     }
-    const faseDoFlare = (t) => (t < 2.5 || t >= 11 ? 'calmo' : t < 3.3 ? 'sobe' : 'apaga');
+    /** O clarão do começo: mais curto e mais forte que o brilho todo. */
+    function claraoDoFlare(t) {
+      const d = t - GATILHO;
+      return d < 0 ? 0 : d < 0.25 ? d / 0.25 : Math.exp(-(d - 0.25) / 0.55);
+    }
+    /** A energia guardada no campo, em frações da energia do flare (sobe até o gatilho e cai depressa). */
+    function energiaGuardadaNoCiclo(t) {
+      return t < GATILHO ? 0.18 + 0.82 * suave(t / GATILHO) : 1 - 0.82 * suave((t - GATILHO) / 0.9);
+    }
+    /** Quanto as duas fitas do flare já se afastaram (de 0 a 1). */
+    const afastamentoDasFitas = (t) => (t < GATILHO ? 0 : suave((t - GATILHO) / 7));
+    function faseDoFlare(t) {
+      if (t < GATILHO) return 'junta';
+      if (t < PICO) return 'sobe';
+      return brilhoDoFlare(t) > 0.02 ? 'apaga' : 'calmo';
+    }
+
+    // O plasma comprimido (passo 2): o cubo, a compressão, o brilho da camada fina.
+    const CICLO_DA_COMPRESSAO = 9;
+    const progressoDaCompressao = (t) => (t < 1.6 ? 0 : t < 3.6 ? suave((t - 1.6) / 2) : 1);
+    const visibilidadeDaCompressao = (t) => (t < 0.4 ? t / 0.4 : t > 8.2 ? Math.max(0, (CICLO_DA_COMPRESSAO - t) / 0.8) : 1);
+    const brilhoDaCamada = (t) => suave((t - 3.2) / 0.8) * visibilidadeDaCompressao(t);
+
+    // A reconexão no ponto neutro (passos 5 e 6): seis pares de linhas se encontram, um de cada vez.
+    const CICLO_DA_RECONEXAO = 15, PRIMEIRA_RECONEXAO = 1.2, INTERVALO_DA_RECONEXAO = 2;
+    const PES_DAS_LINHAS = [9, 12, 15, 18, 21, 24];   // meia distância entre os pés de cada par (Mm), na ordem
+    const instanteDaReconexao = (k) => PRIMEIRA_RECONEXAO + k * INTERVALO_DA_RECONEXAO;
+    const visibilidadeDaReconexao = (t) => Math.min(suave(t / 0.6), 1 - suave((t - 13.8) / 1.1));
+
+    // A viagem até a Terra (passo 7): a luz chega primeiro; os prótons e o plasma, depois.
+    const CICLO_DA_VIAGEM = 16;
+    const CHEGADA = { luz: 1.8, protons: 6.5, plasma: 11.5 };
 
     // -------------------------------------------------------------------------
-    // 3. O Sol em Hα: a região ativa, o brilho do flare e as texturas (feitas uma vez).
-    //    Distâncias no disco em raios do Sol, com o centro do disco em (0, 0).
+    // 4. O Sol em Hα: a esfera, a região ativa e as texturas (feitas uma vez, ao abrir).
+    //    No disco, as distâncias são em raios do Sol, com o centro do disco em (0, 0).
+    //    Na região, em Mm: u vai da mancha N para a S; v corre ao longo da linha entre as polaridades.
     // -------------------------------------------------------------------------
-    const REGIAO = { x: 0.32, y: 0.18 };
-    const LADO_DA_REGIAO = 0.6;
-    // As duas manchas (relativas à região), de polaridades opostas.
+    const ANGULO_DA_REGIAO = -0.21;           // o eixo entre as manchas, um pouco inclinado
     const MANCHAS = [
-      { x: -0.062, y: 0.013, umbra: 0.011, penumbra: 0.024, polo: 'N' },
-      { x: 0.062, y: -0.013, umbra: 0.009, penumbra: 0.021, polo: 'S' },
+      { u: -34, polo: 'N', umbra: 7, penumbra: 15 },
+      { u: 34, polo: 'S', umbra: 6, penumbra: 13 },
     ];
-    const EIXO = (() => { const dx = MANCHAS[1].x - MANCHAS[0].x, dy = MANCHAS[1].y - MANCHAS[0].y, d = Math.hypot(dx, dy); return { x: dx / d, y: dy / d }; })();
-    // Os dois núcleos do brilho ficam um de cada lado da linha entre as polaridades, alongados ao longo dela.
-    const ANGULO_DOS_NUCLEOS = Math.atan2(EIXO.x, -EIXO.y);
-    /** Os dois núcleos do brilho, com a área total pedida (o disco visível tem área π, em raios do Sol²). */
-    function nucleosDoFlare(milesimos) {
-      const A = (milesimos / 1000) * Math.PI;
-      const b = Math.sqrt(A / 2 / (Math.PI * 2.5)), a = 2.5 * b;
-      const d = Math.max(0.02, 1.3 * b);
-      return [-1, 1].map((lado) => ({ x: REGIAO.x + lado * d * EIXO.x, y: REGIAO.y + lado * d * EIXO.y, a, b }));
+    /** De (u, v) da região para (x para leste, y para o norte), no plano da superfície. */
+    function regiaoParaLocal(u, v) {
+      const c = Math.cos(ANGULO_DA_REGIAO), s = Math.sin(ANGULO_DA_REGIAO);
+      return { x: u * c - v * s, y: u * s + v * c };
+    }
+    /** O ponto da superfície em (lon, lat) e as direções leste e norte ali (o observador olha de +z). */
+    function baseDaRegiao(lon, lat) {
+      const cl = Math.cos(lat), sl = Math.sin(lat), co = Math.cos(lon), so = Math.sin(lon);
+      return { c: { x: cl * so, y: sl, z: cl * co }, e: { x: co, y: 0, z: -so }, n: { x: -sl * so, y: cl, z: -sl * co } };
+    }
+    /** Um ponto da região (u, v em Mm), a uma altura h (Mm), como vetor 3D (o raio do Sol vale 1). */
+    function pontoNoSol(base, u, v, h = 0) {
+      const l = regiaoParaLocal(u, v), k = 1 / RAIO_DO_SOL_MM;
+      const x = base.c.x + k * (l.x * base.e.x + l.y * base.n.x);
+      const y = base.c.y + k * (l.x * base.e.y + l.y * base.n.y);
+      const z = base.c.z + k * (l.x * base.e.z + l.y * base.n.z);
+      const f = (1 + h * k) / Math.hypot(x, y, z);
+      return { x: x * f, y: y * f, z: z * f };
+    }
+    /** Um ponto 3D aparece se está do lado de cá, ou se, de lado, fica fora do disco. */
+    const visivelNoSol = (p) => p.z >= 0 || p.x * p.x + p.y * p.y > 1;
+    /** Os eixos u e v da região na tela (y para baixo), vistos de longe: encurtados pela curvatura do Sol. */
+    function eixosNaTela(base) {
+      const c = Math.cos(ANGULO_DA_REGIAO), s = Math.sin(ANGULO_DA_REGIAO);
+      const U = { x: c * base.e.x + s * base.n.x, y: c * base.e.y + s * base.n.y };
+      const V = { x: -s * base.e.x + c * base.n.x, y: -s * base.e.y + c * base.n.y };
+      return { U: { x: U.x, y: -U.y }, V: { x: V.x, y: -V.y } };
     }
 
     /** Números "aleatórios" que se repetem sempre iguais. */
@@ -677,137 +749,254 @@
       c.width = c.height = lado;
       return c;
     }
-    // O disco inteiro: escurece na borda e tem a textura manchada da cromosfera (só um desenho).
+    /** Um borrão de borda suave (gradiente), para as texturas. */
+    function borrao(g, x, y, raio, cor, alfa) {
+      const gradiente = g.createRadialGradient(x, y, 0, x, y, raio);
+      gradiente.addColorStop(0, `rgba(${cor}, ${alfa})`);
+      gradiente.addColorStop(1, `rgba(${cor}, 0)`);
+      g.fillStyle = gradiente;
+      g.beginPath();
+      g.arc(x, y, raio, 0, Math.PI * 2);
+      g.fill();
+    }
+    // Outras regiões ativas e dois filamentos escuros, só para o disco não ficar vazio (decoração).
+    const OUTRAS_REGIOES = [{ x: -0.42, y: -0.3, tamanho: 1 }, { x: -0.18, y: 0.5, tamanho: 0.7 }, { x: 0.36, y: -0.52, tamanho: 0.8 }, { x: -0.68, y: 0.2, tamanho: 0.6 }];
+    const FILAMENTOS = [
+      [[-0.06, -0.63], [0.04, -0.57], [0.13, -0.56], [0.22, -0.57], [0.31, -0.51]],
+      [[-0.64, -0.06], [-0.58, 0.02], [-0.53, 0.05], [-0.48, 0.06], [-0.42, 0.12]],
+    ];
+    // O disco inteiro: claro no centro, escurece na borda, com a rede da cromosfera.
     const TEXTURA_DO_DISCO = (() => {
-      const c = novaTela(1024), g = c.getContext('2d'), C = 512, R = 500;
+      const N = 1024, C = 512, R = 500, c = novaTela(N), g = c.getContext('2d'), sortear = sorteador(911);
       const base = g.createRadialGradient(C, C, 0, C, C, R);
-      base.addColorStop(0, 'rgb(228, 96, 46)');
-      base.addColorStop(0.6, 'rgb(214, 84, 40)');
-      base.addColorStop(0.9, 'rgb(168, 55, 25)');
-      base.addColorStop(1, 'rgb(110, 31, 13)');
+      base.addColorStop(0, 'rgb(255, 186, 108)');
+      base.addColorStop(0.45, 'rgb(252, 142, 66)');
+      base.addColorStop(0.78, 'rgb(234, 98, 42)');
+      base.addColorStop(0.93, 'rgb(194, 62, 25)');
+      base.addColorStop(1, 'rgb(134, 34, 12)');
       g.fillStyle = base;
       g.beginPath();
       g.arc(C, C, R, 0, Math.PI * 2);
       g.fill();
       g.save();
       g.clip();
-      const sortear = sorteador(911);
-      for (let i = 0; i < 6000; i++) {
-        const a = sortear() * Math.PI * 2, r = Math.sqrt(sortear()) * R, claro = sortear() < 0.45;
-        g.fillStyle = claro ? `rgba(255, 170, 120, ${0.05 + 0.07 * sortear()})` : `rgba(70, 12, 0, ${0.06 + 0.08 * sortear()})`;
+      const pontoNoDisco = () => { const a = sortear() * Math.PI * 2, r = Math.sqrt(sortear()) * R; return { x: C + r * Math.cos(a), y: C + r * Math.sin(a) }; };
+      // As células da rede (um pouco mais escuras) e os pontos claros nas bordas delas.
+      for (let i = 0; i < 2200; i++) { const p = pontoNoDisco(); borrao(g, p.x, p.y, 8 + 10 * sortear(), '120, 28, 6', 0.06 + 0.07 * sortear()); }
+      for (let i = 0; i < 6500; i++) {
+        const p = pontoNoDisco();
+        g.fillStyle = `rgba(255, 216, 168, ${0.1 + 0.18 * sortear()})`;
         g.beginPath();
-        g.arc(C + r * Math.cos(a), C + r * Math.sin(a), 1.5 + 3.5 * sortear(), 0, Math.PI * 2);
+        g.arc(p.x, p.y, 0.8 + 1.6 * sortear(), 0, Math.PI * 2);
         g.fill();
       }
-      // Plages fracas em outras partes do disco.
-      for (const p of [{ x: -0.45, y: -0.32 }, { x: -0.15, y: 0.55 }, { x: 0.5, y: -0.5 }, { x: -0.6, y: 0.25 }]) {
-        for (let i = 0; i < 260; i++) {
-          const a = sortear() * Math.PI * 2, r = Math.sqrt(sortear()) * 0.07 * R;
-          const raio = 4 + 7 * sortear(), cx = C + p.x * R + r * Math.cos(a) * 1.4, cy = C - p.y * R + r * Math.sin(a);
-          const suaveNaBorda = g.createRadialGradient(cx, cy, 0, cx, cy, raio);
-          suaveNaBorda.addColorStop(0, `rgba(255, 185, 140, ${0.04 + 0.05 * sortear()})`);
-          suaveNaBorda.addColorStop(1, 'rgba(255, 185, 140, 0)');
-          g.fillStyle = suaveNaBorda;
+      // As fibrilas: traços curtos e escuros.
+      g.lineCap = 'round';
+      for (let i = 0; i < 2600; i++) {
+        const p = pontoNoDisco(), a = sortear() * Math.PI, l = 4 + 9 * sortear();
+        g.strokeStyle = `rgba(110, 24, 6, ${0.14 + 0.16 * sortear()})`;
+        g.lineWidth = 1 + sortear();
+        g.beginPath();
+        g.moveTo(p.x - Math.cos(a) * l / 2, p.y - Math.sin(a) * l / 2);
+        g.lineTo(p.x + Math.cos(a) * l / 2, p.y + Math.sin(a) * l / 2);
+        g.stroke();
+      }
+      // Outras regiões ativas: plage clara e manchinhas.
+      for (const r of OUTRAS_REGIOES) {
+        const x = C + r.x * R, y = C - r.y * R;
+        for (let i = 0; i < 160; i++) {
+          const a = sortear() * Math.PI * 2, d = Math.sqrt(sortear()) * 34 * r.tamanho;
+          borrao(g, x + d * Math.cos(a) * 1.5, y + d * Math.sin(a), 4 + 6 * sortear(), '255, 222, 176', 0.08 + 0.1 * sortear());
+        }
+        for (const lado of [-1, 1]) {
+          g.fillStyle = 'rgba(40, 8, 2, 0.85)';
           g.beginPath();
-          g.arc(cx, cy, raio, 0, Math.PI * 2);
+          g.arc(x + lado * 14 * r.tamanho, y + lado * 3, 3.2 * r.tamanho, 0, Math.PI * 2);
           g.fill();
         }
       }
+      // Os filamentos.
+      g.lineJoin = 'round';
+      for (const f of FILAMENTOS) {
+        const pts = f.map(([x, y]) => ({ x: C + x * R, y: C - y * R }));
+        for (const [largura, cor] of [[8, 'rgba(90, 18, 5, 0.16)'], [3.4, 'rgba(70, 12, 3, 0.4)'], [1.6, 'rgba(50, 8, 2, 0.45)']]) {
+          g.strokeStyle = cor;
+          g.lineWidth = largura;
+          g.beginPath();
+          g.moveTo(pts[0].x, pts[0].y);
+          // Curva suave: passa pelos pontos do meio de cada trecho.
+          for (let i = 1; i < pts.length - 1; i++) g.quadraticCurveTo(pts[i].x, pts[i].y, (pts[i].x + pts[i + 1].x) / 2, (pts[i].y + pts[i + 1].y) / 2);
+          g.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+          g.stroke();
+        }
+      }
+      // O escurecimento da borda, por cima de tudo.
+      g.globalCompositeOperation = 'source-atop';
+      const borda = g.createRadialGradient(C, C, R * 0.5, C, C, R);
+      borda.addColorStop(0, 'rgba(70, 10, 0, 0)');
+      borda.addColorStop(1, 'rgba(70, 10, 0, 0.5)');
+      g.fillStyle = borda;
+      g.fillRect(0, 0, N, N);
       g.restore();
       return c;
     })();
-    // A região ativa, com mais detalhe: plage (mais brilhante) e as duas manchas. A borda some aos poucos.
+    // Os pontos claros da rede, à parte: mudam devagar por cima do disco e dão vida à superfície.
+    const TEXTURA_DOS_BRILHOS = (() => {
+      const N = 1024, C = 512, R = 500, c = novaTela(N), g = c.getContext('2d'), sortear = sorteador(4447);
+      for (let i = 0; i < 3800; i++) {
+        const a = sortear() * Math.PI * 2, r = Math.sqrt(sortear()) * R * 0.99;
+        borrao(g, C + r * Math.cos(a), C + r * Math.sin(a), 1.5 + 3 * sortear(), '255, 210, 160', 0.25 + 0.3 * sortear());
+      }
+      return c;
+    })();
+    // A região ativa, de frente, em detalhe: a rede, a plage, as fibrilas e as duas manchas. Cobre 320 × 320 Mm;
+    // o fundo é transparente (fica por cima do disco) e a borda some aos poucos.
+    const LADO_DA_REGIAO_MM = 320;
     const TEXTURA_DA_REGIAO = (() => {
-      const N = 1024, k = N / LADO_DA_REGIAO, c = novaTela(N), g = c.getContext('2d');
-      const px = (x) => N / 2 + x * k, py = (y) => N / 2 - y * k;
-      const sortear = sorteador(3137);
-      for (let i = 0; i < 2600; i++) {
-        const x = (sortear() - 0.5) * N, y = (sortear() - 0.5) * N, claro = sortear() < 0.45;
-        g.fillStyle = claro ? `rgba(255, 175, 125, ${0.04 + 0.06 * sortear()})` : `rgba(70, 12, 0, ${0.05 + 0.06 * sortear()})`;
+      const N = 1600, k = N / LADO_DA_REGIAO_MM, c = novaTela(N), g = c.getContext('2d'), sortear = sorteador(3137);
+      const px = (u) => N / 2 + u * k, py = (v) => N / 2 - v * k;
+      const dentroDaMancha = (u, v, folga = 1) => MANCHAS.some((m) => Math.hypot(u - m.u, v) < m.penumbra * folga);
+      // A rede, mais fina que a do disco.
+      for (let i = 0; i < 3400; i++) borrao(g, sortear() * N, sortear() * N, 12 + 22 * sortear(), '110, 24, 6', 0.05 + 0.06 * sortear());
+      for (let i = 0; i < 1800; i++) borrao(g, sortear() * N, sortear() * N, 8 + 14 * sortear(), '255, 200, 150', 0.04 + 0.05 * sortear());
+      for (let i = 0; i < 7000; i++) {
+        g.fillStyle = `rgba(255, 214, 166, ${0.1 + 0.18 * sortear()})`;
         g.beginPath();
-        g.arc(N / 2 + x, N / 2 + y, 2 + 5 * sortear(), 0, Math.PI * 2);
+        g.arc(sortear() * N, sortear() * N, 1.5 + 2.5 * sortear(), 0, Math.PI * 2);
         g.fill();
       }
-      // A plage: muitos borrões claros em volta das manchas, numa elipse alongada ao longo do eixo entre elas.
-      for (let i = 0; i < 1500; i++) {
+      // A plage: uma área clara em volta das manchas.
+      for (let i = 0; i < 1300; i++) {
         const a = sortear() * Math.PI * 2, r = Math.sqrt(sortear());
-        const u = 0.14 * r * Math.cos(a), v = 0.075 * r * Math.sin(a);
-        const x = u * EIXO.x - v * EIXO.y, y = u * EIXO.y + v * EIXO.x;
-        if (MANCHAS.some((m) => Math.hypot(x - m.x, y - m.y) < m.penumbra * 1.05)) continue;
-        // Borrões de borda suave (um gradiente em cada um), para a plage não parecer feita de bolinhas.
-        const raio = 8 + 16 * sortear(), cx = px(x), cy = py(y), forca = 0.06 + 0.1 * sortear();
-        const suaveNaBorda = g.createRadialGradient(cx, cy, 0, cx, cy, raio);
-        suaveNaBorda.addColorStop(0, `rgba(255, 200, 152, ${forca})`);
-        suaveNaBorda.addColorStop(1, 'rgba(255, 200, 152, 0)');
-        g.fillStyle = suaveNaBorda;
-        g.beginPath();
-        g.arc(cx, cy, raio, 0, Math.PI * 2);
-        g.fill();
+        const u = 88 * r * Math.cos(a), v = 50 * r * Math.sin(a);
+        if (dentroDaMancha(u, v, 1.1)) continue;
+        borrao(g, px(u), py(v), (3 + 7 * sortear()) * k, '255, 220, 172', 0.05 + 0.08 * sortear());
       }
+      // As fibrilas escuras: saem das manchas e, entre elas, seguem o campo de uma para a outra.
+      g.lineCap = 'round';
       for (const m of MANCHAS) {
-        for (let i = 0; i < 14; i++) {
-          const a = sortear() * Math.PI * 2, r = m.penumbra * 0.18 * sortear();
-          g.fillStyle = 'rgba(78, 22, 8, 0.32)';
+        for (let i = 0; i < 170; i++) {
+          const a = sortear() * Math.PI * 2, r0 = m.penumbra * (1.02 + 0.35 * sortear()), l = (5 + 11 * sortear());
+          const curva = (sortear() - 0.5) * 0.6;
+          const u0 = m.u + r0 * Math.cos(a), v0 = r0 * Math.sin(a);
+          const u1 = m.u + (r0 + l) * Math.cos(a + curva), v1 = (r0 + l) * Math.sin(a + curva);
+          g.strokeStyle = `rgba(110, 26, 6, ${0.1 + 0.2 * sortear()})`;
+          g.lineWidth = (0.35 + 0.45 * sortear()) * k;
           g.beginPath();
-          g.arc(px(m.x + r * Math.cos(a)), py(m.y + r * Math.sin(a)), m.penumbra * k * (0.82 + 0.12 * sortear()), 0, Math.PI * 2);
-          g.fill();
+          g.moveTo(px(u0), py(v0));
+          g.quadraticCurveTo(px((u0 + u1) / 2 + curva * 6), py((v0 + v1) / 2 - curva * 6), px(u1), py(v1));
+          g.stroke();
         }
-        g.fillStyle = 'rgba(26, 6, 2, 0.95)';
+      }
+      for (let i = 0; i < 90; i++) {
+        const v0 = (sortear() - 0.5) * 50, arco = 6 + 14 * sortear();
+        g.strokeStyle = `rgba(110, 26, 6, ${0.08 + 0.14 * sortear()})`;
+        g.lineWidth = (0.3 + 0.4 * sortear()) * k;
         g.beginPath();
-        g.arc(px(m.x), py(m.y), m.umbra * k, 0, Math.PI * 2);
+        g.moveTo(px(-15), py(v0));
+        g.quadraticCurveTo(px(0), py(v0 + arco * (v0 >= 0 ? 1 : -1)), px(15), py(v0));
+        g.stroke();
+      }
+      // As manchas: penumbra com filamentos e umbra escura.
+      for (const m of MANCHAS) {
+        const cx = px(m.u), cy = py(0);
+        g.beginPath();
+        for (let j = 0; j <= 48; j++) {
+          const a = (j / 48) * Math.PI * 2, r = m.penumbra * k * (1 + 0.06 * Math.sin(5 * a + m.u) + 0.04 * Math.sin(11 * a));
+          if (j === 0) g.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a)); else g.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        }
+        const penumbra = g.createRadialGradient(cx, cy, m.umbra * k, cx, cy, m.penumbra * k);
+        penumbra.addColorStop(0, 'rgba(70, 18, 5, 0.97)');
+        penumbra.addColorStop(1, 'rgba(126, 40, 12, 0.9)');
+        g.fillStyle = penumbra;
+        g.fill();
+        for (let j = 0; j < 240; j++) {
+          const a = sortear() * Math.PI * 2, r1 = m.umbra * k * 1.05, r2 = m.penumbra * k * (0.86 + 0.12 * sortear());
+          g.strokeStyle = j % 2 ? 'rgba(46, 10, 2, 0.45)' : 'rgba(176, 74, 32, 0.35)';
+          g.lineWidth = 1 + 1.5 * sortear();
+          g.beginPath();
+          g.moveTo(cx + r1 * Math.cos(a), cy + r1 * Math.sin(a));
+          g.lineTo(cx + r2 * Math.cos(a), cy + r2 * Math.sin(a));
+          g.stroke();
+        }
+        const umbra = g.createRadialGradient(cx, cy, 0, cx, cy, m.umbra * k);
+        umbra.addColorStop(0, 'rgba(14, 3, 1, 0.98)');
+        umbra.addColorStop(1, 'rgba(36, 9, 2, 0.95)');
+        g.fillStyle = umbra;
+        g.beginPath();
+        g.arc(cx, cy, m.umbra * k, 0, Math.PI * 2);
         g.fill();
       }
       g.globalCompositeOperation = 'destination-in';
       const borda = g.createRadialGradient(N / 2, N / 2, 0, N / 2, N / 2, N / 2);
       borda.addColorStop(0, 'rgba(0, 0, 0, 1)');
-      borda.addColorStop(0.6, 'rgba(0, 0, 0, 1)');
+      borda.addColorStop(0.7, 'rgba(0, 0, 0, 1)');
       borda.addColorStop(1, 'rgba(0, 0, 0, 0)');
       g.fillStyle = borda;
       g.fillRect(0, 0, N, N);
       return c;
     })();
+    // A mesma região, menor: para quando ela aparece pequena na tela (fica mais nítida que a grande reduzida).
+    const TEXTURA_DA_REGIAO_PEQUENA = (() => {
+      const c = novaTela(400), g = c.getContext('2d');
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(TEXTURA_DA_REGIAO, 0, 0, 400, 400);
+      return c;
+    })();
+    // As proeminências na borda do disco (decoração): fios de plasma que brilham em Hα contra o céu escuro.
+    const PROEMINENCIAS = [{ angulo: 2.5, largura: 0.17, altura: 0.12 }, { angulo: 3.95, largura: 0.1, altura: 0.07 }, { angulo: 5.2, largura: 0.14, altura: 0.1 }, { angulo: 1.25, largura: 0.08, altura: 0.06 }];
+    const FIOS_DAS_PROEMINENCIAS = PROEMINENCIAS.map((_, i) => {
+      const sortear = sorteador(300 + i);
+      return Array.from({ length: 8 }, () => ({ a: sortear() - 0.5, b: sortear() - 0.5, h: 0.5 + 0.5 * sortear(), fase: sortear() * 6.28, w: 0.6 + sortear() }));
+    });
+    // Para os desenhos de lado: os grânulos da fotosfera e as espículas da cromosfera (decoração).
+    const GRANULOS = (() => { const s = sorteador(51); return Array.from({ length: 150 }, () => ({ x: s(), y: s(), r: 0.6 + 0.8 * s() })); })();
+    const ESPICULAS = (() => { const s = sorteador(77); return Array.from({ length: 170 }, () => ({ x: s(), z: s(), h: 3 + 5 * s(), fase: s() * 6.28, inclina: (s() - 0.5) * 0.5 })); })();
 
     // -------------------------------------------------------------------------
-    // 4. Estado da animação.
+    // 5. Estado da animação.
     // -------------------------------------------------------------------------
     const CENAS = ['longe', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
-    // O desenho de cada cena: o disco do Sol, o corte da atmosfera, o campo de lado (bipolo ou modelo), o gráfico,
-    // ou o caminho do Sol à Terra.
-    const MUNDO_DA_CENA = { longe: 'disco', p1: 'disco', p2: 'corte', p3: 'bipolo', p4: 'grafico', p5: 'modelo', p6: 'modelo', p7: 'solterra' };
-    const DURACAO_DA_VIAGEM = 1.25;
+    // O desenho de cada cena: o Sol (de longe e a região de cima), o corte da atmosfera, o campo de lado (bipolo ou
+    // modelo do ponto neutro), o gráfico, ou o caminho do Sol à Terra.
+    const MUNDO_DA_CENA = { longe: 'sol', p1: 'sol', p2: 'corte', p3: 'bipolo', p4: 'grafico', p5: 'modelo', p6: 'modelo', p7: 'solterra' };
+    const COMECO_DA_REGIAO = { lon: 0.86, lat: 0.21 };   // uns 49° para oeste e 12° para o norte do centro do disco
+    const PRODUTOS = ['protons', 'eletrons', 'raiosx', 'halfa', 'coroa', 'plasma', 'radio'];
 
     const estado = {
       area: COMECO.area,                    // a área do brilho, em milésimos do disco visível
       espessura: COMECO.espessura,          // km
       B: COMECO.B,                          // o campo perto das manchas, em gauss
       liberacao: COMECO.liberacao,          // o tempo para soltar a energia, em segundos
+      lon: COMECO_DA_REGIAO.lon, lat: COMECO_DA_REGIAO.lat,   // onde está a região ativa (dá para arrastar)
       perto: false, passo: 0, cena: 'longe',
-      alvoDoDisco: 'disco', viagem: 1, partida: null,   // a câmera do disco: o disco inteiro ou a região ativa
+      ver: 0,                               // a câmera do Sol: 0 = o disco inteiro; 1 = a região de cima (passo 1)
       tempo: 0, pausado: false,
+      destaque: null,                       // passo 6: o produto em destaque (ou nenhum)
     };
     const forcaDaCena = { longe: 1, p1: 0, p2: 0, p3: 0, p4: 0, p5: 0, p6: 0, p7: 0 };
-    const misturas = { disco: 1, corte: 0, bipolo: 0, modelo: 0, grafico: 0, solterra: 0 };
+    const misturas = { sol: 1, corte: 0, bipolo: 0, modelo: 0, grafico: 0, solterra: 0 };
     const tempoDoFlare = () => estado.tempo % CICLO_DO_FLARE;
 
     // -------------------------------------------------------------------------
-    // 5. Tela, tamanho e câmeras.
+    // 6. Tela, tamanho e câmeras.
     // -------------------------------------------------------------------------
     const tela = document.getElementById('tela');
     const ctx = tela.getContext('2d');
     const painel = document.getElementById('painel');
     const controles = document.querySelector('.controles');
-    let largura = 0, altura = 0;
+    let largura = 0, altura = 0, escalaDaTela = 1;
     // A área livre para o desenho: o que o painel e a barra de controles não cobrem.
     let cena = { x: 0, y: 0, w: 100, h: 100, fundo: 100 };
     let ESPACO_DO_TITULO = 46;
 
     function ajustarTamanho() {
-      const escala = window.devicePixelRatio || 1;
+      escalaDaTela = window.devicePixelRatio || 1;
       largura = window.innerWidth;
       altura = window.innerHeight;
-      tela.width = Math.round(largura * escala);
-      tela.height = Math.round(altura * escala);
-      ctx.setTransform(escala, 0, 0, escala, 0, 0);
+      tela.width = Math.round(largura * escalaDaTela);
+      tela.height = Math.round(altura * escalaDaTela);
+      ctx.setTransform(escalaDaTela, 0, 0, escalaDaTela, 0, 0);
       medirCena();
       desenhar();
     }
@@ -830,68 +1019,74 @@
 
     const alturaLivre = () => cena.h - ESPACO_DO_TITULO;
     const meioDaCena = () => ({ x: cena.x + cena.w / 2, y: cena.y + ESPACO_DO_TITULO + alturaLivre() / 2 });
-    /** A câmera do disco: o disco inteiro, ou de perto da região ativa (passo 1). */
-    function cameraDoDisco(tipo) {
+    const telaLarga = () => cena.w >= 640;
+    /** O disco inteiro (de longe): centro e raio na tela. Em telas largas, ele fica um pouco à esquerda. */
+    function cameraDoDisco() {
       const livre = alturaLivre(), meio = meioDaCena();
-      if (tipo === 'regiao') {
-        const S = Math.max(40, Math.min(cena.w / 0.55, livre / 0.38));
-        return { S, cx: meio.x - S * REGIAO.x, cy: meio.y + S * REGIAO.y };
-      }
-      const S = Math.max(30, Math.min(cena.w / 2.5, livre / 2.3));
-      return { S, cx: meio.x, cy: meio.y };
+      const R = Math.max(40, telaLarga() ? Math.min(cena.w * 0.3, livre * 0.44) : Math.min(cena.w * 0.4, livre * 0.42));
+      return { cx: telaLarga() ? cena.x + cena.w * 0.37 : meio.x, cy: meio.y, R };
     }
+    /** No passo 1: pixels por Mm, para a região caber de frente. */
+    const escalaDaRegiao = () => Math.max(1, Math.min(cena.w / 215, alturaLivre() / 125));
+    /**
+     * Como o Sol aparece agora. "ver" vai de 0 (o disco inteiro) a 1 (a região de frente, no passo 1): a câmera
+     * se aproxima da região e, ao mesmo tempo, a região "se desdobra" até ficar de frente.
+     */
+    function vistaDoSol() {
+      const d = cameraDoDisco(), base = baseDaRegiao(estado.lon, estado.lat), meio = meioDaCena();
+      const e = suave(estado.ver);
+      const P0 = { x: d.cx + d.R * base.c.x, y: d.cy - d.R * base.c.y };
+      const R = d.R * Math.pow((escalaDaRegiao() * RAIO_DO_SOL_MM) / d.R, e);
+      const P = { x: entre(P0.x, meio.x, e), y: entre(P0.y, meio.y, e) };
+      const eixos = eixosNaTela(base);
+      return {
+        cx: P.x - R * base.c.x, cy: P.y + R * base.c.y, R, k: R / RAIO_DO_SOL_MM, P, base, e,
+        U: { x: entre(eixos.U.x, 1, e), y: entre(eixos.U.y, 0, e) },
+        V: { x: entre(eixos.V.x, 0, e), y: entre(eixos.V.y, -1, e) },
+      };
+    }
+    /** Um ponto da região (u, v em Mm) na tela, no plano da superfície. */
+    const naRegiao = (vista, u, v) => ({ x: vista.P.x + vista.k * (u * vista.U.x + v * vista.V.x), y: vista.P.y + vista.k * (u * vista.U.y + v * vista.V.y) });
+    /** Depois disto, desenha-se em Mm no plano da região: x = u e y = −v. */
+    function transformarParaRegiao(vista) {
+      ctx.transform(vista.k * vista.U.x, vista.k * vista.U.y, -vista.k * vista.V.x, -vista.k * vista.V.y, vista.P.x, vista.P.y);
+    }
+    /** Um ponto 3D do Sol (raio 1) na tela. */
+    const naTelaDoSol = (vista, p) => ({ x: vista.cx + vista.R * p.x, y: vista.cy - vista.R * p.y });
+
     /**
      * As outras câmeras ficam paradas:
-     *   corte:    a atmosfera do Sol de lado, em milhares de km (Mm), com a fotosfera em y = 0;
-     *   campo:    o campo acima das manchas, de lado, também em Mm (passos 3, 5 e 6);
+     *   corte:    a atmosfera do Sol em 3D (um bloco visto de cima e de lado), em Mm;
+     *   campo:    o campo acima das manchas, de lado, em Mm (passos 3, 5 e 6);
      *   solterra: o Sol à esquerda e a Terra à direita, fora de escala.
      */
     function cameraFixa(tipo) {
       const livre = alturaLivre(), meio = meioDaCena();
       if (tipo === 'corte') {
-        const largo = Math.max(70, Math.sqrt(areaDoBrilhoKm2(estado.area)) / 1000 + 16);
-        const S = Math.max(2, Math.min(cena.w / largo, livre / 60));
-        return { S, cx: meio.x, cy: meio.y + 25 * S };
+        const S = Math.max(1.5, Math.min(cena.w / 190, livre / 86));
+        return { S, cx: meio.x - (telaLarga() ? 0.06 * cena.w : 0), cy: meio.y + 25 * S };
       }
       if (tipo === 'campo') {
-        const S = Math.max(2, Math.min(cena.w / 66, livre / 66));
-        return { S, cx: meio.x, cy: meio.y + 29 * S };
+        const S = Math.max(1.2, Math.min(cena.w / 136, livre / 128));
+        return { S, cx: meio.x, cy: meio.y + 56 * S };
       }
       const S = Math.max(3, Math.min(cena.w / 27, livre / 12));
       return { S, cx: meio.x - 2 * S, cy: meio.y };
     }
-    function projecaoDoDisco() {
-      const c = cameraDoDisco(estado.alvoDoDisco);
-      if (estado.viagem < 1 && estado.partida) {
-        const e = suave(estado.viagem), de = estado.partida;
-        return { S: de.S * Math.pow(c.S / de.S, e), cx: entre(de.cx, c.cx, e), cy: entre(de.cy, c.cy, e) };
-      }
-      return c;
-    }
-    function projecaoDoMundo(mundo) {
-      if (mundo === 'disco') return projecaoDoDisco();
-      if (mundo === 'bipolo' || mundo === 'modelo') return cameraFixa('campo');
-      return cameraFixa(mundo);
-    }
-    // A projeção do mundo que está sendo desenhado agora.
+    // A projeção do mundo plano que está sendo desenhado agora (campo ou solterra).
     let P = { S: 1, cx: 0, cy: 0 };
-    const usar = (mundo) => { P = projecaoDoMundo(mundo); };
+    const usar = (tipo) => { P = cameraFixa(tipo); };
     const tx = (X) => P.cx + P.S * X;
     const ty = (Y) => P.cy - P.S * Y;
+    // O corte é um bloco em 3D: X para a direita, Y para cima e Z para dentro da tela (vista oblíqua).
+    const ox = (X, Y, Z) => P.cx + P.S * (X + 0.5 * Z);
+    const oy = (X, Y, Z) => P.cy - P.S * (Y + 0.3 * Z);
 
     function atualizarCena() {
       const nova = estado.perto ? `p${estado.passo + 1}` : 'longe';
       if (nova === estado.cena) return;
-      // A câmera do disco só viaja quando a cena nova mostra o disco (de longe ↔ passo 1).
-      if (MUNDO_DA_CENA[nova] === 'disco') {
-        const alvo = nova === 'p1' ? 'regiao' : 'disco';
-        if (alvo !== estado.alvoDoDisco) {
-          estado.partida = projecaoDoDisco();
-          estado.alvoDoDisco = alvo;
-          estado.viagem = 0;
-        }
-      }
       estado.cena = nova;
+      if (nova !== 'p6') estado.destaque = null;
       mostrarControles();
     }
     function mostrarControles() {
@@ -905,13 +1100,14 @@
     }
 
     // -------------------------------------------------------------------------
-    // 6. Ferramentas de desenho.
+    // 7. Ferramentas de desenho.
     // -------------------------------------------------------------------------
     const FONTE = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
     const COR_CAMPO = '134, 185, 255';
     const COR_PROTON = '255, 179, 71';
-    const COR_HALFA = '255, 110, 84';
-    const COR_RAIOS_X = '214, 206, 255';
+    const COR_HALFA = '255, 104, 80';
+    const COR_RAIOS_X = '206, 196, 255';
+    const COR_PLASMA = '255, 196, 160';
     const AZUL = `rgb(${COR_CAMPO})`;
     const LARANJA = `rgb(${COR_PROTON})`;
     const VERMELHO = `rgb(${COR_HALFA})`;
@@ -952,7 +1148,8 @@
       ctx.fillText(texto, x, y);
     }
     const ENTRE_LINHAS = 6;
-    /** Um bloco de linhas com fundo escuro; também fica sempre dentro da área do desenho. */
+    const alturaDoBloco = (linhas) => linhas.reduce((soma, linha) => soma + linha.tamanho + ENTRE_LINHAS, -ENTRE_LINHAS) + 14;
+    /** Um bloco de linhas com fundo escuro; também fica sempre dentro da área do desenho. Devolve a caixa ocupada. */
     function escreverBloco(linhas, x, y, alinhar = 'left') {
       let maior = 0;
       for (const linha of linhas) maior = Math.max(maior, larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500));
@@ -969,6 +1166,7 @@
         escrever(linha.texto, x, py + linha.tamanho / 2, { tamanho: linha.tamanho, cor: linha.cor, alinhar, peso: linha.peso ?? 500 });
         py += linha.tamanho + ENTRE_LINHAS;
       }
+      return { x: esquerda - 10, y: topo - 7, w: maior + 20, h: total + 14 };
     }
     function tracejado(x1, y1, x2, y2, cor, tracos = [5, 5], espessura = 1) {
       ctx.strokeStyle = cor;
@@ -1001,24 +1199,21 @@
     }
     /** Um brilho redondo e esfumado. */
     function brilho(x, y, raio, cor, alfa) {
-      if (alfa < 0.005 || raio < 0.5) return;
+      if (alfa < 0.004 || raio < 0.5) return;
       const g = ctx.createRadialGradient(x, y, 0, x, y, raio);
-      g.addColorStop(0, `rgba(${cor}, ${alfa})`);
+      g.addColorStop(0, `rgba(${cor}, ${Math.min(1, alfa)})`);
       g.addColorStop(1, `rgba(${cor}, 0)`);
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(x, y, raio, 0, Math.PI * 2);
       ctx.fill();
     }
-    /** O brilho fraco em volta da borda do Sol. */
-    function halo(x, y, raio) {
-      const g = ctx.createRadialGradient(x, y, 0.92 * raio, x, y, 1.2 * raio);
-      g.addColorStop(0, 'rgba(255, 120, 60, 0.35)');
-      g.addColorStop(1, 'rgba(255, 120, 60, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, 1.2 * raio, 0, Math.PI * 2);
-      ctx.fill();
+    /** Desenha somando luz (o que é brilho fica mais claro onde se sobrepõe). */
+    function aditivo(desenho) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      desenho();
+      ctx.restore();
     }
     function ponto(x, y, raio, cor) {
       ctx.fillStyle = cor;
@@ -1026,9 +1221,31 @@
       ctx.arc(x, y, raio, 0, Math.PI * 2);
       ctx.fill();
     }
+    /** Um clarão: núcleo branco, halo quente e raios finos (como a luz forte numa câmera). */
+    function clarao(x, y, raio, forca, { raios = 8, giro = 0, cor = '255, 236, 210' } = {}) {
+      if (forca < 0.01) return;
+      aditivo(() => {
+        brilho(x, y, raio * 3.2, '255, 150, 80', 0.22 * forca);
+        brilho(x, y, raio * 1.5, cor, 0.6 * forca);
+        brilho(x, y, raio * 0.55, '255, 255, 255', Math.min(1, 1.1 * forca));
+        ctx.lineCap = 'round';
+        for (let i = 0; i < raios; i++) {
+          const a = giro + (i * Math.PI * 2) / raios, comprimento = raio * (i % 2 ? 2.6 : 4.2) * (0.6 + 0.4 * forca);
+          const g = ctx.createLinearGradient(x, y, x + Math.cos(a) * comprimento, y + Math.sin(a) * comprimento);
+          g.addColorStop(0, `rgba(255, 245, 230, ${0.55 * forca})`);
+          g.addColorStop(1, 'rgba(255, 245, 230, 0)');
+          ctx.strokeStyle = g;
+          ctx.lineWidth = Math.max(1, raio * 0.07);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + Math.cos(a) * comprimento, y + Math.sin(a) * comprimento);
+          ctx.stroke();
+        }
+      });
+    }
     const AMOSTRAS = {
       proton(x1, x2, y) { ponto(x1 + 12, y, 3.4, LARANJA); },
-      eletron(x1, x2, y) { ponto(x1 + 12, y, 2.2, '#f0f0f0'); },
+      eletron(x1, x2, y) { ponto(x1 + 12, y, 2.2, '#f4f4f4'); },
       campo(x1, x2, y) {
         ctx.strokeStyle = `rgba(${COR_CAMPO}, 0.9)`;
         ctx.lineWidth = 1.3;
@@ -1040,23 +1257,72 @@
         ctx.lineTo(x1 + 17, y + 3);
         ctx.stroke();
       },
-      halfa(x1, x2, y) { brilho(x1 + 14, y, 9, COR_HALFA, 0.95); },
-      raiosX(x1, x2, y) { brilho(x1 + 14, y, 9, COR_RAIOS_X, 0.95); },
-      plasma(x1, x2, y) { brilho(x1 + 14, y, 10, '255, 200, 160', 0.6); },
+      energia(x1, x2, y) {
+        const g = ctx.createLinearGradient(x1, 0, x2, 0);
+        g.addColorStop(0, 'rgba(40, 90, 220, 0.9)');
+        g.addColorStop(0.6, 'rgba(120, 200, 255, 0.9)');
+        g.addColorStop(1, 'rgba(240, 250, 255, 0.95)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x1, y - 4, x2 - x1, 8);
+      },
+      halfa(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 9, COR_HALFA, 0.95)); },
+      raiosx(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 9, COR_RAIOS_X, 0.95)); },
+      coroa(x1, x2, y) {
+        aditivo(() => {
+          ctx.strokeStyle = `rgba(${COR_RAIOS_X}, 0.8)`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(x1 + 14, y + 6, 9, Math.PI * 1.15, Math.PI * 1.85);
+          ctx.stroke();
+        });
+      },
+      plasma(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 10, COR_PLASMA, 0.7)); },
+      radio(x1, x2, y) {
+        ctx.strokeStyle = 'rgba(220, 220, 255, 0.8)';
+        ctx.lineWidth = 1.2;
+        for (const r of [3, 6, 9]) {
+          ctx.beginPath();
+          ctx.arc(x1 + 8, y, r, -0.7, 0.7);
+          ctx.stroke();
+        }
+      },
+      luz(x1, x2, y) {
+        const g = ctx.createLinearGradient(x1, 0, x2, 0);
+        g.addColorStop(0, `rgba(${COR_RAIOS_X}, 0)`);
+        g.addColorStop(1, `rgba(${COR_RAIOS_X}, 0.95)`);
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+      },
     };
+    // A legenda do passo 6 dá para tocar: cada item com uma chave guarda aqui a sua caixa na tela.
+    let zonasDaLegenda = [];
+    /** A legenda no canto de cima, à esquerda. Itens: [amostra, texto, chave (opcional, para destacar)]. */
     function desenharLegenda(itens) {
-      if (alturaLivre() <= 200) return;
+      if (alturaLivre() <= 200) return null;
       const x = cena.x + 10, y = cena.y + ESPACO_DO_TITULO + 6;
-      const maior = Math.max(...itens.map(([, texto]) => larguraDoTexto(texto, 11.5)));
+      const maior = Math.max(...itens.map(([, texto]) => larguraDoTexto(texto, 11.5, 600)));
       ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(x, y, 66 + maior, itens.length * 18 + 10, 9); else ctx.rect(x, y, 66 + maior, itens.length * 18 + 10);
       ctx.fill();
-      itens.forEach(([amostra, texto], i) => {
-        const alturaDoItem = y + 14 + i * 18;
+      itens.forEach(([amostra, texto, chave], i) => {
+        const alturaDoItem = y + 14 + i * 18, ativo = chave && estado.destaque === chave, apagado = estado.destaque && chave && !ativo;
+        if (ativo) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.fillRect(x + 3, alturaDoItem - 9, 60 + maior, 18);
+        }
+        ctx.save();
+        if (apagado) ctx.globalAlpha *= 0.35;
         amostra(x + 8, x + 46, alturaDoItem);
-        escrever(texto, x + 54, alturaDoItem, { tamanho: 11.5, cor: '#b4b4b4' });
+        escrever(texto, x + 54, alturaDoItem, { tamanho: 11.5, cor: ativo ? '#ffffff' : '#b4b4b4', peso: ativo ? 600 : 500 });
+        ctx.restore();
+        if (chave) zonasDaLegenda.push({ chave, x: x, y: alturaDoItem - 9, w: 66 + maior, h: 18 });
       });
+      return { x, y, w: 66 + maior, h: itens.length * 18 + 10 };
     }
 
     // Números em português.
@@ -1078,20 +1344,23 @@
     /** Arredonda para mostrar: 3 285 → 3 300. */
     const doisAlgarismos = (valor) => Number(valor.toPrecision(2));
 
-    const ESTRELAS = Array.from({ length: 90 }, (_, i) => {
+    const ESTRELAS = Array.from({ length: 110 }, (_, i) => {
       const a = Math.sin(i * 127.1 + 3.7) * 43758.5453, b = Math.sin(i * 311.7 + 1.3) * 24634.6345;
-      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.07 + 0.16 * ((i * 37) % 10) / 10 };
+      return { u: a - Math.floor(a), v: b - Math.floor(b), brilho: 0.07 + 0.18 * ((i * 37) % 10) / 10 };
     });
 
     const bufferX = new Float32Array(400), bufferY = new Float32Array(400);
-    /** Traça uma linha de campo (pontos do mundo atual), com setinhas que andam no sentido do campo. */
-    function tracarPontos(pontos, { cor = COR_CAMPO, forca = 0.5, espessura = 1.1, setinhas = 0.65, fase = 0, distancia = 70, tracos = null } = {}) {
+    /** Traça uma linha de campo (pontos do mundo plano atual), com setinhas que andam no sentido do campo. */
+    function tracarPontos(pontos, { cor = COR_CAMPO, forca = 0.5, espessura = 1.1, setinhas = 0.65, fase = 0, distancia = 70, tracos = null, acimaDe = -Infinity } = {}) {
       const n = Math.min(pontos.length / 2, bufferX.length);
       ctx.beginPath();
+      let aberto = false;
       for (let i = 0; i < n; i++) {
         bufferX[i] = tx(pontos[2 * i]);
         bufferY[i] = ty(pontos[2 * i + 1]);
-        if (i === 0) ctx.moveTo(bufferX[i], bufferY[i]); else ctx.lineTo(bufferX[i], bufferY[i]);
+        if (pontos[2 * i + 1] < acimaDe) { aberto = false; continue; }
+        if (!aberto) ctx.moveTo(bufferX[i], bufferY[i]); else ctx.lineTo(bufferX[i], bufferY[i]);
+        aberto = true;
       }
       ctx.strokeStyle = `rgba(${cor}, ${forca})`;
       ctx.lineWidth = espessura;
@@ -1108,6 +1377,7 @@
         const dx = bufferX[i] - bufferX[i - 1], dy = bufferY[i] - bufferY[i - 1];
         const trecho = Math.hypot(dx, dy);
         if (trecho < 1e-6) continue;
+        if (pontos[2 * i + 1] < acimaDe || pontos[2 * i - 1] < acimaDe) { falta = (falta + trecho) % distancia; continue; }
         const ux = dx / trecho, uy = dy / trecho;
         let andado = falta;
         while (andado <= trecho) {
@@ -1122,286 +1392,867 @@
         falta = andado - trecho;
       }
     }
+    /** Uma linha que brilha (laço quente, fita): várias passadas, da mais larga e fraca à mais fina e forte. */
+    function linhaQueBrilha(pontosNaTela, cor, forca, larguraBase) {
+      if (forca < 0.01 || pontosNaTela.length < 2) return;
+      aditivo(() => {
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        for (const [fator, alfa] of [[4, 0.12], [2, 0.3], [0.8, 0.85]]) {
+          ctx.strokeStyle = `rgba(${cor}, ${alfa * forca})`;
+          ctx.lineWidth = Math.max(0.8, larguraBase * fator);
+          ctx.beginPath();
+          pontosNaTela.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+          ctx.stroke();
+        }
+      });
+    }
+    /** Mistura de cores por temperatura: quente (branco-violeta) → morno (laranja) → frio (vermelho de Hα). */
+    function corDoLaco(idade) {
+      const q = limitar(idade, 0, 1);
+      const quente = [232, 222, 255], morno = [255, 176, 96], frio = [255, 96, 72];
+      const [a, b, f] = q < 0.4 ? [quente, morno, q / 0.4] : [morno, frio, (q - 0.4) / 0.6];
+      return a.map((v, i) => Math.round(entre(v, b[i], f))).join(', ');
+    }
 
     // -------------------------------------------------------------------------
-    // 7. O disco do Sol em Hα (de longe e passo 1).
+    // 8. O Sol em Hα: de longe (o disco inteiro) e no passo 1 (a região ativa de frente).
     // -------------------------------------------------------------------------
-    function desenharBrilhoDoFlare(intensidade) {
-      if (intensidade < 0.005) return;
-      for (const n of nucleosDoFlare(estado.area)) {
-        const x = tx(n.x), y = ty(n.y), a = n.a * P.S, b = n.b * P.S;
-        brilho(x, y, Math.max(10, 2.6 * a), '255, 226, 200', 0.6 * intensidade);
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(-ANGULO_DOS_NUCLEOS);
-        ctx.fillStyle = `rgba(255, 250, 240, ${0.95 * intensidade})`;
+    /** O brilho em volta do disco e raios suaves que giram devagar (decoração). */
+    function desenharHalo(cx, cy, R, alfa) {
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        const g = ctx.createRadialGradient(cx, cy, R * 0.96, cx, cy, R * 1.9);
+        g.addColorStop(0, 'rgba(255, 132, 62, 0.55)');
+        g.addColorStop(0.22, 'rgba(255, 110, 50, 0.2)');
+        g.addColorStop(1, 'rgba(255, 90, 40, 0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.ellipse(0, 0, Math.max(1.2, a), Math.max(0.8, b), 0, 0, Math.PI * 2);
+        ctx.arc(cx, cy, R * 1.9, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
+        ctx.lineCap = 'round';
+        for (let i = 0; i < 7; i++) {
+          const a = i * 0.9 + estado.tempo * 0.02, comprimento = R * (1.55 + 0.35 * Math.sin(i * 2.1));
+          const x1 = cx + Math.cos(a) * R * 0.95, y1 = cy + Math.sin(a) * R * 0.95;
+          const x2 = cx + Math.cos(a) * comprimento, y2 = cy + Math.sin(a) * comprimento;
+          const raio = ctx.createLinearGradient(x1, y1, x2, y2);
+          raio.addColorStop(0, 'rgba(255, 150, 80, 0.09)');
+          raio.addColorStop(1, 'rgba(255, 150, 80, 0)');
+          ctx.strokeStyle = raio;
+          ctx.lineWidth = R * 0.16;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      });
+    }
+    function desenharProeminencias(cx, cy, R, alfa) {
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        ctx.lineCap = 'round';
+        PROEMINENCIAS.forEach((p, i) => {
+          for (const f of FIOS_DAS_PROEMINENCIAS[i]) {
+            const a1 = p.angulo - p.largura / 2 + f.a * p.largura * 0.7, a2 = p.angulo + p.largura / 2 + f.b * p.largura * 0.7;
+            const h = p.altura * f.h * (1 + 0.08 * Math.sin(estado.tempo * 0.8 + f.fase));
+            const x1 = cx + Math.cos(a1) * R * 0.995, y1 = cy - Math.sin(a1) * R * 0.995;
+            const x2 = cx + Math.cos(a2) * R * 0.995, y2 = cy - Math.sin(a2) * R * 0.995;
+            const torce = 0.25 * Math.sin(estado.tempo * 0.5 + f.fase) * p.largura;
+            const c1x = cx + Math.cos(a1 + torce) * R * (1 + 2.3 * h), c1y = cy - Math.sin(a1 + torce) * R * (1 + 2.3 * h);
+            const c2x = cx + Math.cos(a2 - torce) * R * (1 + 2.1 * h), c2y = cy - Math.sin(a2 - torce) * R * (1 + 2.1 * h);
+            for (const [espessura, cor] of [[R * 0.034 * f.w, 'rgba(255, 70, 50, 0.07)'], [R * 0.014 * f.w, 'rgba(255, 96, 70, 0.12)'], [R * 0.005 * f.w, 'rgba(255, 150, 120, 0.14)']]) {
+              ctx.strokeStyle = cor;
+              ctx.lineWidth = Math.max(1, espessura);
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
+              ctx.bezierCurveTo(c1x, c1y, c2x, c2y, x2, y2);
+              ctx.stroke();
+            }
+          }
+        });
+      });
+    }
+    /** O disco em Hα: a textura, os pontos claros que mudam devagar e a borda que brilha. */
+    function desenharDiscoEmHalfa(cx, cy, R, alfa) {
+      const lado = (1024 / 500) * R;
+      ctx.globalAlpha = alfa;
+      ctx.drawImage(TEXTURA_DO_DISCO, cx - lado / 2, cy - lado / 2, lado, lado);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = alfa * (0.3 + 0.18 * Math.sin(estado.tempo * 0.9));
+      ctx.translate(cx, cy);
+      ctx.rotate(0.012 * Math.sin(estado.tempo * 0.25));
+      ctx.drawImage(TEXTURA_DOS_BRILHOS, -lado / 2, -lado / 2, lado, lado);
+      ctx.restore();
+      if (R < 4000) {
+        aditivo(() => {
+          ctx.globalAlpha = alfa;
+          const g = ctx.createRadialGradient(cx, cy, R * 0.985, cx, cy, R * 1.035);
+          g.addColorStop(0, 'rgba(255, 150, 110, 0)');
+          g.addColorStop(0.35, 'rgba(255, 160, 120, 0.6)');
+          g.addColorStop(1, 'rgba(255, 110, 80, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(cx, cy, R * 1.035, 0, Math.PI * 2);
+          ctx.fill();
+        });
       }
     }
-    function desenharDisco(alfa) {
-      const S = P.S;
+
+    // As duas fitas do flare: elipses de L × W, uma de cada lado da linha entre as polaridades, que se afastam.
+    /** O tamanho das fitas: as duas somam a área do brilho (em Mm²); L = 3 W. */
+    function geometriaDasFitas(t) {
+      const A = areaDoBrilhoKm2(estado.area) / 1e6;
+      const W = Math.sqrt((2 * A) / (3 * Math.PI)), L = 3 * W;
+      return { W, L, d: W / 2 + 2 + 16 * afastamentoDasFitas(t), A };
+    }
+    function desenharFitas(vista, t, alfa) {
+      const b = brilhoDoFlare(t), cl = claraoDoFlare(t);
+      if (b < 0.004) return;
+      const { W, L, d } = geometriaDasFitas(t);
+      ctx.save();
+      transformarParaRegiao(vista);
+      ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = alfa;
-      halo(tx(0), ty(0), S);
-      ctx.drawImage(TEXTURA_DO_DISCO, tx(-512 / 500), ty(512 / 500), (1024 / 500) * S, (1024 / 500) * S);
-      ctx.drawImage(TEXTURA_DA_REGIAO, tx(REGIAO.x - LADO_DA_REGIAO / 2), ty(REGIAO.y + LADO_DA_REGIAO / 2), LADO_DA_REGIAO * S, LADO_DA_REGIAO * S);
-      desenharBrilhoDoFlare(brilhoDoFlare(tempoDoFlare()));
+      for (const lado of [-1, 1]) {
+        // O brilho em volta da fita (largo e fraco).
+        ctx.save();
+        ctx.translate(lado * d, 0);
+        ctx.scale(W / L, 1);
+        for (const [escala, cor, a] of [[2.6, '255, 80, 50', 0.1], [1.5, '255, 110, 80', 0.12]]) {
+          const g = ctx.createRadialGradient(0, 0, 0, 0, 0, (L / 2) * escala);
+          g.addColorStop(0, `rgba(${cor}, ${a * b})`);
+          g.addColorStop(1, `rgba(${cor}, 0)`);
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(0, 0, (L / 2) * escala, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+        // A fita: uma faixa curva (cada fatia de v anda um pouco em u, o que não muda a área da elipse).
+        const fita = new Path2D(), bordaDeFora = [];
+        for (let j = 0; j <= 40; j++) {
+          const s = -1 + j / 20, meia = (W / 2) * Math.sqrt(Math.max(0, 1 - s * s)), centro = lado * (d + 0.3 * W * s * s);
+          if (j === 0) fita.moveTo(centro - meia, -s * L / 2); else fita.lineTo(centro - meia, -s * L / 2);
+          bordaDeFora.push([centro + meia, -s * L / 2]);
+        }
+        for (let j = bordaDeFora.length - 1; j >= 0; j--) fita.lineTo(...bordaDeFora[j]);
+        fita.closePath();
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = `rgba(255, 224, 206, ${0.52 * b})`;
+        ctx.fill(fita);
+        // Contas mais claras ao longo da fita, que tremulam.
+        ctx.clip(fita);
+        for (let i = 0; i < 6; i++) {
+          const s = -0.8 + (i * 1.6) / 5, cx = lado * (d + 0.3 * W * s * s), cy = -s * L / 2;
+          const f = b * Math.max(0, 0.45 + 0.55 * Math.sin(estado.tempo * 3.1 + i * 1.7 + lado));
+          const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.75);
+          g.addColorStop(0, `rgba(255, 250, 244, ${0.75 * f})`);
+          g.addColorStop(1, 'rgba(255, 240, 225, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(cx, cy, W * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+        // Os núcleos que piscam no começo (a fase mais violenta).
+        if (cl > 0.01) {
+          for (const f of [-0.3, 0.02, 0.28]) {
+            const s = 2 * f, cxNucleo = lado * (d + 0.3 * W * s * s);
+            const g = ctx.createRadialGradient(cxNucleo, -f * L, 0, cxNucleo, -f * L, W * 0.9);
+            g.addColorStop(0, `rgba(255, 255, 255, ${cl})`);
+            g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(cxNucleo, -f * L, W * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.restore();
+    }
+    /** Pontos de um laço em 3D, do pé (−d, v1) ao pé (d, v2), com altura H (Mm). Os escondidos atrás do Sol ficam de fora. */
+    function lacoNoSol(vista, d, v1, v2, H) {
+      const pontos = [];
+      for (let i = 0; i <= 24; i++) {
+        const s = i / 24, p = pontoNoSol(vista.base, entre(-d, d, s), entre(v1, v2, s), H * Math.sin(Math.PI * s));
+        if (visivelNoSol(p)) pontos.push(naTelaDoSol(vista, p));
+      }
+      return pontos;
+    }
+    /** Os laços acima da região (vistos de longe): antes, um arco torcido e frio; depois do gatilho, laços que acendem. */
+    function desenharLacosDoSol(vista, t, alfa) {
+      const larguraBase = Math.max(0.8, vista.k * 1.2);
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      const antes = 1 - suave((t - GATILHO) / 1.5);
+      if (antes > 0.01) {
+        for (let j = 0; j < 6; j++) {
+          const d = 8 + 4 * j, v = -24 + 9.5 * j;
+          linhaQueBrilha(lacoNoSol(vista, d, v - 12, v + 12, 14 + 4 * j), '255, 120, 90', 0.35 * antes, larguraBase);
+        }
+      }
+      if (t >= GATILHO) {
+        const { L, d } = geometriaDasFitas(t), idade = (t - GATILHO) / 7, forca = brilhoDoFlare(t) * 0.7 + 0.3 * (1 - suave((t - 13) / 2.5));
+        for (const f of [-0.36, -0.12, 0.12, 0.36]) {
+          linhaQueBrilha(lacoNoSol(vista, d, f * L - 3, f * L + 3, 0.9 * d + 6), corDoLaco(idade), forca, larguraBase);
+        }
+      }
+      ctx.restore();
+    }
+    // Os prótons que saem do flare, com direções e ritmos um pouco diferentes.
+    const PROTONS_DO_SOL = (() => {
+      const sortear = sorteador(919);
+      return Array.from({ length: 22 }, () => ({ du: (sortear() - 0.5) * 0.5, dv: (sortear() - 0.5) * 0.5, ritmo: 0.8 + 0.5 * sortear(), atraso: sortear() * 0.5 }));
+    })();
+    /** O plasma lançado (uma bolha que cresce) e os prótons, saindo do Sol pela direção da região. */
+    function desenharLancamento(vista, t, alfa) {
+      const d = t - GATILHO - 0.2;
+      if (d < 0 || d > 7) return;
+      const centro = naTelaDoSol(vista, pontoNoSol(vista.base, 0, 0, 0));
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        // Os prótons: mais rápidos, com rastro.
+        ctx.lineCap = 'round';
+        for (const p of PROTONS_DO_SOL) {
+          const dp = d - p.atraso;
+          if (dp <= 0 || dp > 4) continue;
+          const h = 700 * p.ritmo * dp, h0 = Math.max(0, h - 160);
+          const a = naTelaDoSol(vista, pontoNoSol(vista.base, p.du * h, p.dv * h, h));
+          const b = naTelaDoSol(vista, pontoNoSol(vista.base, p.du * h0, p.dv * h0, h0));
+          const g = ctx.createLinearGradient(b.x, b.y, a.x, a.y);
+          g.addColorStop(0, `rgba(${COR_PROTON}, 0)`);
+          g.addColorStop(1, `rgba(${COR_PROTON}, ${0.9 * (1 - suave((dp - 2.5) / 1.5))})`);
+          ctx.strokeStyle = g;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(a.x, a.y);
+          ctx.stroke();
+        }
+        // A bolha de plasma: borda clara e o meio mais fraco.
+        const h = 40 + 320 * d, c = naTelaDoSol(vista, pontoNoSol(vista.base, 0, 0, h));
+        const raio = (12 + 0.34 * h) * vista.k, forca = suave(d / 0.4) * (1 - suave((d - 4) / 3));
+        const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, raio);
+        g.addColorStop(0, `rgba(${COR_PLASMA}, ${0.05 * forca})`);
+        g.addColorStop(0.7, `rgba(${COR_PLASMA}, ${0.12 * forca})`);
+        g.addColorStop(0.9, `rgba(255, 228, 210, ${0.42 * forca})`);
+        g.addColorStop(1, 'rgba(255, 228, 210, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, raio, 0, Math.PI * 2);
+        ctx.fill();
+        // Uma "ponte" de luz entre a região e a bolha, enquanto ela sai.
+        const ponte = ctx.createLinearGradient(centro.x, centro.y, c.x, c.y);
+        ponte.addColorStop(0, `rgba(${COR_PLASMA}, ${0.25 * forca})`);
+        ponte.addColorStop(1, `rgba(${COR_PLASMA}, 0)`);
+        ctx.strokeStyle = ponte;
+        ctx.lineWidth = Math.max(2, raio * 0.35);
+        ctx.beginPath();
+        ctx.moveTo(centro.x, centro.y);
+        ctx.lineTo(c.x, c.y);
+        ctx.stroke();
+      });
+    }
+    function desenharSol(alfa) {
+      const vista = vistaDoSol(), t = tempoDoFlare(), longe = 1 - vista.e;
+      const { cx, cy, R } = vista;
+      if (longe > 0.01) {
+        desenharHalo(cx, cy, R, alfa * longe);
+        desenharProeminencias(cx, cy, R, alfa * longe);
+      }
+      ctx.imageSmoothingQuality = 'high';
+      desenharDiscoEmHalfa(cx, cy, R, alfa);
+      // A região ativa (no plano da superfície; o que passar da borda do disco fica de fora).
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.clip();
+      if (vista.e > 0.3) {
+        ctx.globalAlpha = alfa * 0.94 * suave((vista.e - 0.3) / 0.5);
+        ctx.fillStyle = `rgb(${corDaSuperficie(vista.base)})`;
+        ctx.fillRect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+      }
+      ctx.save();
+      ctx.globalAlpha = alfa;
+      transformarParaRegiao(vista);
+      const textura = vista.k * LADO_DA_REGIAO_MM < 500 ? TEXTURA_DA_REGIAO_PEQUENA : TEXTURA_DA_REGIAO;
+      ctx.drawImage(textura, -LADO_DA_REGIAO_MM / 2, -LADO_DA_REGIAO_MM / 2, LADO_DA_REGIAO_MM, LADO_DA_REGIAO_MM);
+      ctx.restore();
+      desenharFitas(vista, t, alfa);
+      ctx.restore();
+      if (longe > 0.01) {
+        desenharLacosDoSol(vista, t, alfa * longe);
+        desenharLancamento(vista, t, alfa * longe);
+      }
+      // O clarão: forte no gatilho e um brilho que fica enquanto o flare apaga. De perto, ele é bem menor.
+      const forca = (1.3 * claraoDoFlare(t) + 0.5 * brilhoDoFlare(t)) * (1 - suave(vista.e / 0.6));
+      const raio = limitar(R * 0.13, 16, 60) * (1 - 0.7 * vista.e);
+      ctx.globalAlpha = alfa;
+      clarao(vista.P.x, vista.P.y, raio, forca, { raios: 10, giro: 0.3 + estado.tempo * 0.05 });
+      // No gatilho, um pouco de luz em toda a cena (de longe).
+      if (claraoDoFlare(t) > 0.01 && longe > 0.01) {
+        aditivo(() => {
+          ctx.globalAlpha = alfa * longe;
+          ctx.fillStyle = `rgba(255, 236, 214, ${0.1 * claraoDoFlare(t)})`;
+          ctx.fillRect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
+        });
+      }
       ctx.globalAlpha = 1;
     }
-    /** A curva do brilho em Hα no ciclo, com o momento de agora (de longe). */
-    function desenharCurvaDeLuz(alfa) {
-      const w = 200, h = 74, esquerda = cena.x + 14, base = cena.y + cena.h - 16;
-      if (tx(-1) - esquerda < w + 16 || alturaLivre() < 260) return;
+
+    /** A lupa (de longe, em telas largas): a região vista de cima, com as fitas. */
+    function lugarDaLupa() {
+      if (!telaLarga() || alturaLivre() < 300) return null;
+      const r = Math.min(86, alturaLivre() * 0.21);
+      return { x: cena.x + cena.w - r - 28, y: cena.y + cena.h - r - 26, r };
+    }
+    function corDaSuperficie(base) {
+      const mu = Math.sqrt(Math.max(0, base.c.z));
+      return [entre(150, 252, mu), entre(40, 140, mu), entre(16, 64, mu)].map(Math.round).join(', ');
+    }
+    function desenharLupa(alfa) {
+      const lupa = lugarDaLupa();
+      if (!lupa) return;
+      const vista = vistaDoSol(), t = tempoDoFlare();
       ctx.globalAlpha = alfa;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      // As linhas que ligam a região à lupa.
+      const a = Math.atan2(lupa.y - vista.P.y, lupa.x - vista.P.x);
+      for (const lado of [-1, 1]) {
+        const q = { x: lupa.x + lupa.r * Math.cos(a + Math.PI / 2 * lado), y: lupa.y + lupa.r * Math.sin(a + Math.PI / 2 * lado) };
+        tracejado(vista.P.x, vista.P.y, q.x, q.y, 'rgba(255, 255, 255, 0.3)', [3, 4]);
+      }
+      ctx.save();
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(esquerda - 8, base - h - 26, w + 16, h + 34, 10); else ctx.rect(esquerda - 8, base - h - 26, w + 16, h + 34);
-      ctx.fill();
-      escrever('brilho em Hα (tempo acelerado)', esquerda, base - h - 14, { tamanho: 11, cor: '#a9a9a9' });
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(esquerda, base);
-      ctx.lineTo(esquerda + w, base);
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(255, 236, 214, 0.9)';
+      ctx.arc(lupa.x, lupa.y, lupa.r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = `rgb(${corDaSuperficie(vista.base)})`;
+      ctx.fillRect(lupa.x - lupa.r, lupa.y - lupa.r, 2 * lupa.r, 2 * lupa.r);
+      const vistaDaLupa = { P: { x: lupa.x, y: lupa.y }, k: lupa.r / 72, U: { x: 1, y: 0 }, V: { x: 0, y: -1 } };
+      ctx.save();
+      transformarParaRegiao(vistaDaLupa);
+      ctx.drawImage(TEXTURA_DA_REGIAO_PEQUENA, -LADO_DA_REGIAO_MM / 2, -LADO_DA_REGIAO_MM / 2, LADO_DA_REGIAO_MM, LADO_DA_REGIAO_MM);
+      ctx.restore();
+      desenharFitas(vistaDaLupa, t, alfa);
+      ctx.restore();
+      ctx.globalAlpha = alfa;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
-      for (let i = 0; i <= 120; i++) {
-        const t = (i / 120) * CICLO_DO_FLARE, x = esquerda + (w * i) / 120, y = base - 4 - (h - 10) * brilhoDoFlare(t);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
+      ctx.arc(lupa.x, lupa.y, lupa.r, 0, Math.PI * 2);
       ctx.stroke();
-      const t = tempoDoFlare();
-      ponto(esquerda + (w * t) / CICLO_DO_FLARE, base - 4 - (h - 10) * brilhoDoFlare(t), 3.5, '#ffffff');
+      escrever('lupa: a região vista de cima', lupa.x, lupa.y - lupa.r - 12, { tamanho: 11.5, cor: '#d8d8d8', alinhar: 'center', placa: true });
+      if (brilhoDoFlare(t) > 0.15) escrever('as fitas do flare', lupa.x, lupa.y + lupa.r - 14, { tamanho: 11, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
       ctx.globalAlpha = 1;
     }
-    /** De longe: o nome da região ativa e a classe do flare. */
+    /** Onde a região está no disco: perto do centro (vista de cima), perto da borda (de lado) ou no meio. */
+    function posicaoDaRegiao() {
+      const angulo = Math.acos(limitar(baseDaRegiao(estado.lon, estado.lat).c.z, -1, 1)) * 180 / Math.PI;
+      return angulo < 30 ? 'centro' : angulo > 60 ? 'borda' : 'meio';
+    }
+    /** De longe: a alça para arrastar a região, os nomes e a lupa. */
     function desenharDeLonge(alfa) {
-      const comNomes = alturaLivre() >= 170;
-      desenharCurvaDeLuz(alfa);
-      if (!comNomes) return;
+      const vista = vistaDoSol(), t = tempoDoFlare(), comNomes = alturaLivre() >= 170;
       ctx.globalAlpha = alfa;
-      const ax = tx(REGIAO.x + 0.1), ay = ty(REGIAO.y);
-      const xNome = tx(1) + 16;
-      const cabeFora = xNome + 190 < cena.x + cena.w;
-      const linhas = [
-        { texto: 'região ativa: manchas e plages', tamanho: 11.5, cor: '#d8d8d8' },
+      const pulso = 0.5 + 0.5 * Math.sin(performance.now() / 380);
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.35 + 0.3 * pulso})`;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(vista.P.x, vista.P.y, 15 + 3 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      desenharLupa(alfa);
+      if (!comNomes) { ctx.globalAlpha = 1; return; }
+      ctx.globalAlpha = alfa;
+      // O nome da região: abaixo dela, se ela está na metade de cima do disco; acima, se está embaixo.
+      const embaixo = vista.P.y < vista.cy, linhas = [
+        { texto: 'região ativa (arraste)', tamanho: 11.5, cor: '#e8e8e8' },
         { texto: `flare classe ${classeDoFlare(estado.area)}`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
       ];
-      if (cabeFora) {
-        tracejado(ax, ay, xNome - 6, ay, 'rgba(255, 255, 255, 0.5)', [3, 3]);
-        escreverBloco(linhas, xNome, ay, 'left');
-      } else {
-        escreverBloco(linhas, tx(REGIAO.x), ty(REGIAO.y - 0.16), 'center');
+      const y = embaixo ? vista.P.y + 40 : vista.P.y - 40 - alturaDoBloco(linhas) + 14;
+      escreverBloco(linhas, vista.P.x, y, 'center');
+      // O que está saindo do Sol, enquanto aparece.
+      const d = t - GATILHO - 0.2;
+      if (d > 0.6 && d < 4.2) {
+        const h = 40 + 320 * d, c = naTelaDoSol(vista, pontoNoSol(vista.base, 0, 0, h)), raio = (12 + 0.34 * h) * vista.k;
+        const dentro = c.x > cena.x + 20 && c.x < cena.x + cena.w - 20 && c.y > cena.y + ESPACO_DO_TITULO + 20 && c.y < cena.y + cena.h - 20;
+        if (dentro && raio > 18) escrever('plasma lançado', c.x, c.y - raio * 0.6, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
+      }
+      if (claraoDoFlare(t) > 0.2) escrever('o clarão do gatilho', vista.P.x + 22, vista.P.y + (embaixo ? -26 : 26), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
+      ctx.globalAlpha = 1;
+    }
+
+    /** Passo 1: as manchas, a plage, a área medida, a escala, o disco inteiro e as classes. */
+    function desenharPasso1(alfa) {
+      if (alturaLivre() < 170) return;
+      const vista = vistaDoSol(), t = tempoDoFlare(), noPico = geometriaDasFitas(PICO);
+      ctx.globalAlpha = alfa;
+      // A área medida: as duas fitas no máximo do brilho (tracejadas).
+      ctx.save();
+      transformarParaRegiao(vista);
+      ctx.setLineDash([4 / vista.k, 4 / vista.k]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 1.3 / vista.k;
+      for (const lado of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(lado * noPico.d, 0, noPico.W / 2, noPico.L / 2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+      for (const m of MANCHAS) {
+        const p = naRegiao(vista, m.u, m.polo === 'N' ? m.penumbra + 7 : -(m.penumbra + 7));
+        escrever(`mancha (polaridade ${m.polo})`, p.x, p.y, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+      }
+      const plage = naRegiao(vista, -44, -30);
+      escrever('plage: cálcio K e Hα mais fortes', plage.x, plage.y, { tamanho: 11.5, cor: '#ffe6d6', alinhar: 'center', placa: true });
+      const fita = naRegiao(vista, noPico.d + noPico.W / 2 + 2, noPico.L / 2);
+      escrever(brilhoDoFlare(t) > 0.1 ? `as fitas do flare: ${emMilesimos(estado.area)} do disco` : `área medida: ${emMilesimos(estado.area)} do disco`,
+        fita.x + 6, fita.y - 4, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
+      // A escala: 20 000 km.
+      const barra = 20 * vista.k, x0 = cena.x + 18, y0 = cena.y + cena.h - 20;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0 - 5);
+      ctx.lineTo(x0, y0);
+      ctx.lineTo(x0 + barra, y0);
+      ctx.lineTo(x0 + barra, y0 - 5);
+      ctx.stroke();
+      escrever('20 000 km', x0 + barra / 2, y0 - 12, { tamanho: 11, cor: '#ffffff', alinhar: 'center', placa: true });
+      // As classes pela área (limites usuais, em milésimos do disco).
+      const classe = classeDoFlare(estado.area), caixa = 34, total = caixa * 5 + 4 * 6;
+      const xc = cena.x + cena.w / 2 - total / 2, yc = cena.y + cena.h - 46;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(xc - 10, yc - 22, total + 20, 58, 10); else ctx.rect(xc - 10, yc - 22, total + 20, 58);
+      ctx.fill();
+      escrever('classe pela área (limites usuais)', xc + total / 2, yc - 11, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'center' });
+      LIMITES_DAS_CLASSES.forEach((limite, i) => {
+        const x = xc + i * (caixa + 6), atual = limite.classe === classe;
+        ctx.fillStyle = atual ? '#ededed' : 'rgba(255, 255, 255, 0.08)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, yc, caixa, 18, 5); else ctx.rect(x, yc, caixa, 18);
+        ctx.fill();
+        escrever(limite.classe, x + caixa / 2, yc + 9.5, { tamanho: 11.5, cor: atual ? '#000000' : '#c8c8c8', peso: 700, alinhar: 'center', contorno: !atual });
+        if (i < 4) escrever(numero(limite.ate, 1), x + caixa + 3, yc + 27, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'center' });
+      });
+      // O disco inteiro, pequeno: onde fica a região e o tamanho do brilho perto dele.
+      if (cena.w >= 480) {
+        const r = 34, x = cena.x + cena.w - r - 18, y = cena.y + ESPACO_DO_TITULO + r + 10;
+        const lado = (1024 / 500) * r;
+        ctx.drawImage(TEXTURA_DO_DISCO, x - lado / 2, y - lado / 2, lado, lado);
+        const c = baseDaRegiao(estado.lon, estado.lat).c, px = x + r * c.x, py = y - r * c.y;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ponto(px, py, Math.max(0.8, r * Math.sqrt(estado.area / 1000)), '#ffffff');
+        escrever('o disco inteiro', x, y + r + 12, { tamanho: 10.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
       }
       ctx.globalAlpha = 1;
     }
-    /** Passo 1: as manchas, a plage e a escala das classes. */
-    function desenharPasso1(alfa) {
-      if (alturaLivre() < 170) return;
-      ctx.globalAlpha = alfa;
-      for (const m of MANCHAS) {
-        const x = tx(REGIAO.x + m.x), y = ty(REGIAO.y + m.y) + (m.penumbra * P.S + 14) * (m.polo === 'N' ? -1 : 1);
-        escrever(`mancha (polaridade ${m.polo})`, x, y, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-      }
-      escrever('plage (cálcio K e Hα mais fortes)', tx(REGIAO.x - 0.05), ty(REGIAO.y - 0.085), { tamanho: 11.5, cor: '#ffd9c2', alinhar: 'center', placa: true });
-      const nucleo = nucleosDoFlare(estado.area)[1];
-      escrever(`brilho do flare: ${emMilesimos(estado.area)} do disco`, tx(nucleo.x) + 18, ty(nucleo.y) - nucleo.b * P.S - 22,
-        { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
-      // A escala das classes (limites usuais, em milésimos do disco).
-      const classe = classeDoFlare(estado.area), caixa = 34, total = caixa * 5 + 4 * 6;
-      const x0 = cena.x + cena.w / 2 - total / 2, y0 = cena.y + cena.h - 46;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+
+    // -------------------------------------------------------------------------
+    // 9. Passo 2: o corte da atmosfera, em 3D (Mm). O plasma que ocupava um cubo de 10¹⁴ km³ é comprimido numa
+    //    camada fina, que brilha (frio, 10⁴ K); acima, laços de plasma quente (10⁷ a 10⁸ K).
+    // -------------------------------------------------------------------------
+    const PARTICULAS_DO_CUBO = (() => {
+      const sortear = sorteador(4242);
+      return Array.from({ length: 320 }, () => ({ u: sortear(), v: sortear(), w: sortear() }));
+    })();
+    const BASE_DA_CAMADA = 1.5;      // Mm: a camada comprimida fica nos 5 000 km de baixo
+    const BLOCO = { x: 64, z: 30, fundo: 10 };   // o pedaço de Sol desenhado (metade da largura, metade da profundidade, espessura)
+    function poligono(pontos, preenchimento, contorno) {
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x0 - 10, y0 - 22, total + 20, 58, 10); else ctx.rect(x0 - 10, y0 - 22, total + 20, 58);
-      ctx.fill();
-      escrever('classe pela área (limites usuais)', x0 + total / 2, y0 - 11, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'center' });
-      LIMITES_DAS_CLASSES.forEach((limite, i) => {
-        const x = x0 + i * (caixa + 6), atual = limite.classe === classe;
-        ctx.fillStyle = atual ? '#ededed' : 'rgba(255, 255, 255, 0.08)';
+      pontos.forEach(([X, Y, Z], i) => (i === 0 ? ctx.moveTo(ox(X, Y, Z), oy(X, Y, Z)) : ctx.lineTo(ox(X, Y, Z), oy(X, Y, Z))));
+      ctx.closePath();
+      if (preenchimento) { ctx.fillStyle = preenchimento; ctx.fill(); }
+      if (contorno) { ctx.strokeStyle = contorno; ctx.stroke(); }
+    }
+    /** O bloco da fotosfera, com grânulos, e a cromosfera com espículas por cima. */
+    function desenharBlocoDoSol(alfa) {
+      const { x: bx, z: bz, fundo } = BLOCO;
+      ctx.globalAlpha = alfa;
+      // A frente e o lado direito do bloco (mais escuros) e o topo (claro).
+      const frente = ctx.createLinearGradient(0, oy(0, 0, -bz), 0, oy(0, -fundo, -bz));
+      frente.addColorStop(0, 'rgb(236, 110, 46)');
+      frente.addColorStop(1, 'rgb(120, 34, 12)');
+      poligono([[-bx, 0, -bz], [bx, 0, -bz], [bx, -fundo, -bz], [-bx, -fundo, -bz]], frente);
+      poligono([[bx, 0, -bz], [bx, 0, bz], [bx, -fundo, bz], [bx, -fundo, -bz]], 'rgb(150, 44, 16)');
+      const topo = ctx.createLinearGradient(ox(0, 0, -bz), oy(0, 0, -bz), ox(0, 0, bz), oy(0, 0, bz));
+      topo.addColorStop(0, 'rgb(255, 156, 76)');
+      topo.addColorStop(1, 'rgb(226, 100, 42)');
+      poligono([[-bx, 0, -bz], [bx, 0, -bz], [bx, 0, bz], [-bx, 0, bz]], topo);
+      // Os grânulos: células claras no topo e na frente.
+      for (const g of GRANULOS) {
+        const X = -bx + 2 * bx * g.x, Z = -bz + 2 * bz * g.y;
+        ctx.fillStyle = 'rgba(255, 210, 150, 0.2)';
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(x, y0, caixa, 18, 5); else ctx.rect(x, y0, caixa, 18);
+        ctx.ellipse(ox(X, 0, Z), oy(X, 0, Z), g.r * 2.2 * P.S, g.r * 0.9 * P.S, 0, 0, Math.PI * 2);
         ctx.fill();
-        escrever(limite.classe, x + caixa / 2, y0 + 9.5, { tamanho: 11.5, cor: atual ? '#000000' : '#c8c8c8', peso: 700, alinhar: 'center', contorno: !atual });
-        if (i < 4) escrever(numero(limite.ate, 1), x + caixa + 3, y0 + 27, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'center' });
+        const Xf = -bx + 2 * bx * g.y, Yf = -fundo * (0.15 + 0.8 * g.x);
+        ctx.fillStyle = 'rgba(255, 190, 130, 0.13)';
+        ctx.beginPath();
+        ctx.ellipse(ox(Xf, Yf, -bz), oy(Xf, Yf, -bz), g.r * 2 * P.S, g.r * 1.4 * P.S, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // A cromosfera: uma camada fina e avermelhada, com as espículas.
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        poligono([[-bx, 2, -bz], [bx, 2, -bz], [bx, 2, bz], [-bx, 2, bz]], 'rgba(255, 80, 50, 0.1)');
+        poligono([[-bx, 0, -bz], [bx, 0, -bz], [bx, 2, -bz], [-bx, 2, -bz]], 'rgba(255, 80, 50, 0.22)');
+        ctx.lineCap = 'round';
+        ctx.lineWidth = Math.max(1, P.S * 0.35);
+        for (const e of ESPICULAS) {
+          const X = -bx + 2 * bx * e.x, Z = -bz + 2 * bz * e.z, balanco = 0.7 * Math.sin(estado.tempo * 1.3 + e.fase);
+          const topoX = X + e.inclina * e.h + balanco, h = e.h * (0.85 + 0.15 * Math.sin(estado.tempo * 0.9 + e.fase * 2));
+          ctx.strokeStyle = 'rgba(255, 110, 80, 0.32)';
+          ctx.beginPath();
+          ctx.moveTo(ox(X, 0.5, Z), oy(X, 0.5, Z));
+          ctx.lineTo(ox(topoX, 0.5 + h, Z), oy(topoX, 0.5 + h, Z));
+          ctx.stroke();
+        }
       });
       ctx.globalAlpha = 1;
     }
-
-    // -------------------------------------------------------------------------
-    // 8. O corte da atmosfera (passo 2), em milhares de km (Mm).
-    //    O plasma que ocupava um cubo de 10¹⁴ km³ é comprimido numa camada fina e brilha.
-    // -------------------------------------------------------------------------
-    const CICLO_DA_COMPRESSAO = 8;
-    const PARTICULAS_DO_CUBO = (() => {
-      const sortear = sorteador(4242);
-      return Array.from({ length: 170 }, () => ({ u: sortear(), v: sortear() }));
-    })();
-    const BASE_DA_CAMADA = 1.2;      // Mm: a camada comprimida fica nos 5 000 km de baixo
-    function progressoDaCompressao(t) {
-      return t < 1.4 ? 0 : t < 3.4 ? suave((t - 1.4) / 2) : 1;
+    /** As arestas de uma caixa: as de trás tracejadas, as da frente cheias. */
+    function desenharCaixa(x1, x2, y1, y2, z1, z2, alfa) {
+      const v = (i) => [i & 1 ? x2 : x1, i & 2 ? y2 : y1, i & 4 ? z2 : z1];
+      const arestas = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+      // As faces de frente (z1), de cima (y2) e da direita (x2) ficam um pouco claras.
+      poligono([v(0), v(1), v(3), v(2)], `rgba(255, 255, 255, ${0.05 * alfa})`);
+      poligono([v(2), v(3), v(7), v(6)], `rgba(255, 255, 255, ${0.07 * alfa})`);
+      poligono([v(1), v(5), v(7), v(3)], `rgba(255, 255, 255, ${0.04 * alfa})`);
+      for (const [a, b] of arestas) {
+        const atras = (a === 4 && b === 6) || (a === 0 && b === 4) || (a === 4 && b === 5);   // as que passam pelo canto de trás, embaixo, à esquerda
+        ctx.setLineDash(atras ? [3, 4] : []);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${(atras ? 0.35 : 0.8) * alfa})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(ox(...v(a)), oy(...v(a)));
+        ctx.lineTo(ox(...v(b)), oy(...v(b)));
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
     }
-    const opacidadeDoCiclo = (t) => (t < 0.4 ? t / 0.4 : t > 7.4 ? (CICLO_DA_COMPRESSAO - t) / 0.6 : 1);
-    /** O fundo de lado: fotosfera (embaixo), cromosfera e coroa. Serve para o corte e para o campo. */
-    function desenharCamadas(alfa, alturaDaCromosfera) {
-      ctx.globalAlpha = alfa;
-      const y0 = ty(0);
-      const foto = ctx.createLinearGradient(0, y0, 0, cena.fundo);
-      foto.addColorStop(0, 'rgb(214, 84, 40)');
-      foto.addColorStop(1, 'rgb(90, 26, 10)');
-      ctx.fillStyle = foto;
-      ctx.fillRect(cena.x, y0, cena.w, cena.fundo - y0);
-      const cromo = ctx.createLinearGradient(0, y0, 0, ty(alturaDaCromosfera));
-      cromo.addColorStop(0, 'rgba(220, 70, 44, 0.55)');
-      cromo.addColorStop(1, 'rgba(220, 70, 44, 0)');
-      ctx.fillStyle = cromo;
-      ctx.fillRect(cena.x, ty(alturaDaCromosfera), cena.w, y0 - ty(alturaDaCromosfera));
-      ctx.globalAlpha = 1;
+    /** Os laços de plasma quente, acima da camada. */
+    function desenharLacosQuentes(W, forca) {
+      if (forca < 0.01) return;
+      const lacos = [[-12, 26, -10], [-6, 20, 4], [3, 30, -2], [10, 22, 9], [-1, 16, 14]];
+      lacos.forEach(([centro, altura, Z], i) => {
+        const pontos = [];
+        const meia = Math.min(18, 0.4 * W + 6);
+        for (let j = 0; j <= 24; j++) {
+          const s = j / 24, X = centro + meia * (2 * s - 1), Y = BASE_DA_CAMADA + altura * Math.sin(Math.PI * s) * (1 + 0.03 * Math.sin(estado.tempo * 2 + i));
+          pontos.push({ x: ox(X, Y, Z), y: oy(X, Y, Z) });
+        }
+        linhaQueBrilha(pontos, COR_RAIOS_X, forca * 0.85, Math.max(1, P.S * 0.5));
+      });
     }
     function desenharCorte(alfa) {
-      const t = estado.tempo % CICLO_DA_COMPRESSAO, k = progressoDaCompressao(t), visivel = opacidadeDoCiclo(t);
-      const brilhoAgora = suave((t - 3.0) / 0.6) * visivel;
+      const t = estado.tempo % CICLO_DA_COMPRESSAO, k = progressoDaCompressao(t), visivel = visibilidadeDaCompressao(t), brilhoAgora = brilhoDaCamada(t);
       const W = Math.sqrt(areaDoBrilhoKm2(estado.area)) / 1000, cubo = LADO_DO_CUBO_KM / 1000, esp = estado.espessura / 1000;
-      desenharCamadas(alfa, 4);
+      desenharBlocoDoSol(alfa);
       ctx.globalAlpha = alfa;
-      // O brilho frio (10⁴ K), nos 5 000 km de baixo, e uma parte que sobe até a coroa baixa.
+      // O cubo (antes) vira camada fina (depois): largura e profundidade de "cubo" para W; altura de "cubo" para a espessura.
+      const lado = entre(cubo, W, k), alturaAgora = entre(cubo, esp, k), y1 = BASE_DA_CAMADA, y2 = BASE_DA_CAMADA + Math.max(alturaAgora, 0.12);
+      // O brilho da camada comprimida (10⁴ K, visto em Hα): forte e avermelhado, com um halo.
       if (brilhoAgora > 0.01) {
-        const g = ctx.createLinearGradient(0, ty(0), 0, ty(12));
-        g.addColorStop(0, `rgba(${COR_HALFA}, ${0.75 * brilhoAgora})`);
-        g.addColorStop(0.42, `rgba(${COR_HALFA}, ${0.45 * brilhoAgora})`);
-        g.addColorStop(1, `rgba(${COR_HALFA}, 0)`);
-        ctx.fillStyle = g;
-        ctx.fillRect(tx(-W / 2), ty(12), W * P.S, ty(0) - ty(12));
-        // O plasma quente (10⁷ a 10⁸ K), mais acima.
-        const cx = tx(0), cy = ty(22);
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.scale(1, 0.55);
-        brilho(0, 0, Math.max(20, 0.36 * W * P.S), COR_RAIOS_X, 0.32 * brilhoAgora);
-        ctx.restore();
+        aditivo(() => {
+          ctx.globalAlpha = alfa;
+          poligono([[-lado / 2, y2, -lado / 2], [lado / 2, y2, -lado / 2], [lado / 2, y2, lado / 2], [-lado / 2, y2, lado / 2]], `rgba(255, 120, 90, ${0.75 * brilhoAgora})`);
+          ctx.save();
+          ctx.translate(ox(0, y2, 0), oy(0, y2, 0));
+          ctx.scale(1, 0.42);
+          brilho(0, 0, (lado * 0.9 + 10) * P.S, COR_HALFA, 0.55 * brilhoAgora);
+          brilho(0, 0, (lado * 0.45) * P.S, '255, 210, 180', 0.5 * brilhoAgora);
+          ctx.restore();
+          // Uma parte sobe até a coroa baixa.
+          ctx.save();
+          ctx.translate(ox(0, y2 + 6, 0), oy(0, y2 + 6, 0));
+          ctx.scale(1, 1.4);
+          brilho(0, 0, (lado * 0.3 + 4) * P.S, COR_HALFA, 0.16 * brilhoAgora);
+          ctx.restore();
+        });
       }
-      // O cubo que vira camada fina, com as partículas dentro.
-      const larguraAgora = entre(cubo, W, k), alturaAgora = entre(cubo, esp, k);
-      const xE = tx(-larguraAgora / 2), yT = ty(BASE_DA_CAMADA + alturaAgora), yB = ty(BASE_DA_CAMADA);
-      ctx.globalAlpha = alfa * visivel;
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
-      ctx.lineWidth = 1.2;
-      ctx.strokeRect(xE, yT, larguraAgora * P.S, Math.max(2, yB - yT));
-      ctx.setLineDash([]);
-      const raio = limitar(P.S * 0.18, 1.2, 2.4);
+      desenharLacosQuentes(W, brilhoAgora);
+      desenharCaixa(-lado / 2, lado / 2, y1, y2, -lado / 2, lado / 2, alfa * visivel);
+      // As partículas: mais juntas, mais quentes.
+      const raio = limitar(P.S * 0.3, 1.1, 2.2), cor = `rgba(255, ${Math.round(entre(230, 170, k))}, ${Math.round(entre(200, 120, k))}, ${0.9 * visivel})`;
       for (const p of PARTICULAS_DO_CUBO) {
-        ponto(tx((p.u - 0.5) * larguraAgora), ty(BASE_DA_CAMADA + p.v * alturaAgora), raio, `rgba(255, 220, 190, ${0.85})`);
+        const X = (p.u - 0.5) * lado, Y = y1 + p.v * (y2 - y1), Z = (p.w - 0.5) * lado;
+        ponto(ox(X, Y, Z), oy(X, Y, Z), raio, cor);
+      }
+      ctx.globalAlpha = 1;
+    }
+    /** O termômetro (escala de 10³ a 10⁹ K): marca o frio (10⁴ K) e o quente (10⁷ a 10⁸ K) quando aparecem. */
+    function desenharTermometro(alfa, frio, quente) {
+      const x = cena.x + cena.w - 34, topo = cena.y + ESPACO_DO_TITULO + 70, base = cena.y + cena.h - 34;
+      if (base - topo < 120) return;
+      const y = (T) => base - ((base - topo) * (Math.log10(T) - 3)) / 6;
+      ctx.globalAlpha = alfa;
+      const g = ctx.createLinearGradient(0, base, 0, topo);
+      g.addColorStop(0, 'rgb(150, 30, 20)');
+      g.addColorStop(0.2, 'rgb(255, 100, 70)');
+      g.addColorStop(0.5, 'rgb(255, 220, 160)');
+      g.addColorStop(0.75, 'rgb(240, 240, 255)');
+      g.addColorStop(1, 'rgb(190, 170, 255)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x - 4, topo, 8, base - topo, 4); else ctx.rect(x - 4, topo, 8, base - topo);
+      ctx.fill();
+      for (let e = 3; e <= 9; e++) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillRect(x + 6, y(10 ** e) - 0.5, 5, 1);
+        escrever(`10${SOBRESCRITOS[e]}`, x + 13, y(10 ** e), { tamanho: 9.5, cor: '#8f8f8f' });
+      }
+      escrever('K', x, topo - 12, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'center' });
+      // O frio: 10⁴ K.
+      if (frio > 0.01) {
+        aditivo(() => brilho(x, y(TEMPERATURA_FRIA), 14, COR_HALFA, 0.9 * frio));
+        escrever('frio: 10⁴ K', x - 12, y(TEMPERATURA_FRIA), { tamanho: 11.5, cor: '#ffd2c4', peso: 600, alinhar: 'right', placa: true });
+      }
+      // O quente: de 10⁷ a 10⁸ K.
+      if (quente > 0.01) {
+        const y1 = y(TEMPERATURA_QUENTE[0]), y2 = y(TEMPERATURA_QUENTE[1]);
+        aditivo(() => {
+          ctx.fillStyle = `rgba(${COR_RAIOS_X}, ${0.7 * quente})`;
+          ctx.fillRect(x - 7, y2, 14, y1 - y2);
+        });
+        escrever('quente: 10⁷ a 10⁸ K', x - 12, (y1 + y2) / 2, { tamanho: 11.5, cor: VIOLETA, peso: 600, alinhar: 'right', placa: true });
       }
       ctx.globalAlpha = 1;
     }
     function desenharPasso2(alfa) {
-      if (alturaLivre() < 170) return;
-      const t = estado.tempo % CICLO_DA_COMPRESSAO, k = progressoDaCompressao(t), visivel = opacidadeDoCiclo(t);
-      const brilhoAgora = suave((t - 3.0) / 0.6) * visivel;
-      const W = Math.sqrt(areaDoBrilhoKm2(estado.area)) / 1000, cubo = LADO_DO_CUBO_KM / 1000;
+      const t = estado.tempo % CICLO_DA_COMPRESSAO, k = progressoDaCompressao(t), visivel = visibilidadeDaCompressao(t), brilhoAgora = brilhoDaCamada(t);
+      const comNomes = alturaLivre() >= 170, largo = telaLarga();
+      const W = Math.sqrt(areaDoBrilhoKm2(estado.area)) / 1000, cubo = LADO_DO_CUBO_KM / 1000, esp = estado.espessura / 1000;
+      if (largo) desenharTermometro(alfa, brilhoAgora, brilhoAgora * suave((t - 3.8) / 0.6));
+      if (!comNomes) return;
       ctx.globalAlpha = alfa;
-      // As camadas e a medida dos 5 000 km.
-      const xMedida = tx(-Math.max(cubo, W) / 2) - 26;
-      seta(xMedida, ty(0), xMedida, ty(5), { cor: '#ffffff', espessura: 1.3, ponta: 6 });
-      escrever('5 000 km', xMedida - 6, (ty(0) + ty(5)) / 2, { tamanho: 11, cor: '#ffffff', alinhar: 'right', placa: true });
-      escrever('fotosfera', cena.x + 16, ty(0) + 16, { tamanho: 11.5, cor: '#ffe2d0', placa: true });
-      escrever('coroa', cena.x + 16, ty(40), { tamanho: 11.5, cor: '#c8c8c8', placa: true });
+      // A medida dos 5 000 km, no canto da frente do bloco.
+      const xm = -BLOCO.x + 6, zm = -BLOCO.z, alturaMarca = ALTURA_DO_BRILHO_KM / 1000;
+      seta(ox(xm, 0, zm), oy(xm, 0, zm), ox(xm, alturaMarca, zm), oy(xm, alturaMarca, zm), { cor: '#ffffff', espessura: 1.4, ponta: 6 });
+      escrever('5 000 km', ox(xm, alturaMarca, zm) + 6, oy(xm, alturaMarca, zm) - 4, { tamanho: 11, cor: '#ffffff', placa: true });
+      escrever('fotosfera', ox(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), oy(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), { tamanho: 11.5, cor: '#ffe2d0', placa: true });
+      escrever('cromosfera', ox(BLOCO.x - 2, 1, -BLOCO.z), oy(BLOCO.x - 2, 1, -BLOCO.z) + 2, { tamanho: 11, cor: '#ffd2c4', alinhar: 'right', placa: true });
+      escrever('coroa', cena.x + 16, cena.y + ESPACO_DO_TITULO + 150, { tamanho: 11.5, cor: '#c8c8c8', placa: true });
       ctx.globalAlpha = alfa * visivel;
       if (k < 0.35) {
-        escrever(`antes: ${dez(14)} km³ (um cubo de ${comMilhar(doisAlgarismos(LADO_DO_CUBO_KM))} km)`, tx(0), ty(BASE_DA_CAMADA + cubo) - 14,
+        escrever(`antes: ${dez(14)} km³ (um cubo de ${comMilhar(doisAlgarismos(LADO_DO_CUBO_KM))} km)`, ox(0, BASE_DA_CAMADA + cubo, cubo / 2), oy(0, BASE_DA_CAMADA + cubo, cubo / 2) - 14,
           { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
       }
       if (k > 0.7) {
-        escrever(`depois: ${estado.espessura} km de espessura`, tx(W / 2) + 10, ty(BASE_DA_CAMADA) - 2, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
+        escrever(`depois: ${emMilesimos(estado.area)} do disco × ${estado.espessura} km`, ox(W / 2, BASE_DA_CAMADA, -W / 2) + 10, oy(W / 2, BASE_DA_CAMADA, -W / 2) + 16,
+          { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
+        // A lupa: a espessura da camada, vista de bem perto.
+        if (largo) {
+          const ax = ox(W / 2, BASE_DA_CAMADA, 0), ay = oy(W / 2, BASE_DA_CAMADA, 0), lx = ax + 74, ly = ay - 92, r = 34;
+          tracejado(ax, ay, lx - r * 0.7, ly + r * 0.7, 'rgba(255, 255, 255, 0.5)', [3, 3]);
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(lx, ly, r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.fillStyle = 'rgb(18, 6, 4)';
+          ctx.fillRect(lx - r, ly - r, 2 * r, 2 * r);
+          const faixa = Math.min(2 * r - 10, estado.espessura * 0.7);
+          ctx.fillStyle = `rgba(255, 120, 90, ${0.4 + 0.6 * brilhoAgora})`;
+          ctx.fillRect(lx - r, ly - faixa / 2, 2 * r, faixa);
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(lx, ly, r, 0, Math.PI * 2);
+          ctx.stroke();
+          escrever(`${estado.espessura} km`, lx, ly, { tamanho: 12, cor: '#ffffff', peso: 700, alinhar: 'center' });
+        }
       }
-      if (brilhoAgora > 0.3) {
-        escrever('frio: 10⁴ K (o brilho visível)', tx(-W / 2) + 4, ty(7.5), { tamanho: 11.5, cor: '#ffd2c4', placa: true });
-        escrever('quente: 10⁷ a 10⁸ K', tx(0), ty(22), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
+      if (brilhoAgora > 0.3 && !largo) {
+        escrever('frio: 10⁴ K (o brilho visível)', ox(-W / 2, 4, -W / 2), oy(-W / 2, 4, -W / 2) - 6, { tamanho: 11.5, cor: '#ffd2c4', placa: true });
+        escrever('quente: 10⁷ a 10⁸ K', ox(0, 30, 0), oy(0, 30, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
       }
+      if (brilhoAgora > 0.3 && largo) escrever('laços quentes (raios X moles)', ox(0, 34, 0), oy(0, 34, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
       ctx.globalAlpha = alfa;
-      escreverBloco([
+      // O resumo da conta: o volume e a densidade.
+      const caixa = escreverBloco([
         { texto: `volume: ${comMilhar(doisAlgarismos(quantasVezesMenor(estado.area, estado.espessura)))} vezes menor`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
         { texto: 'densidade: × 1 000 (do texto)', tamanho: 12, cor: '#d8d8d8' },
-      ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
+      ], cena.x + 16, cena.y + ESPACO_DO_TITULO + 18, 'left');
+      // A densidade numa barrinha (escala de 10), que enche com a compressão.
+      const bx = caixa.x + 10, by = caixa.y + caixa.h + 8, bw = caixa.w - 20;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.fillRect(bx, by, bw, 6);
+      ctx.fillStyle = `rgba(${COR_HALFA}, 0.9)`;
+      ctx.fillRect(bx, by, bw * (0.15 + 0.85 * k), 6);
+      escrever(`${dez(Math.log10(DENSIDADE_ANTES))} → ${dez(Math.log10(DENSIDADE_DEPOIS))} elétrons/m³ (do PDF)`, bx, by + 16, { tamanho: 10.5, cor: '#a9a9a9' });
       ctx.globalAlpha = 1;
     }
 
     // -------------------------------------------------------------------------
-    // 9. O campo acima das manchas, de lado (Mm): o bipolo (passo 3) e o modelo do ponto neutro (passos 5 e 6).
-    //    A mancha N fica à esquerda e a S à direita; o campo sai da N e entra na S.
+    // 10. O campo de lado, em Mm: o chão com as manchas; o bipolo e o mapa da energia (passo 3); o modelo do ponto
+    //     neutro com a reconexão (passos 5 e 6). A mancha N fica à esquerda e a S à direita.
     // -------------------------------------------------------------------------
-    const MANCHA_X = 12;
-    function desenharManchasDeLado(alfa) {
+    const MANCHA_X = 34, FONTE_ABAIXO = 4;      // as "cargas" magnéticas do bipolo ficam um pouco abaixo da superfície
+    /** O chão de lado: fotosfera com grânulos, cromosfera com espículas e as duas manchas. */
+    function desenharChaoDeLado(alfa) {
       ctx.globalAlpha = alfa;
-      for (const lado of [-1, 1]) {
-        ctx.fillStyle = 'rgba(30, 8, 3, 0.92)';
+      const y0 = ty(0);
+      const foto = ctx.createLinearGradient(0, y0, 0, cena.fundo);
+      foto.addColorStop(0, 'rgb(240, 116, 50)');
+      foto.addColorStop(1, 'rgb(96, 26, 10)');
+      ctx.fillStyle = foto;
+      ctx.fillRect(cena.x, y0, cena.w, cena.fundo - y0);
+      for (const g of GRANULOS) {
+        ctx.fillStyle = 'rgba(255, 206, 150, 0.16)';
         ctx.beginPath();
-        ctx.ellipse(tx(lado * MANCHA_X), ty(-0.5), 3.6 * P.S, 1.3 * P.S, 0, 0, Math.PI * 2);
+        ctx.ellipse(cena.x + g.x * cena.w, y0 + 3 + g.y * 20, g.r * 9, g.r * 3.5, 0, 0, Math.PI * 2);
         ctx.fill();
-        escrever(lado < 0 ? 'N' : 'S', tx(lado * MANCHA_X), ty(-0.6), { tamanho: 12, cor: '#ffffff', peso: 700, alinhar: 'center' });
+      }
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        const cromo = ctx.createLinearGradient(0, y0, 0, ty(3));
+        cromo.addColorStop(0, 'rgba(255, 80, 50, 0.45)');
+        cromo.addColorStop(1, 'rgba(255, 80, 50, 0)');
+        ctx.fillStyle = cromo;
+        ctx.fillRect(cena.x, ty(3), cena.w, y0 - ty(3));
+        ctx.lineCap = 'round';
+        ctx.lineWidth = Math.max(1, P.S * 0.35);
+        for (const e of ESPICULAS) {
+          const X = -70 + 140 * e.x, balanco = 0.7 * Math.sin(estado.tempo * 1.3 + e.fase), h = e.h * (0.85 + 0.15 * Math.sin(estado.tempo * 0.9 + e.fase * 2));
+          ctx.strokeStyle = 'rgba(255, 110, 80, 0.28)';
+          ctx.beginPath();
+          ctx.moveTo(tx(X), ty(0.3));
+          ctx.lineTo(tx(X + e.inclina * h + balanco), ty(0.3 + h));
+          ctx.stroke();
+        }
+      });
+      for (const m of MANCHAS) {
+        const x = tx(Math.sign(m.u) * MANCHA_X);
+        ctx.fillStyle = 'rgba(110, 34, 10, 0.92)';
+        ctx.beginPath();
+        ctx.ellipse(x, ty(-0.4), m.penumbra * P.S, 3 * P.S, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(24, 6, 2, 0.96)';
+        ctx.beginPath();
+        ctx.ellipse(x, ty(-0.8), m.umbra * P.S, 2.4 * P.S, 0, 0, Math.PI * 2);
+        ctx.fill();
+        escrever(m.polo, x, ty(-1.2) + 2, { tamanho: 12, cor: '#ffffff', peso: 700, alinhar: 'center' });
       }
       ctx.globalAlpha = 1;
     }
-    // O bipolo: arcos de círculo que passam pelas duas manchas (o campo de duas "cargas" magnéticas, de lado).
+    // O bipolo: arcos de círculo que passam pelas duas "cargas" (o campo de duas fontes magnéticas, de lado).
     const linhasGuardadas = new Map();
     function linhasDoBipolo(gauss) {
-      const n = Math.round(4 + (8 * (gauss - 50)) / 950);
+      const n = Math.round(5 + (9 * (gauss - 50)) / 950);
       if (!linhasGuardadas.has(n)) {
+        const a = MANCHA_X, f = FONTE_ABAIXO;
         linhasGuardadas.set(n, Array.from({ length: n }, (_, i) => {
-          const topo = 3 + ((i + 0.5) / n) * 44, k = (topo * topo - MANCHA_X ** 2) / (2 * topo);
-          const raio = Math.hypot(MANCHA_X, k), alfa = Math.atan2(-k, MANCHA_X), pontos = new Float32Array(2 * 61);
-          for (let j = 0; j <= 60; j++) {
-            const teta = Math.PI - alfa - ((Math.PI - 2 * alfa) * j) / 60;
+          // Cada linha é um círculo que passa por (−a, −f) e (a, −f), com o topo na altura escolhida.
+          const topo = 4 + ((i + 0.5) / n) * 62, alturaDoTopo = topo + f;
+          const k = (alturaDoTopo ** 2 - a ** 2) / (2 * alturaDoTopo);    // o centro, medido a partir das fontes
+          const raio = Math.hypot(a, k), alfa = Math.atan2(-k, a), pontos = new Float32Array(2 * 81);
+          for (let j = 0; j <= 80; j++) {
+            const teta = Math.PI - alfa - ((Math.PI - 2 * alfa) * j) / 80;
             pontos[2 * j] = raio * Math.cos(teta);
-            pontos[2 * j + 1] = k + raio * Math.sin(teta);
+            pontos[2 * j + 1] = k - f + raio * Math.sin(teta);
           }
           return pontos;
         }));
       }
       return linhasGuardadas.get(n);
     }
+    /** O quadrado da intensidade do campo das duas fontes (sem unidade; só a forma). */
+    function campoAoQuadrado(x, y) {
+      const dx1 = x + MANCHA_X, dx2 = x - MANCHA_X, dy = y + FONTE_ABAIXO;
+      const r1 = dx1 * dx1 + dy * dy, r2 = dx2 * dx2 + dy * dy;
+      const Bx = dx1 / r1 - dx2 / r2, By = dy / r1 - dy / r2;
+      return Bx * Bx + By * By;
+    }
+    // O mapa da energia por m³ (B²): claro perto das manchas, apagado no alto. Feito uma vez; cobre x de −68 a 68 e
+    // y de 0 a 120 Mm.
+    const AREA_DO_MAPA = { x: 68, y: 120 };
+    const MAPA_DE_ENERGIA = (() => {
+      const nx = 340, ny = 300, c = document.createElement('canvas');
+      c.width = nx;
+      c.height = ny;
+      const g = c.getContext('2d'), imagem = g.createImageData(nx, ny), referencia = campoAoQuadrado(0, 14);
+      for (let j = 0; j < ny; j++) {
+        for (let i = 0; i < nx; i++) {
+          const x = -AREA_DO_MAPA.x + (2 * AREA_DO_MAPA.x * (i + 0.5)) / nx, y = AREA_DO_MAPA.y * (1 - (j + 0.5) / ny);
+          // Escala de 10: de 10^−2,2 a 10 vezes a referência.
+          const a = limitar((Math.log10(campoAoQuadrado(x, y) / referencia) + 2.2) / 3.2, 0, 1);
+          const cores = [[10, 22, 70], [36, 96, 226], [118, 206, 255], [246, 252, 255]], posicao = a * 3, n = Math.min(2, Math.floor(posicao)), f = posicao - n;
+          const borda = Math.min(1, (AREA_DO_MAPA.x - Math.abs(x)) / 14, (AREA_DO_MAPA.y - y) / 24);
+          const q = (j * nx + i) * 4;
+          for (let c = 0; c < 3; c++) imagem.data[q + c] = Math.round(entre(cores[n][c], cores[n + 1][c], f));
+          imagem.data[q + 3] = Math.round(255 * a ** 1.25 * borda);
+        }
+      }
+      g.putImageData(imagem, 0, 0);
+      return c;
+    })();
     function desenharBipolo(alfa) {
+      // O mapa: mais claro com mais campo (a energia por m³ cresce com B²).
+      ctx.globalAlpha = alfa * (0.3 + 0.7 * Math.min(1, (estado.B / 700) ** 2));
+      ctx.drawImage(MAPA_DE_ENERGIA, tx(-AREA_DO_MAPA.x), ty(AREA_DO_MAPA.y), 2 * AREA_DO_MAPA.x * P.S, AREA_DO_MAPA.y * P.S);
       ctx.globalAlpha = alfa;
-      linhasDoBipolo(estado.B).forEach((pontos, i) => tracarPontos(pontos, { forca: 0.6, fase: i * 23 }));
+      linhasDoBipolo(estado.B).forEach((pontos, i) => tracarPontos(pontos, { forca: 0.7, fase: i * 23, acimaDe: 0 }));
       // O volume de 10¹⁴ km³ (um cubo de 46 000 km), acima das manchas.
       const cubo = LADO_DO_CUBO_KM / 1000;
       ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
       ctx.lineWidth = 1.1;
       ctx.strokeRect(tx(-cubo / 2), ty(cubo), cubo * P.S, cubo * P.S);
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
     }
-    const NOME_DO_CAMPO_NO_PASSO3 = 'campo magnético (da N para a S)';
-    function desenharBarrasDeEnergia(alfa) {
-      const campo = energiaDoCampo(estado.B), maior = Math.max(campo, ENERGIA_DO_FLARE);
+    const NOME_DO_CAMPO_NO_PASSO3 = 'linhas do campo (da N para a S)';
+    /** O quadro da energia: o campo × o flare, e a régua do campo com o mínimo de ~320 G. */
+    function desenharQuadroDaEnergia(alfa, legenda) {
+      const campo = energiaDoCampo(estado.B), maior = Math.max(campo, ENERGIA_DO_FLARE), basta = campo >= ENERGIA_DO_FLARE;
       const textoDoCampo = `no campo (${estado.B} G): ${cientifico(campo)} J`;
-      // As barras têm uns 230 px; o bloco cresce se um texto for mais largo, e fica sempre dentro do desenho.
-      const w = Math.min(230, Math.max(140, cena.w * 0.3));
-      const larguraDoBloco = Math.max(w, larguraDoTexto(textoDoCampo, 11.5, 600));
-      const x = cena.x + cena.w - 16 - larguraDoBloco;
-      // Se não couber ao lado da legenda (telas estreitas), o bloco desce para baixo dela.
-      const fimDaLegenda = cena.x + 10 + 66 + larguraDoTexto(NOME_DO_CAMPO_NO_PASSO3, 11.5) + 10;
-      const y = cena.y + ESPACO_DO_TITULO + 12 + (alturaLivre() > 200 && x - 10 < fimDaLegenda ? 36 : 0);
+      const w = Math.min(240, Math.max(150, cena.w * 0.3));
+      const larguraDoQuadro = Math.max(w, larguraDoTexto(textoDoCampo, 11.5, 600));
+      const x = cena.x + cena.w - 16 - larguraDoQuadro;
+      const desce = legenda && x - 10 < legenda.x + legenda.w + 10 ? legenda.h + 8 : 0;
+      const y = cena.y + ESPACO_DO_TITULO + 12 + desce;
       ctx.globalAlpha = alfa;
       ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x - 10, y - 4, larguraDoBloco + 20, 92, 10); else ctx.rect(x - 10, y - 4, larguraDoBloco + 20, 92);
+      if (ctx.roundRect) ctx.roundRect(x - 10, y - 4, larguraDoQuadro + 20, 150, 10); else ctx.rect(x - 10, y - 4, larguraDoQuadro + 20, 150);
       ctx.fill();
       escrever(textoDoCampo, x, y + 8, { tamanho: 11.5, cor: AZUL, peso: 600 });
-      ctx.fillStyle = `rgba(${COR_CAMPO}, 0.85)`;
-      ctx.fillRect(x, y + 18, Math.max(2, (w * campo) / maior), 10);
-      escrever(`o flare solta: 4 × 10²⁵ J`, x, y + 46, { tamanho: 11.5, cor: '#ffffff', peso: 600 });
+      const barra = ctx.createLinearGradient(x, 0, x + w, 0);
+      barra.addColorStop(0, 'rgba(60, 120, 230, 0.95)');
+      barra.addColorStop(1, 'rgba(200, 235, 255, 0.95)');
+      ctx.fillStyle = barra;
+      ctx.fillRect(x, y + 17, Math.max(2, (w * campo) / maior), 10);
+      escrever('o flare solta: 4 × 10²⁵ J', x, y + 44, { tamanho: 11.5, cor: '#ffffff', peso: 600 });
       const wl = (w * ENERGIA_LUZ) / maior, wp = (w * ENERGIA_PARTICULAS) / maior;
-      ctx.fillStyle = 'rgba(255, 245, 230, 0.9)';
-      ctx.fillRect(x, y + 56, Math.max(1, wl), 10);
-      ctx.fillStyle = `rgba(${COR_PROTON}, 0.9)`;
-      ctx.fillRect(x + wl, y + 56, Math.max(1, wp), 10);
-      escrever('luz (1) + partículas (3)', x, y + 78, { tamanho: 10.5, cor: '#a9a9a9' });
+      ctx.fillStyle = 'rgba(255, 245, 230, 0.92)';
+      ctx.fillRect(x, y + 53, Math.max(1, wl), 10);
+      ctx.fillStyle = `rgba(${COR_PROTON}, 0.92)`;
+      ctx.fillRect(x + wl, y + 53, Math.max(1, wp), 10);
+      escrever('luz (1) + partículas (3)', x, y + 73, { tamanho: 10.5, cor: '#a9a9a9' });
+      // A régua do campo: de 0 a 1 000 G, com o mínimo para o flare.
+      const ry = y + 104, xr = (G) => x + (w * G) / 1000;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+      ctx.fillRect(x, ry - 2, w, 4);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fillRect(xr(CAMPO_MINIMO_G), ry - 2, w - (xr(CAMPO_MINIMO_G) - x), 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(xr(CAMPO_MINIMO_G) - 0.75, ry - 8, 1.5, 16);
+      escrever(`mínimo: ~${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G`, xr(CAMPO_MINIMO_G), ry - 15, { tamanho: 10.5, cor: '#d8d8d8', alinhar: 'center' });
+      ponto(xr(estado.B), ry, 5, basta ? AZUL : VERMELHO);
+      escrever('0', x, ry + 13, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'center' });
+      escrever('1 000 G', x + w, ry + 13, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'right' });
+      escrever(basta ? `sobra: ${numero(campo / ENERGIA_DO_FLARE, 1)} vezes` : 'não basta', x + w / 2, ry + 30, { tamanho: 12, cor: basta ? '#ffffff' : VERMELHO, peso: 600, alinhar: 'center' });
       ctx.globalAlpha = 1;
     }
     function desenharPasso3(alfa) {
@@ -1409,17 +2260,15 @@
       const cubo = LADO_DO_CUBO_KM / 1000;
       ctx.globalAlpha = alfa;
       escrever(`${dez(14)} km³`, tx(cubo / 2) - 8, ty(cubo) + 14, { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
-      desenharBarrasDeEnergia(alfa);
-      desenharLegenda([[AMOSTRAS.campo, NOME_DO_CAMPO_NO_PASSO3]]);
+      const legenda = desenharLegenda([[AMOSTRAS.campo, NOME_DO_CAMPO_NO_PASSO3], [AMOSTRAS.energia, 'energia por m³ (B²/2μ₀)']]);
+      desenharQuadroDaEnergia(alfa, legenda);
       ctx.globalAlpha = 1;
     }
 
     // O modelo do ponto neutro (uma possibilidade, como a fig. 5.4 do livro; não é para tomar ao pé da letra).
-    const PONTO_NEUTRO = { x: 0, y: 24 };
-    const LACOS_FECHADOS = [2, 3.5, 5];          // meia distância entre os pés dos laços já fechados (Mm)
-    const PE_DO_LACO_NOVO = 7;                   // o laço que acabou de se fechar, com a ponta no ponto neutro
-    const LINHAS_ABERTAS = [8.5, 11, 14, 18];    // os pés das linhas esticadas, que ainda vão se encontrar
-    const PULSO = 3.2;                           // s: a cada pulso, o campo colapsa um pouco no ponto neutro
+    // As linhas esticadas acima das manchas se aproximam do meio; quando um par se encontra no ponto neutro, ele se
+    // reconecta: embaixo vira um laço fechado (que nasce pontudo, quente, e depois se arredonda e esfria); em cima,
+    // uma linha em U que sobe levando plasma. As partículas ganham energia ali e saem pelas linhas.
     function bezier2(p0, p1, p2, t) {
       const u = 1 - t;
       return { x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y };
@@ -1431,146 +2280,251 @@
         y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
       };
     }
-    // As duas pernas do laço novo: da mancha N (esquerda) até o ponto neutro, e de lá até a S.
-    const PERNA_N = [{ x: -PE_DO_LACO_NOVO, y: 0 }, { x: -PE_DO_LACO_NOVO, y: 17 }, PONTO_NEUTRO];
-    const PERNA_S = [PONTO_NEUTRO, { x: PE_DO_LACO_NOVO, y: 17 }, { x: PE_DO_LACO_NOVO, y: 0 }];
-    const LINHAS_DO_MODELO = (() => {
-      const linhas = [];
-      for (const d of LACOS_FECHADOS) {
-        const pontos = new Float32Array(2 * 41);
-        for (let j = 0; j <= 40; j++) {
-          const teta = Math.PI - (Math.PI * j) / 40;
-          pontos[2 * j] = d * Math.cos(teta);
-          pontos[2 * j + 1] = 1.6 * d * Math.sin(teta);
-        }
-        linhas.push({ tipo: 'fechada', pontos });
-      }
-      const novo = new Float32Array(2 * 41);
+    const TOPO_DO_DESENHO = 122;
+    const LACOS_ANTIGOS = [4.5, 6.5];            // laços que já existiam (frios)
+    const LINHAS_DE_FORA = [27, 30.5, 34];       // linhas esticadas que não se reconectam neste ciclo
+    /** O ponto neutro sobe aos poucos, conforme os laços de baixo crescem. */
+    const alturaDoPontoNeutro = (t) => 36 + 2.6 * limitar((t - PRIMEIRA_RECONEXAO) / INTERVALO_DA_RECONEXAO, 0, PES_DAS_LINHAS.length - 1);
+    /** Uma linha esticada: do pé (lado −1, à esquerda, o campo sobe) ou até o pé (lado +1, à direita, o campo desce). */
+    function linhaEsticada(D, s, yX, lado) {
+      const pontos = new Float32Array(2 * 41);
       for (let j = 0; j <= 40; j++) {
-        const p = j <= 20 ? bezier2(...PERNA_N, j / 20) : bezier2(...PERNA_S, (j - 20) / 20);
-        novo[2 * j] = p.x;
-        novo[2 * j + 1] = p.y;
-      }
-      linhas.push({ tipo: 'nova', pontos: novo });
-      for (const D of LINHAS_ABERTAS) {
-        const s = 1 + (D - 8.5) * 0.55;
-        // À esquerda o campo sobe (sai da N); à direita desce (entra na S): perto do ponto neutro, sentidos opostos.
-        for (const lado of [-1, 1]) {
-          const pontos = new Float32Array(2 * 41);
-          for (let j = 0; j <= 40; j++) {
-            const f = lado < 0 ? j / 40 : 1 - j / 40;
-            const p = f <= 0.75
-              ? bezier3({ x: -D, y: 0 }, { x: -D, y: 15 }, { x: -s, y: 17 }, { x: -s, y: 28 }, f / 0.75)
-              : { x: -s, y: 28 + ((f - 0.75) / 0.25) * 36 };
-            pontos[2 * j] = lado < 0 ? p.x : -p.x;
-            pontos[2 * j + 1] = p.y;
-          }
-          linhas.push({ tipo: 'aberta', lado, pontos });
-        }
-      }
-      return linhas;
-    })();
-    /** Uma linha já solta, acima do ponto neutro, em forma de U, subindo (o campo desce à direita e sobe à esquerda). */
-    function linhaSolta(fundo) {
-      const pontos = new Float32Array(2 * 31);
-      for (let j = 0; j <= 30; j++) {
-        const x = 2.6 - (5.2 * j) / 30;
-        pontos[2 * j] = x;
-        pontos[2 * j + 1] = fundo + 24 * (x / 2.6) ** 2;
+        const f = lado < 0 ? j / 40 : 1 - j / 40;
+        const p = f <= 0.7
+          ? bezier3({ x: -D, y: 0 }, { x: -D, y: 0.55 * yX }, { x: -s, y: yX - 7 }, { x: -s, y: yX + 2 }, f / 0.7)
+          : { x: -s, y: yX + 2 + ((f - 0.7) / 0.3) * (TOPO_DO_DESENHO - yX - 2) };
+        pontos[2 * j] = lado < 0 ? p.x : -p.x;
+        pontos[2 * j + 1] = p.y;
       }
       return pontos;
     }
-    const faseDoPulso = () => estado.tempo % PULSO;
-    function desenharModelo(alfa) {
-      const f = faseDoPulso();
+    /** Um laço novo: nasce pontudo, com a ponta no ponto neutro, e se arredonda (r de 0 a 1). */
+    function lacoNovo(D, yX, H, r) {
+      const pontos = new Float32Array(2 * 49);
+      for (let j = 0; j <= 48; j++) {
+        const pontudo = j <= 24 ? bezier2({ x: -D, y: 0 }, { x: -D, y: 0.75 * yX }, { x: 0, y: yX }, j / 24) : bezier2({ x: 0, y: yX }, { x: D, y: 0.75 * yX }, { x: D, y: 0 }, (j - 24) / 24);
+        const teta = Math.PI - (Math.PI * j) / 48;
+        pontos[2 * j] = entre(pontudo.x, D * Math.cos(teta), r);
+        pontos[2 * j + 1] = entre(pontudo.y, H * Math.sin(teta), r);
+      }
+      return pontos;
+    }
+    /** Uma linha solta, acima do ponto neutro, em U: o campo desce à direita e sobe à esquerda. */
+    function linhaSolta(fundo) {
+      const pontos = [];
+      for (let j = 0; j <= 30; j++) {
+        const s = 1 - (2 * j) / 30, y = fundo + Math.abs(s) ** 1.6 * (TOPO_DO_DESENHO + 10 - fundo);
+        pontos.push(s * (1 + 0.16 * (y - fundo)), y);
+      }
+      return new Float32Array(pontos);
+    }
+    const alturaDoLaco = (D) => 0.95 * D + 5;
+    /** Tudo o que o modelo mostra no instante t do ciclo: linhas, laços, linhas soltas e eventos de reconexão. */
+    function estadoDoModelo(t) {
+      const yX = alturaDoPontoNeutro(t), linhas = [], lacos = [], soltas = [], eventos = [];
+      for (const D of LINHAS_DE_FORA) for (const lado of [-1, 1]) linhas.push({ pontos: linhaEsticada(D, 0.85 * D - 4, yX, lado), lado, D });
+      PES_DAS_LINHAS.forEach((D, k) => {
+        const tk = instanteDaReconexao(k);
+        if (t < tk) {
+          // Ainda esticada: se aproxima do meio até se encontrar com a do outro lado.
+          const s = Math.min(0.85 * D - 4, 0.3 + 2.6 * (tk - t));
+          for (const lado of [-1, 1]) linhas.push({ pontos: linhaEsticada(D, s, yX, lado), lado, D });
+        } else {
+          const idade = t - tk, yk = alturaDoPontoNeutro(tk);
+          lacos.push({ D, idade, pontos: lacoNovo(D, yk, alturaDoLaco(D), suave(idade / 1.6)), k });
+          const fundo = yk + 2 + 26 * idade ** 1.2;
+          if (fundo < TOPO_DO_DESENHO - 4) soltas.push({ fundo, idade, k });
+          eventos.push({ k, D, idade, yX: yk });
+        }
+      });
+      return { yX, linhas, lacos, soltas, eventos };
+    }
+    /** O fator de destaque: com um produto escolhido (passo 6), os outros ficam apagados. */
+    const destaque = (produto) => (!estado.destaque || estado.destaque === produto ? 1 : 0.13);
+    /** Um ponto ao longo de uma perna do laço: f = 0 no topo, f = 1 no pé (lado −1 à esquerda). */
+    function pontoNaPerna(pontos, f, lado) {
+      const i = 24 + lado * f * 24, i0 = Math.floor(i), i1 = Math.min(48, i0 + 1), q = i - i0;
+      return { x: entre(pontos[2 * i0], pontos[2 * i1], q), y: entre(pontos[2 * i0 + 1], pontos[2 * i1 + 1], q) };
+    }
+    function desenharModelo(alfa, modoProdutos) {
+      const t = estado.tempo % CICLO_DA_RECONEXAO, m = estadoDoModelo(t), vis = visibilidadeDaReconexao(t), S = P.S;
       ctx.globalAlpha = alfa;
-      // A coroa aquecida em cima dos laços: raios X moles e ultravioleta.
-      ctx.save();
-      ctx.translate(tx(0), ty(7));
-      ctx.scale(1, 0.7);
-      brilho(0, 0, 8.5 * P.S, COR_RAIOS_X, 0.2 + 0.25 * Math.exp(-f / 1.2));
-      ctx.restore();
-      for (const linha of LINHAS_DO_MODELO) {
-        tracarPontos(linha.pontos, { forca: linha.tipo === 'nova' ? 0.85 : 0.55, espessura: linha.tipo === 'nova' ? 1.5 : 1.1, fase: linha.pontos[0] * 13 });
+      // A folha de corrente acima do ponto neutro: uma faixa fina que brilha fraco.
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        const g = ctx.createLinearGradient(0, ty(m.yX), 0, ty(m.yX + 46));
+        g.addColorStop(0, 'rgba(220, 230, 255, 0.28)');
+        g.addColorStop(1, 'rgba(220, 230, 255, 0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(tx(-1.2), ty(m.yX + 46), 2.4 * S, ty(m.yX) - ty(m.yX + 46));
+      });
+      // As linhas esticadas e os laços antigos.
+      for (const l of m.linhas) tracarPontos(l.pontos, { forca: 0.55, fase: l.D * 7 + (l.lado > 0 ? 33 : 0) });
+      for (const D of LACOS_ANTIGOS) {
+        const pontos = lacoNovo(D, 0, alturaDoLaco(D) * 0.8, 1);
+        tracarPontos(pontos, { forca: 0.5, fase: D * 11 });
+        linhaQueBrilha(Array.from({ length: 49 }, (_, j) => ({ x: tx(pontos[2 * j]), y: ty(pontos[2 * j + 1]) })), COR_HALFA, 0.25 * destaque('halfa'), Math.max(1, S * 0.4));
+      }
+      // Os laços novos: brilham quentes ao nascer e esfriam (a cor muda); a ponta de cima aquece a coroa.
+      for (const l of m.lacos) {
+        const naTela = Array.from({ length: 49 }, (_, j) => ({ x: tx(l.pontos[2 * j]), y: ty(l.pontos[2 * j + 1]) }));
+        tracarPontos(l.pontos, { forca: 0.6 * vis, fase: l.D * 9 });
+        const quente = l.idade < 4 ? 1 : 0;
+        linhaQueBrilha(naTela, corDoLaco(l.idade / 7), vis * (0.5 + 0.5 * Math.exp(-l.idade / 3)) * (quente ? destaque('coroa') : destaque('halfa')), Math.max(1, S * 0.55));
+        if (l.idade < 4.5) {
+          const topo = { x: tx(0), y: ty(lacoNovo(l.D, alturaDoPontoNeutro(instanteDaReconexao(l.k)), alturaDoLaco(l.D), suave(l.idade / 1.6))[49]) };
+          aditivo(() => {
+            ctx.globalAlpha = alfa;
+            ctx.save();
+            ctx.translate(topo.x, topo.y);
+            ctx.scale(1.6, 1);
+            brilho(0, 0, 7 * S, COR_RAIOS_X, 0.35 * vis * Math.exp(-l.idade / 1.8) * destaque('coroa'));
+            ctx.restore();
+          });
+        }
       }
       // As linhas soltas sobem, levando o plasma lançado.
       ctx.save();
       ctx.beginPath();
-      ctx.rect(cena.x, cena.y, cena.w, ty(PONTO_NEUTRO.y + 1.5) - cena.y);
+      ctx.rect(cena.x, cena.y, cena.w, ty(m.yX + 1) - cena.y);
       ctx.clip();
-      for (const j of [0, 1]) {
-        const fase = ((estado.tempo + j * PULSO / 2) % PULSO) / PULSO, fundo = 26 + 36 * fase, some = 1 - suave((fase - 0.7) / 0.3);
-        tracarPontos(linhaSolta(fundo), { forca: 0.55 * some, setinhas: 0.6 * some });
-        if (j === 0) {
+      for (const s of m.soltas) {
+        const some = vis * (1 - suave((s.fundo - 90) / 28));
+        tracarPontos(linhaSolta(s.fundo), { forca: 0.55 * some, setinhas: 0.6 * some });
+        aditivo(() => {
+          ctx.globalAlpha = alfa;
           ctx.save();
-          ctx.translate(tx(0), ty(fundo + 3));
-          ctx.scale(1.4, 1);
-          brilho(0, 0, 2.6 * P.S, '255, 200, 160', 0.35 * some);
+          ctx.translate(tx(0), ty(s.fundo + 5));
+          ctx.scale(1.3, 1);
+          brilho(0, 0, (3 + 0.12 * (s.fundo - m.yX)) * S, COR_PLASMA, 0.45 * some * destaque('plasma'));
           ctx.restore();
-        }
+        });
       }
       ctx.restore();
       // O campo entra no ponto neutro pelos dois lados (o colapso).
       for (const lado of [-1, 1]) {
-        const vai = (estado.tempo * 0.6) % 1;
-        const x1 = tx(lado * entre(11, 4, vai)), x2 = tx(lado * entre(8.5, 1.5, vai));
-        seta(x1, ty(PONTO_NEUTRO.y), x2, ty(PONTO_NEUTRO.y), { cor: `rgba(255, 255, 255, ${0.75 * Math.sin(Math.PI * vai)})`, espessura: 1.6, ponta: 7 });
+        for (const dy of [-4, 4]) {
+          const vai = (estado.tempo * 0.7 + (dy > 0 ? 0.5 : 0)) % 1;
+          seta(tx(lado * entre(20, 7, vai)), ty(m.yX + dy), tx(lado * entre(14, 2.5, vai)), ty(m.yX + dy),
+            { cor: `rgba(255, 255, 255, ${0.85 * Math.sin(Math.PI * vai)})`, espessura: 2.2, ponta: 9 });
+        }
       }
-      // O clarão no ponto neutro e as partículas que saem dele.
-      brilho(tx(PONTO_NEUTRO.x), ty(PONTO_NEUTRO.y), 3.2 * P.S, '255, 255, 255', 0.9 * (1 - suave(f / 0.5)));
-      for (let j = 0; j < 4; j++) {
-        const g = (f - 0.1 - j * 0.12) / 2;
-        if (g < 0 || g > 1) continue;
-        const x = tx((j % 2 ? 1 : -1) * (0.4 + 0.35 * j)), y = ty(PONTO_NEUTRO.y + 0.6 + 40 * g);
-        ponto(x, y, limitar(P.S * 0.45, 2.2, 4), `rgba(${COR_PROTON}, ${1 - suave((g - 0.8) / 0.2)})`);
-      }
-      for (let j = 0; j < 3; j++) {
-        const g = (f - 0.1 - j * 0.08) / 0.6;
-        if (g < 0 || g > 1) continue;
-        const pN = bezier2(...PERNA_N, 1 - g), pS = bezier2(...PERNA_S, g);
-        ponto(tx(pN.x), ty(pN.y), limitar(P.S * 0.3, 1.6, 2.8), '#f4f4f4');
-        ponto(tx(pS.x), ty(pS.y), limitar(P.S * 0.3, 1.6, 2.8), '#f4f4f4');
-      }
-      // Nos pés do laço novo, os elétrons são freados na cromosfera: raios X e Hα.
-      const pe = f < 0.75 ? 0 : Math.exp(-(f - 0.75) / 0.7);
-      for (const lado of [-1, 1]) {
-        brilho(tx(lado * PE_DO_LACO_NOVO), ty(0.6), 3.4 * P.S, COR_HALFA, 0.85 * pe);
-        brilho(tx(lado * PE_DO_LACO_NOVO), ty(0.6), 1.5 * P.S, COR_RAIOS_X, 0.95 * pe);
-      }
+      // O ponto neutro: uma marca que pulsa (ali, B = 0).
+      const pulso = 0.5 + 0.5 * Math.sin(estado.tempo * 4);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + 0.3 * pulso})`;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.arc(tx(0), ty(m.yX), 4 + 2 * pulso, 0, Math.PI * 2);
+      ctx.stroke();
+      // Cada reconexão: o clarão no ponto neutro, os elétrons que descem, os prótons que sobem, os pés que acendem
+      // (as fitas) e, no passo 6, os surtos de rádio.
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        for (const ev of m.eventos) {
+          const { idade, D, yX } = ev;
+          brilho(tx(0), ty(yX), 7 * S, '255, 255, 255', vis * 0.95 * Math.exp(-idade / 0.35));
+          const laco = m.lacos.find((l) => l.k === ev.k);
+          for (let j = 0; j < 5; j++) {
+            const f = (idade - j * 0.05) / 0.55;
+            if (f < 0 || f > 1 || !laco) continue;
+            for (const lado of [-1, 1]) {
+              const p = pontoNaPerna(laco.pontos, f, lado);
+              ponto(tx(p.x), ty(p.y), limitar(S * 0.5, 1.6, 3), `rgba(245, 245, 255, ${vis * destaque('eletrons')})`);
+            }
+          }
+          // Os pés: raios X (núcleo violeta-branco) e Hα (brilho vermelho largo); ficam acesos um tempo (as fitas).
+          const pe = idade < 0.55 ? 0 : Math.exp(-(idade - 0.55) / 2.2);
+          for (const lado of [-1, 1]) {
+            brilho(tx(lado * D), ty(0.8), 6 * S, COR_HALFA, vis * 0.9 * (0.35 + 0.65 * pe) * destaque('halfa') * (idade > 0.5 ? 1 : 0));
+            brilho(tx(lado * D), ty(0.8), 2.6 * S, COR_RAIOS_X, vis * pe * destaque('raiosx'));
+          }
+          // Os prótons sobem, com rastro.
+          for (let j = 0; j < 3; j++) {
+            const yp = yX + 2 + 34 * (idade - j * 0.1);
+            if (yp < yX + 1 || yp > TOPO_DO_DESENHO) continue;
+            const xp = (j - 1) * 0.9, g = ctx.createLinearGradient(tx(xp), ty(yp - 9), tx(xp), ty(yp));
+            g.addColorStop(0, `rgba(${COR_PROTON}, 0)`);
+            g.addColorStop(1, `rgba(${COR_PROTON}, ${vis * destaque('protons')})`);
+            ctx.strokeStyle = g;
+            ctx.lineWidth = limitar(S * 0.9, 2, 4);
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(tx(xp), ty(yp - 9));
+            ctx.lineTo(tx(xp), ty(yp));
+            ctx.stroke();
+          }
+          // Surtos de rádio (passo 6): um feixe de elétrons sobe depressa e deixa ondas que se abrem.
+          if (modoProdutos > 0.01) {
+            for (let j = 0; j < 4; j++) {
+              const nasce = 0.05 + j * 0.15, r = (idade - nasce) * 26;
+              if (r <= 0 || r > 26) continue;
+              const y0 = yX + 8 + 60 * nasce;
+              ctx.strokeStyle = `rgba(220, 220, 255, ${0.5 * (1 - r / 26) * vis * modoProdutos * destaque('radio')})`;
+              ctx.lineWidth = 1.2;
+              ctx.beginPath();
+              ctx.arc(tx(3), ty(y0), r * S, -0.9, 0.9);
+              ctx.stroke();
+            }
+            const yb = yX + 4 + 80 * idade;
+            if (yb < TOPO_DO_DESENHO) ponto(tx(3), ty(yb), 2, `rgba(255, 255, 255, ${vis * modoProdutos * destaque('radio')})`);
+          }
+        }
+      });
       ctx.globalAlpha = 1;
     }
     function desenharPasso5(alfa) {
       if (alturaLivre() < 170) return;
-      const curto = cena.w < 560;
+      const t = estado.tempo % CICLO_DA_RECONEXAO, m = estadoDoModelo(t), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
-      escrever('ponto neutro', tx(PONTO_NEUTRO.x) + 14, ty(PONTO_NEUTRO.y) - 14, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
-      escrever(curto ? 'o campo colapsa' : 'o campo colapsa: entra pelos dois lados', tx(-10), ty(PONTO_NEUTRO.y) + 18, { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
-      escrever(curto ? 'sobe' : 'campo para cima', tx(-7.5), ty(45), { tamanho: 11, cor: AZUL, alinhar: 'right', placa: true });
-      escrever(curto ? 'desce' : 'campo para baixo', tx(7.5), ty(45), { tamanho: 11, cor: AZUL, placa: true });
-      escrever(curto ? 'partículas ganham energia' : 'as partículas ganham energia e seguem as linhas', tx(0), ty(60), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-      escrever('fotosfera', cena.x + 16, ty(0) + 16, { tamanho: 11.5, cor: '#ffe2d0', placa: true });
+      escrever('ponto neutro: B = 0', tx(0) + 14, ty(m.yX) - 16, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
+      escrever(curto ? 'o campo colapsa' : 'o campo entra pelos dois lados e colapsa', tx(-16) - 6, ty(m.yX), { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
+      escrever(curto ? '↑ campo' : 'campo para cima ↑', tx(-9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, alinhar: 'right', placa: true });
+      escrever(curto ? 'campo ↓' : '↓ campo para baixo', tx(9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, placa: true });
+      escrever(curto ? 'partículas ganham energia' : 'as partículas ganham energia e seguem as linhas', tx(0), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+      escrever(curto ? 'polaridades opostas' : 'duas manchas de polaridades opostas', tx(0), ty(-1.5) + 16, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
       desenharLegenda([[AMOSTRAS.campo, 'campo magnético'], [AMOSTRAS.proton, 'próton'], [AMOSTRAS.eletron, 'elétron']]);
       ctx.globalAlpha = 1;
     }
+    const EXPLICACAO_DO_DESTAQUE = {
+      protons: 'Prótons vão para fora e podem causar, na Terra, um evento de prótons solares.',
+      eletrons: 'Elétrons descem pelas linhas e são freados na cromosfera, mais densa.',
+      raiosx: 'Freados, os elétrons produzem raios X de Bremsstrahlung: na Terra, distúrbios súbitos na baixa ionosfera.',
+      halfa: 'O hidrogênio ionizado pelas colisões se recombina e emite Hα: as fitas do flare visto em Hα.',
+      coroa: 'A coroa aquecida emite raios X moles e ultravioleta.',
+      plasma: 'O plasma lançado acima do flare reforça o vento solar.',
+      radio: 'Muitos surtos de rádio também podem ser explicados por um modelo assim.',
+    };
     function desenharPasso6(alfa) {
+      zonasDaLegenda = [];
       if (alturaLivre() < 170) return;
-      const curto = cena.w < 560;
+      const t = estado.tempo % CICLO_DA_RECONEXAO, m = estadoDoModelo(t), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
-      escrever(curto ? 'prótons → fora' : 'prótons → para fora (evento de prótons)', tx(1.5), ty(56), { tamanho: 11.5, cor: LARANJA, peso: 600, placa: true });
-      escrever(curto ? 'plasma → vento solar' : 'plasma lançado → reforça o vento solar', tx(-3), ty(40), { tamanho: 11.5, cor: '#ffd9bf', alinhar: 'right', placa: true });
-      escrever(curto ? 'elétrons descem' : 'elétrons descem pelas linhas', tx(PE_DO_LACO_NOVO + 2), ty(15), { tamanho: 11.5, cor: '#f0f0f0', placa: true });
-      escrever(curto ? 'raios X e Hα' : 'raios X (frenagem) e Hα', tx(-PE_DO_LACO_NOVO - 1.5) - 8, ty(3), { tamanho: 11.5, cor: VERMELHO, peso: 600, alinhar: 'right', placa: true });
-      escrever(curto ? 'raios X moles e UV' : 'coroa aquecida: raios X moles e UV', tx(0), ty(12.5), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
-      if (!curto) escrever('surtos de rádio: também explicados assim', tx(-30), ty(52), { tamanho: 11, cor: '#c8c8c8', placa: true });
-      desenharLegenda([[AMOSTRAS.proton, 'prótons'], [AMOSTRAS.eletron, 'elétrons'], [AMOSTRAS.raiosX, 'raios X e UV'], [AMOSTRAS.halfa, 'Hα'], [AMOSTRAS.plasma, 'plasma']]);
+      const nome = (produto, texto, x, y, opcoes) => { ctx.save(); ctx.globalAlpha = alfa * (destaque(produto) > 0.5 ? 1 : 0.3); escrever(texto, x, y, { ...opcoes, placa: true }); ctx.restore(); };
+      nome('protons', curto ? 'prótons → fora' : 'prótons → para fora', tx(2), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: LARANJA, peso: 600 });
+      const solta = m.soltas[m.soltas.length - 1];
+      if (solta) nome('plasma', curto ? 'plasma lançado' : 'plasma lançado → vento solar', tx(-6), ty(solta.fundo + 6), { tamanho: 11.5, cor: '#ffd9bf', alinhar: 'right' });
+      nome('radio', 'surtos de rádio', tx(9), ty(m.yX + 26), { tamanho: 11, cor: '#dcdcff' });
+      nome('coroa', curto ? 'raios X moles e UV' : 'coroa aquecida: raios X moles e UV', tx(0), ty(m.yX - 10), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center' });
+      const ultimo = m.lacos[m.lacos.length - 1];
+      if (ultimo) {
+        nome('eletrons', curto ? 'elétrons descem' : 'elétrons descem pelas linhas', tx(ultimo.D + 3), ty(alturaDoLaco(ultimo.D) * 0.75), { tamanho: 11.5, cor: '#f0f0f0' });
+        nome('raiosx', curto ? 'raios X e Hα' : 'pés: raios X (frenagem) e Hα', tx(-ultimo.D - 3), ty(3.5), { tamanho: 11.5, cor: VERMELHO, peso: 600, alinhar: 'right' });
+        if (!curto && m.lacos.length > 2) nome('halfa', 'as fitas se afastam', tx(ultimo.D + 4), ty(3.5), { tamanho: 11, cor: '#ffd2c4' });
+      }
+      const legenda = desenharLegenda([
+        [AMOSTRAS.proton, 'prótons', 'protons'], [AMOSTRAS.eletron, 'elétrons', 'eletrons'], [AMOSTRAS.raiosx, 'raios X', 'raiosx'],
+        [AMOSTRAS.halfa, 'Hα', 'halfa'], [AMOSTRAS.coroa, 'raios X moles e UV', 'coroa'], [AMOSTRAS.plasma, 'plasma', 'plasma'], [AMOSTRAS.radio, 'rádio', 'radio'],
+      ]);
+      if (estado.destaque) escrever(EXPLICACAO_DO_DESTAQUE[estado.destaque], cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+      else if (legenda) escrever(curto ? 'toque na legenda' : 'toque na legenda para destacar', legenda.x + 8, legenda.y + legenda.h + 14, { tamanho: 11, cor: '#a9a9a9', placa: true });
       ctx.globalAlpha = 1;
     }
 
     // -------------------------------------------------------------------------
-    // 10. Passo 4: a energia guardada ao longo do tempo (um esquema).
+    // 11. Passo 4: a energia guardada ao longo do tempo (um esquema) e as duas potências (escala de 10).
     //     Sobe durante cerca de um dia e cai em poucas centenas de segundos.
     // -------------------------------------------------------------------------
-    /** A energia guardada, em unidades da energia do flare, t em horas (t = 0 é o gatilho). */
+    /** A energia guardada, em unidades da energia do flare, com t em horas (t = 0 é o gatilho). */
     function energiaGuardada(t) {
       if (t < -24) return 0.12;
       if (t < 0) return 0.12 + (t + 24) / 24 + 0.015 * Math.sin(1.7 * t) * (1 + t / 24);
@@ -1594,27 +2548,71 @@
       }
       return { naTelaX, naTelaY };
     }
-    function curva(naTelaX, naTelaY, de, ate, passo, funcao, cor, espessura) {
+    function curva(naTelaX, naTelaY, de, ate, passo, funcao, cor, espessura, base) {
+      const pontos = [];
+      for (let v = de; v <= ate + 1e-9; v += passo) pontos.push({ x: naTelaX(v), y: naTelaY(funcao(v)) });
+      if (pontos.length < 2) return;
+      if (base !== undefined) {
+        // A área embaixo da curva, bem fraca.
+        const g = ctx.createLinearGradient(0, Math.min(...pontos.map((p) => p.y)), 0, base);
+        g.addColorStop(0, `rgba(${COR_CAMPO}, 0.28)`);
+        g.addColorStop(1, `rgba(${COR_CAMPO}, 0.02)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(pontos[0].x, base);
+        for (const p of pontos) ctx.lineTo(p.x, p.y);
+        ctx.lineTo(pontos[pontos.length - 1].x, base);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.strokeStyle = cor;
       ctx.lineWidth = espessura;
       ctx.beginPath();
-      for (let v = de; v <= ate + 1e-9; v += passo) {
-        const x = naTelaX(v), y = naTelaY(funcao(v));
-        if (v === de) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
+      pontos.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
       ctx.stroke();
+    }
+    /** As duas potências numa escala de 10 (de 10¹⁹ a 10²⁵ W). */
+    function desenharPotencias(q, comNomes, destaque) {
+      const juntar = potencia(ENERGIA_DO_FLARE, SEGUNDOS_PARA_JUNTAR), soltar = potencia(ENERGIA_DO_FLARE, estado.liberacao);
+      const x = (W) => q.esquerda + ((q.direita - q.esquerda) * (Math.log10(W) - 19)) / 6;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(q.esquerda - 10, q.topo - 8, q.direita - q.esquerda + 20, q.base - q.topo + 16, 10); else ctx.rect(q.esquerda - 10, q.topo - 8, q.direita - q.esquerda + 20, q.base - q.topo + 16);
+      ctx.fill();
+      if (comNomes) escrever(`potência: soltar é ${comMilhar(SEGUNDOS_PARA_JUNTAR / estado.liberacao)} vezes juntar (escala de 10)`, q.esquerda, q.topo + 4, { tamanho: 11, cor: '#c8c8c8' });
+      const h = Math.min(11, (q.base - q.topo - 44) / 2), y1 = q.topo + 16, y2 = y1 + h + 8;
+      for (let e = 19; e <= 25; e++) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.fillRect(x(10 ** e) - 0.5, y1 - 2, 1, y2 + h - y1 + 4);
+        if (comNomes) escrever(`10${String(e).split('').map((c) => SOBRESCRITOS[c]).join('')} W`, x(10 ** e), q.base - 2, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'center' });
+      }
+      ctx.fillStyle = `rgba(${COR_CAMPO}, ${destaque === 'juntar' ? 1 : 0.65})`;
+      ctx.fillRect(q.esquerda, y1, x(juntar) - q.esquerda, h);
+      ctx.fillStyle = `rgba(255, 220, 180, ${destaque === 'soltar' ? 1 : 0.65})`;
+      ctx.fillRect(q.esquerda, y2, x(soltar) - q.esquerda, h);
+      if (comNomes) {
+        // O nome fica depois do fim da barra; se não couber, vai para dentro dela (escuro).
+        const nomeDaBarra = (texto, fim, y, cor) => {
+          if (fim + 8 + larguraDoTexto(texto, 11, 600) < q.direita) escrever(texto, fim + 8, y, { tamanho: 11, cor, peso: 600 });
+          else escrever(texto, fim - 6, y, { tamanho: 11, cor: '#151515', peso: 700, alinhar: 'right', contorno: false });
+        };
+        nomeDaBarra(`juntar (1 dia): ${cientifico(juntar)} W`, x(juntar), y1 + h / 2, AZUL);
+        nomeDaBarra(`soltar (${estado.liberacao} s): ${cientifico(soltar)} W`, x(soltar), y2 + h / 2, '#ffe2c8');
+      }
     }
     function desenharGrafico(alfa) {
       const comNomes = alturaLivre() >= 170;
-      const area = { esquerda: cena.x + (comNomes ? 30 : 14), direita: cena.x + cena.w - 18, topo: cena.y + ESPACO_DO_TITULO + (comNomes ? 34 : 8), base: cena.y + cena.h - (comNomes ? 34 : 12) };
+      const area = { esquerda: cena.x + (comNomes ? 30 : 14), direita: cena.x + cena.w - 18, topo: cena.y + ESPACO_DO_TITULO + (comNomes ? 34 : 8), base: cena.y + cena.h - (comNomes ? 30 : 12) };
       if (area.base - area.topo < 40 || area.direita - area.esquerda < 120) return;
-      const largo = area.direita - area.esquerda >= 600;
-      const principal = largo ? { ...area, direita: area.esquerda + (area.direita - area.esquerda) * 0.58 } : { ...area };
-      // Em telas largas, o detalhe fica ao lado; nas estreitas, embaixo.
-      if (!largo) principal.base = area.topo + (area.base - area.topo) * 0.52;
+      const largo = area.direita - area.esquerda >= 600, comPotencias = area.base - area.topo >= 230;
+      // As potências ficam numa faixa embaixo; os gráficos, em cima (lado a lado nas telas largas).
+      const faixa = comPotencias ? Math.min(84, (area.base - area.topo) * 0.3) : 0;
+      const graficos = { ...area, base: area.base - (faixa ? faixa + 46 : 0) };
+      const principal = largo ? { ...graficos, direita: graficos.esquerda + (graficos.direita - graficos.esquerda) * 0.58 } : { ...graficos };
+      if (!largo) principal.base = graficos.topo + (graficos.base - graficos.topo) * 0.52;
       const detalhe = largo
-        ? { esquerda: principal.direita + 40, direita: area.direita, topo: area.topo, base: area.base }
-        : { esquerda: area.esquerda, direita: area.direita, topo: principal.base + (comNomes ? 46 : 14), base: area.base };
+        ? { esquerda: principal.direita + 40, direita: graficos.direita, topo: graficos.topo, base: graficos.base }
+        : { esquerda: graficos.esquerda, direita: graficos.direita, topo: principal.base + (comNomes ? 46 : 14), base: graficos.base };
       const tLib = estado.liberacao;
       // Onde está o cursor: primeiro percorre o dia inteiro; depois, os segundos do gatilho em diante.
       const f = (estado.tempo % 10) / 10;
@@ -1623,7 +2621,7 @@
       ctx.globalAlpha = alfa;
       const g1 = eixosDoGrafico(principal, { xDe: -28, xAte: 4, marcasX: [{ valor: -24, texto: '−24 h' }, { valor: -12, texto: '−12 h' }, { valor: 0, texto: '0' }], nomeX: 'horas', comNomes });
       curva(g1.naTelaX, g1.naTelaY, -28, 4, 0.02, energiaGuardada, 'rgba(255, 255, 255, 0.2)', 1.4);
-      curva(g1.naTelaX, g1.naTelaY, -28, Math.min(horaAgora, 4), 0.02, energiaGuardada, AZUL, 2);
+      curva(g1.naTelaX, g1.naTelaY, -28, Math.min(horaAgora, 4), 0.02, energiaGuardada, AZUL, 2.2, principal.base);
       tracejado(g1.naTelaX(0), principal.topo, g1.naTelaX(0), principal.base, 'rgba(255, 255, 255, 0.45)', [4, 4]);
       ponto(g1.naTelaX(horaAgora), g1.naTelaY(energiaGuardada(horaAgora)), 4, '#ffffff');
       // O detalhe: os segundos depois do gatilho.
@@ -1631,87 +2629,156 @@
       const emSegundos = (s) => energiaGuardada(s / 3600);
       curva(g2.naTelaX, g2.naTelaY, -60, tLib + 240, 2, emSegundos, 'rgba(255, 255, 255, 0.2)', 1.4);
       if (segundoAgora !== null) {
-        curva(g2.naTelaX, g2.naTelaY, -60, segundoAgora, 2, emSegundos, AZUL, 2);
+        curva(g2.naTelaX, g2.naTelaY, -60, segundoAgora, 2, emSegundos, AZUL, 2.2, detalhe.base);
         ponto(g2.naTelaX(segundoAgora), g2.naTelaY(emSegundos(segundoAgora)), 4, '#ffffff');
+        // O gatilho: um clarão quando o cursor passa por ele.
+        const dSeg = segundoAgora;
+        if (dSeg > -10 && dSeg < 120) clarao(g2.naTelaX(0), g2.naTelaY(1.12), 10, 1 - Math.abs(dSeg - 20) / 100, { raios: 6 });
       }
       tracejado(g2.naTelaX(0), detalhe.topo, g2.naTelaX(0), detalhe.base, 'rgba(255, 255, 255, 0.45)', [4, 4]);
       if (comNomes) {
-        escrever('energia guardada (esquema)', principal.esquerda, principal.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
+        escrever('energia guardada no campo (esquema)', principal.esquerda, principal.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
         escrever('cerca de um dia juntando', g1.naTelaX(-13), g1.naTelaY(energiaGuardada(-13)) - 22, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
         escrever('gatilho', g1.naTelaX(0) - 6, principal.topo + 12, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'right', placa: true });
         escrever(largo ? 'de perto: os segundos depois do gatilho' : 'de perto', detalhe.esquerda, detalhe.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
         escrever(`soltando: ${tLib} s`, g2.naTelaX(tLib / 2) + 10, g2.naTelaY(0.62), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
-        // A ponte entre o gráfico grande e o detalhe.
         if (largo) tracejado(g1.naTelaX(0.3), g1.naTelaY(0.6), detalhe.esquerda - 4, g2.naTelaY(0.6), 'rgba(255, 255, 255, 0.3)', [2, 4]);
       }
+      if (faixa) desenharPotencias({ esquerda: area.esquerda + 10, direita: area.direita - 10, topo: area.base - faixa, base: area.base }, comNomes, segundoAgora === null ? 'juntar' : 'soltar');
       ctx.globalAlpha = 1;
     }
 
     // -------------------------------------------------------------------------
-    // 11. Passo 7: do Sol à Terra (fora de escala; os tempos da cena são um esquema).
+    // 12. Passo 7: do Sol à Terra (fora de escala; os tempos da cena são um esquema).
     // -------------------------------------------------------------------------
     const SOL = { x: -16, y: 0, r: 7 };
     const TERRA = { x: 12, y: 0, r: 1 };
     const FLARE_NO_SOL = { x: SOL.x + SOL.r * Math.cos(0.14), y: SOL.y + SOL.r * Math.sin(0.14) };
-    const CICLO_DA_VIAGEM = 14;
-    const CHEGADA = { luz: 1.6, protons: 6, plasma: 11 };     // s, na cena (tempo fora de escala)
     const DIRECAO = (() => { const dx = TERRA.x - FLARE_NO_SOL.x, dy = TERRA.y - FLARE_NO_SOL.y, d = Math.hypot(dx, dy); return { x: dx / d, y: dy / d, d }; })();
     const PROTONS_DA_VIAGEM = (() => {
       const sortear = sorteador(808);
-      return Array.from({ length: 14 }, () => ({ angulo: (sortear() - 0.5) * 0.22, atraso: sortear() * 0.9, ritmo: 0.92 + 0.16 * sortear() }));
+      return Array.from({ length: 26 }, () => ({ angulo: (sortear() - 0.5) * 0.24, atraso: sortear() * 1.2, ritmo: 0.9 + 0.2 * sortear() }));
+    })();
+    const VENTO = (() => {
+      const sortear = sorteador(1212);
+      return Array.from({ length: 140 }, () => ({ y: (sortear() - 0.5) * 12, fase: sortear(), ritmo: 0.8 + 0.4 * sortear() }));
     })();
     const tempoDaViagem = () => estado.tempo % CICLO_DA_VIAGEM;
+    /** Onde está a frente da bolha de plasma (distância a partir do flare). */
+    const andouOPlasma = (t) => (DIRECAO.d / CHEGADA.plasma) * t;
     function desenharSolETerra(alfa) {
       const t = tempoDaViagem(), S = P.S;
       ctx.globalAlpha = alfa;
-      // O Sol (em Hα) e o flare na borda.
-      halo(tx(SOL.x), ty(SOL.y), SOL.r * S);
-      const lado = SOL.r * (1024 / 500) * S;
-      ctx.drawImage(TEXTURA_DO_DISCO, tx(SOL.x) - lado / 2, ty(SOL.y) - lado / 2, lado, lado);
-      const clarao = t < 0.4 ? suave(t / 0.4) : Math.exp(-(t - 0.4) / 2.5);
-      brilho(tx(FLARE_NO_SOL.x), ty(FLARE_NO_SOL.y), 1.4 * S, '255, 240, 225', 0.95 * clarao);
+      // O vento solar de sempre (fraco); onde a bolha de plasma passa, ele fica mais forte.
+      const frente = andouOPlasma(t) + FLARE_NO_SOL.x;
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        for (const v of VENTO) {
+          const x = SOL.x + SOL.r + ((estado.tempo * 2.2 * v.ritmo / 30 + v.fase) % 1) * (TERRA.x + 4 - SOL.x - SOL.r);
+          const reforco = Math.abs(x - (frente - 2)) < 4 && t < CHEGADA.plasma + 3 ? 1 : 0;
+          ponto(tx(x), ty(v.y), reforco ? 1.8 : 1.1, `rgba(255, 210, 170, ${reforco ? 0.7 : 0.22})`);
+        }
+      });
+      // O Sol (em Hα), com o halo e as proeminências, e o flare na borda virada para a Terra.
+      const R = SOL.r * S, cx = tx(SOL.x), cy = ty(SOL.y);
+      desenharHalo(cx, cy, R, alfa * 0.8);
+      desenharProeminencias(cx, cy, R, alfa);
+      desenharDiscoEmHalfa(cx, cy, R, alfa);
+      const forca = t < 0.4 ? suave(t / 0.4) : Math.exp(-(t - 0.4) / 2.2);
+      ctx.globalAlpha = alfa;
+      clarao(tx(FLARE_NO_SOL.x), ty(FLARE_NO_SOL.y), 0.9 * S, forca, { raios: 8, giro: 0.4 });
       // A luz (raios X, UV e Hα): frentes que saem do flare.
       const vLuz = DIRECAO.d / CHEGADA.luz, rumo = Math.atan2(-DIRECAO.y, DIRECAO.x);
-      for (let j = 0; j < 3; j++) {
-        const raio = vLuz * (t - j * 0.14);
-        if (raio <= 0.3 || raio > DIRECAO.d + 3) continue;
-        ctx.strokeStyle = `rgba(${COR_RAIOS_X}, ${0.8 * (1 - raio / (DIRECAO.d + 3))})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(tx(FLARE_NO_SOL.x), ty(FLARE_NO_SOL.y), raio * S, rumo - 0.22, rumo + 0.22);
-        ctx.stroke();
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        for (let j = 0; j < 4; j++) {
+          const raio = vLuz * (t - j * 0.1);
+          if (raio <= 0.3 || raio > DIRECAO.d + 3) continue;
+          ctx.strokeStyle = `rgba(${j === 3 ? COR_HALFA : COR_RAIOS_X}, ${0.85 * (1 - raio / (DIRECAO.d + 3))})`;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.arc(tx(FLARE_NO_SOL.x), ty(FLARE_NO_SOL.y), raio * S, rumo - 0.22, rumo + 0.22);
+          ctx.stroke();
+        }
+      });
+      // O plasma: uma bolha com a borda clara, que cresce e chega por último.
+      const andou = andouOPlasma(t);
+      if (andou < DIRECAO.d + 7) {
+        const c = { x: FLARE_NO_SOL.x + DIRECAO.x * andou, y: FLARE_NO_SOL.y + DIRECAO.y * andou }, raio = (0.6 + 0.2 * andou) * S;
+        const some = 1 - suave((andou - DIRECAO.d - 1) / 6);
+        aditivo(() => {
+          ctx.globalAlpha = alfa;
+          const g = ctx.createRadialGradient(tx(c.x), ty(c.y), 0, tx(c.x), ty(c.y), raio);
+          g.addColorStop(0, `rgba(${COR_PLASMA}, ${0.05 * some})`);
+          g.addColorStop(0.75, `rgba(${COR_PLASMA}, ${0.12 * some})`);
+          g.addColorStop(0.93, `rgba(255, 228, 210, ${0.38 * some})`);
+          g.addColorStop(1, 'rgba(255, 228, 210, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(tx(c.x), ty(c.y), raio, 0, Math.PI * 2);
+          ctx.fill();
+        });
       }
-      // O plasma: uma nuvem que cresce e chega por último.
-      const vPlasma = DIRECAO.d / CHEGADA.plasma, andou = vPlasma * t;
-      if (andou < DIRECAO.d + 6) {
-        const cx = FLARE_NO_SOL.x + DIRECAO.x * andou, cy = FLARE_NO_SOL.y + DIRECAO.y * andou;
-        brilho(tx(cx), ty(cy), (0.6 + 0.17 * andou) * S, '255, 200, 160', 0.3 * (1 - suave((andou - DIRECAO.d - 2) / 4)));
-      }
-      // Os prótons.
+      // Os prótons, com rastro.
       const vProton = DIRECAO.d / CHEGADA.protons;
-      for (const p of PROTONS_DA_VIAGEM) {
-        const andouP = vProton * p.ritmo * (t - p.atraso);
-        if (andouP <= 0 || andouP > DIRECAO.d + 4) continue;
-        const a = Math.atan2(DIRECAO.y, DIRECAO.x) + p.angulo;
-        ponto(tx(FLARE_NO_SOL.x + Math.cos(a) * andouP), ty(FLARE_NO_SOL.y + Math.sin(a) * andouP), limitar(S * 0.09, 2, 3.4), LARANJA);
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        ctx.lineCap = 'round';
+        for (const p of PROTONS_DA_VIAGEM) {
+          const andouP = vProton * p.ritmo * (t - p.atraso);
+          if (andouP <= 0 || andouP > DIRECAO.d + 4) continue;
+          const a = Math.atan2(DIRECAO.y, DIRECAO.x) + p.angulo, atras = Math.max(0, andouP - 1.6);
+          const x1 = tx(FLARE_NO_SOL.x + Math.cos(a) * atras), y1 = ty(FLARE_NO_SOL.y + Math.sin(a) * atras);
+          const x2 = tx(FLARE_NO_SOL.x + Math.cos(a) * andouP), y2 = ty(FLARE_NO_SOL.y + Math.sin(a) * andouP);
+          const g = ctx.createLinearGradient(x1, y1, x2, y2);
+          g.addColorStop(0, `rgba(${COR_PROTON}, 0)`);
+          g.addColorStop(1, `rgba(${COR_PROTON}, 0.95)`);
+          ctx.strokeStyle = g;
+          ctx.lineWidth = limitar(S * 0.1, 1.6, 3);
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      });
+      // A magnetosfera (esquema): fica mais apertada quando a bolha de plasma chega.
+      const aperto = suave((t - CHEGADA.plasma) / 0.8) * (1 - suave((t - CHEGADA.plasma - 3) / 1.5));
+      const nariz = (3.4 - 1.1 * aperto) * TERRA.r;
+      ctx.strokeStyle = 'rgba(134, 185, 255, 0.45)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (let j = 0; j <= 40; j++) {
+        const a = -Math.PI * 0.8 + (Math.PI * 1.6 * j) / 40, r = nariz / Math.sqrt(Math.max(0.15, (1 + Math.cos(a)) / 2)) ** 0.8;
+        const x = TERRA.x - r * Math.cos(a), y = TERRA.y + r * Math.sin(a);
+        if (j === 0) ctx.moveTo(tx(x), ty(y)); else ctx.lineTo(tx(x), ty(y));
       }
-      // A Terra, com o lado do dia (de frente para o Sol) e a baixa ionosfera, que acende com os raios X.
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // A Terra: o lado do dia (de frente para o Sol) e a baixa ionosfera, que acende com os raios X.
       const x = tx(TERRA.x), y = ty(TERRA.y), r = TERRA.r * S;
       const terra = ctx.createLinearGradient(x - r, y, x + r, y);
-      terra.addColorStop(0, '#5f86b8');
-      terra.addColorStop(0.5, '#3d5f8a');
-      terra.addColorStop(0.52, '#16243a');
-      terra.addColorStop(1, '#0e1828');
+      terra.addColorStop(0, '#6a92c6');
+      terra.addColorStop(0.5, '#3e6090');
+      terra.addColorStop(0.53, '#15233a');
+      terra.addColorStop(1, '#0d1726');
       ctx.fillStyle = terra;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
       const ionosfera = t < CHEGADA.luz ? 0 : Math.exp(-(t - CHEGADA.luz) / 4);
-      ctx.strokeStyle = `rgba(${COR_RAIOS_X}, ${0.25 + 0.7 * ionosfera})`;
-      ctx.lineWidth = Math.max(1.5, 0.12 * r + 2.5 * ionosfera);
-      ctx.beginPath();
-      ctx.arc(x, y, r * 1.22, Math.PI / 2, Math.PI * 1.5);
-      ctx.stroke();
+      aditivo(() => {
+        ctx.globalAlpha = alfa;
+        ctx.strokeStyle = `rgba(${COR_RAIOS_X}, ${0.2 + 0.75 * ionosfera})`;
+        ctx.lineWidth = Math.max(1.5, 0.1 * r + 3 * ionosfera);
+        ctx.beginPath();
+        ctx.arc(x, y, r * 1.2, Math.PI / 2, Math.PI * 1.5);
+        ctx.stroke();
+        brilho(x - r * 0.6, y, r * 1.6, COR_RAIOS_X, 0.35 * ionosfera);
+        // Os prótons chegando: um brilho em volta da Terra.
+        const protons = t < CHEGADA.protons ? 0 : Math.exp(-(t - CHEGADA.protons) / 3);
+        brilho(x, y, r * 2.4, COR_PROTON, 0.3 * protons);
+      });
       ctx.globalAlpha = 1;
     }
     function desenharPasso7(alfa) {
@@ -1719,8 +2786,14 @@
       const t = tempoDaViagem(), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
       escrever('Sol (Hα)', tx(SOL.x + SOL.r) - 10, ty(SOL.y - SOL.r * 0.55), { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'right', placa: true });
-      escrever('flare', tx(FLARE_NO_SOL.x) + 12, ty(FLARE_NO_SOL.y) - 16, { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
+      escrever('flare', tx(FLARE_NO_SOL.x) + 14, ty(FLARE_NO_SOL.y) - 18, { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
       escrever('Terra', tx(TERRA.x), ty(TERRA.y - TERRA.r) + 14, { tamanho: 11.5, cor: '#c8d8ee', alinhar: 'center', placa: true });
+      // O relógio da luz: enquanto a frente de luz viaja, ele conta de 0 a 8,3 minutos.
+      const minutos = Math.min(1, t / CHEGADA.luz) * TEMPO_DA_LUZ / 60;
+      escreverBloco([
+        { texto: t < CHEGADA.luz ? `a luz viaja: ${numero(minutos, 1)} min` : `a luz chegou: ${numero(TEMPO_DA_LUZ / 60, 1)} min`, tamanho: 12.5, cor: VIOLETA, peso: 600 },
+        { texto: curto ? 'partículas: depois' : 'prótons e plasma: depois (o texto não diz quanto)', tamanho: 11, cor: '#d8d8d8' },
+      ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
       // O que acontece na Terra, na ordem em que chega.
       const acima = [], abaixo = [];
       if (t >= CHEGADA.luz) {
@@ -1729,19 +2802,33 @@
       }
       if (t >= CHEGADA.protons) abaixo.push({ texto: curto ? 'prótons: evento de prótons' : 'prótons: evento de prótons solares', tamanho: 11.5, cor: LARANJA, peso: 600 });
       if (t >= CHEGADA.plasma) abaixo.push({ texto: curto ? 'plasma: vento mais forte' : 'plasma: reforça o vento solar', tamanho: 11.5, cor: '#ffd9bf', peso: 600 });
-      if (acima.length) escreverBloco(acima, tx(TERRA.x), ty(TERRA.y + TERRA.r) - 24 - (acima.length - 1) * 17, 'center');
-      if (abaixo.length) escreverBloco(abaixo, tx(TERRA.x), ty(TERRA.y - TERRA.r) + 40, 'center');
-      escrever(curto ? 'luz: 8,3 min · partículas: depois' : 'a luz leva 8,3 min (acréscimo); prótons e plasma chegam depois · tempo fora de escala',
-        cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
-      desenharLegenda([[AMOSTRAS.raiosX, 'luz: raios X, UV e Hα'], [AMOSTRAS.proton, 'prótons'], [AMOSTRAS.plasma, 'plasma']]);
+      if (acima.length) escreverBloco(acima, tx(TERRA.x), ty(TERRA.y + TERRA.r) - 30 - (acima.length - 1) * 17, 'center');
+      if (abaixo.length) escreverBloco(abaixo, tx(TERRA.x), ty(TERRA.y - TERRA.r) + 42, 'center');
+      // A linha do tempo: as três chegadas, fora de escala.
+      const x0 = cena.x + cena.w * 0.18, x1 = cena.x + cena.w * 0.82, yl = cena.y + cena.h - 18, xt = (s) => entre(x0, x1, s / (CICLO_DA_VIAGEM - 1.5));
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x0, yl);
+      ctx.lineTo(x1, yl);
+      ctx.stroke();
+      for (const [chave, cor, nomeLongo, nomeCurto] of [['luz', VIOLETA, 'luz: 8,3 min', 'luz'], ['protons', LARANJA, 'prótons', 'prótons'], ['plasma', '#ffd9bf', 'plasma', 'plasma']]) {
+        const chegou = t >= CHEGADA[chave];
+        ponto(xt(CHEGADA[chave]), yl, chegou ? 4.5 : 3, chegou ? cor : 'rgba(255, 255, 255, 0.35)');
+        escrever(curto ? nomeCurto : nomeLongo, xt(CHEGADA[chave]), yl - 12, { tamanho: 10.5, cor: chegou ? cor : '#8f8f8f', alinhar: 'center' });
+      }
+      ponto(xt(Math.min(t, CICLO_DA_VIAGEM - 1.5)), yl, 2.5, '#ffffff');
+      if (!curto) escrever('(fora de escala)', x1 + 8, yl, { tamanho: 10, cor: '#8f8f8f' });
+      desenharLegenda([[AMOSTRAS.luz, 'luz: raios X, UV e Hα'], [AMOSTRAS.proton, 'prótons'], [AMOSTRAS.plasma, 'plasma']]);
       ctx.globalAlpha = 1;
     }
 
     // -------------------------------------------------------------------------
-    // 12. O quadro inteiro.
+    // 13. O quadro inteiro.
     // -------------------------------------------------------------------------
     function desenhar() {
       ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, largura, altura);
       for (const estrela of ESTRELAS) {
@@ -1752,15 +2839,14 @@
       ctx.beginPath();
       ctx.rect(cena.x, cena.y, cena.w, cena.fundo - cena.y);
       ctx.clip();
-      if (misturas.disco > 0.01) { usar('disco'); desenharDisco(misturas.disco); }
+      if (misturas.sol > 0.01) desenharSol(misturas.sol);
       if (misturas.corte > 0.01) { usar('corte'); desenharCorte(misturas.corte); }
       const campo = Math.max(misturas.bipolo, misturas.modelo);
       if (campo > 0.01) {
         usar('campo');
-        desenharCamadas(campo, 1.6);
+        desenharChaoDeLado(campo);
         if (misturas.bipolo > 0.01) desenharBipolo(misturas.bipolo);
-        if (misturas.modelo > 0.01) desenharModelo(misturas.modelo);
-        desenharManchasDeLado(campo);
+        if (misturas.modelo > 0.01) desenharModelo(misturas.modelo, forcaDaCena.p6);
       }
       if (misturas.solterra > 0.01) { usar('solterra'); desenharSolETerra(misturas.solterra); }
       const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
@@ -1770,8 +2856,9 @@
       ctx.fillStyle = sombra;
       ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
       if (misturas.grafico > 0.01) desenharGrafico(misturas.grafico);
-      if (forcaDaCena.longe > 0.01) { usar('disco'); desenharDeLonge(forcaDaCena.longe); }
-      if (forcaDaCena.p1 > 0.01) { usar('disco'); desenharPasso1(forcaDaCena.p1); }
+      zonasDaLegenda = [];
+      if (forcaDaCena.longe > 0.01) desenharDeLonge(forcaDaCena.longe);
+      if (forcaDaCena.p1 > 0.01) desenharPasso1(forcaDaCena.p1);
       if (forcaDaCena.p2 > 0.01) { usar('corte'); desenharPasso2(forcaDaCena.p2); }
       if (forcaDaCena.p3 > 0.01) { usar('campo'); desenharPasso3(forcaDaCena.p3); }
       if (forcaDaCena.p5 > 0.01) { usar('campo'); desenharPasso5(forcaDaCena.p5); }
@@ -1782,7 +2869,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // 13. Painel: textos e números que mudam.
+    // 14. Painel: textos, números e o gráfico pequeno (de longe).
     // -------------------------------------------------------------------------
     const el = (id) => document.getElementById(id);
     const textos = new Map();
@@ -1793,21 +2880,66 @@
     }
 
     por('nota', `Esquema fora de escala, com o tempo acelerado. As densidades vieram do PDF como ${dez(Math.log10(DENSIDADE_ANTES), true)} →
-      ${dez(Math.log10(DENSIDADE_DEPOIS), true)} e ${dez(Math.log10(DENSIDADE_QUENTE), true)} elétrons/m³ e parecem ter perdido algarismos: confira no livro. Acréscimos: o raio do Sol
-      (${comMilhar(RAIO_DO_SOL_KM)} km), os limites das classes, ${COMECO.B} G e ${COMECO.liberacao} s como exemplos e os
-      8,3 min da luz até a Terra.`);
+      ${dez(Math.log10(DENSIDADE_DEPOIS), true)} e ${dez(Math.log10(DENSIDADE_QUENTE), true)} elétrons/m³ e parecem ter perdido algarismos: confira no livro.
+      Acréscimos: o raio do Sol (${comMilhar(RAIO_DO_SOL_KM)} km), os limites das classes, ${COMECO.B} G e ${COMECO.liberacao} s como exemplos e
+      os 8,3 min da luz até a Terra. A textura do Sol, as proeminências, as fitas e os laços são desenhos.`);
     const SUBTITULOS = {
       longe: 'De longe: o Sol visto na luz Hα (656,2 nm).<span class="longo"> Tempo acelerado.</span>',
-      p1: 'De perto: a região ativa, em Hα.',
-      p2: 'De perto: um corte da atmosfera do Sol.<span class="longo"> Esquema.</span>',
+      p1: 'De perto: a região ativa vista de cima, em Hα.',
+      p2: 'De perto: um pedaço da atmosfera do Sol.<span class="longo"> Esquema.</span>',
       p3: 'De perto: o campo acima das duas manchas, de lado.<span class="longo"> Esquema.</span>',
       p4: 'De perto: a energia guardada ao longo do tempo.<span class="longo"> Esquema.</span>',
       p5: 'De perto: o modelo da figura 5.4, de lado.<span class="longo"> Uma possibilidade.</span>',
       p6: 'De perto: de onde sai cada produto.<span class="longo"> Esquema.</span>',
       p7: 'De perto: do Sol à Terra.<span class="longo"> Fora de escala.</span>',
     };
-    const TEXTO_DA_FASE = { calmo: 'calmo: o campo junta energia', sobe: 'o brilho sobe depressa', apaga: 'o brilho apaga devagar' };
+    const TEXTO_DA_FASE = { junta: 'agora: o campo junta energia', sobe: 'agora: o gatilho, o brilho sobe depressa', apaga: 'agora: o brilho apaga devagar', calmo: 'agora: calmo' };
+    const TEXTO_DA_POSICAO = { centro: 'perto do centro: vista de cima', meio: 'entre o centro e a borda', borda: 'perto da borda: vista de lado' };
 
+    // O gráfico pequeno do painel: o brilho em Hα e a energia guardada, no ciclo, com o momento de agora.
+    const mini = el('mini');
+    const miniCtx = mini.getContext('2d');
+    function desenharMini() {
+      const w = mini.clientWidth, h = mini.clientHeight;
+      if (w < 10 || h < 10) return;
+      const escala = window.devicePixelRatio || 1;
+      if (mini.width !== Math.round(w * escala) || mini.height !== Math.round(h * escala)) {
+        mini.width = Math.round(w * escala);
+        mini.height = Math.round(h * escala);
+      }
+      const g = miniCtx;
+      g.setTransform(escala, 0, 0, escala, 0, 0);
+      g.clearRect(0, 0, w, h);
+      g.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      g.fillRect(0, 0, w, h);
+      const x = (t) => 4 + ((w - 8) * t) / CICLO_DO_FLARE, y = (v) => h - 6 - (h - 14) * v;
+      for (const [funcao, cor, espessura] of [[energiaGuardadaNoCiclo, `rgba(${COR_CAMPO}, 0.9)`, 1.6], [brilhoDoFlare, 'rgba(255, 226, 200, 0.95)', 1.8]]) {
+        g.strokeStyle = cor;
+        g.lineWidth = espessura;
+        g.beginPath();
+        for (let i = 0; i <= 160; i++) {
+          const t = (i / 160) * CICLO_DO_FLARE;
+          if (i === 0) g.moveTo(x(t), y(funcao(t))); else g.lineTo(x(t), y(funcao(t)));
+        }
+        g.stroke();
+      }
+      g.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      g.setLineDash([3, 3]);
+      g.beginPath();
+      g.moveTo(x(GATILHO), 4);
+      g.lineTo(x(GATILHO), h - 4);
+      g.stroke();
+      g.setLineDash([]);
+      const t = tempoDoFlare();
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.arc(x(t), y(brilhoDoFlare(t)), 3.2, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = `rgb(${COR_CAMPO})`;
+      g.beginPath();
+      g.arc(x(t), y(energiaGuardadaNoCiclo(t)), 3.2, 0, Math.PI * 2);
+      g.fill();
+    }
     function atualizarAgora() {
       por('l-agora', TEXTO_DA_FASE[faseDoFlare(tempoDoFlare())]);
     }
@@ -1821,11 +2953,11 @@
 
       // Visão de longe.
       por('l-classe', `${classe} · ${emMilesimos(estado.area)} do disco`);
-      por('l-energia', `4 × ${dez(25, true)} J`);
+      por('l-posicao', TEXTO_DA_POSICAO[posicaoDaRegiao()]);
       atualizarAgora();
 
       // Passo 1.
-      por('conta-1', `área do brilho: ${emMilesimos(estado.area)} do disco visível`);
+      por('conta-1', `área do brilho: ${emMilesimos(estado.area)} do disco visível = ${cientifico(areaDoBrilhoKm2(estado.area), { html: true })} km²`);
       por('valor-1', classe === 'S' ? '<b>classe S</b> (subflare), pelos limites usuais da classificação (acréscimo)'
         : `<b>classe ${classe}</b>, pelos limites usuais da classificação (acréscimo)`);
 
@@ -1843,7 +2975,7 @@
       por('conta-3b', `${numero(densidade, densidade < 100 ? 1 : 0)} J/m³ × ${dez(23, true)} m³ (${dez(14, true)} km³) = ${cientifico(E, { html: true })} J`);
       por('valor-3', razao >= 1
         ? `<b>${numero(razao, 1)} vezes</b> os ${dez(25, true)} + 3 × ${dez(25, true)} = 4 × ${dez(25, true)} J: sobra energia`
-        : `só ${numero(razao, 2)} dos 4 × ${dez(25, true)} J: <b>não basta</b>`);
+        : `só ${numero(razao, 2)} dos 4 × ${dez(25, true)} J: <b>não basta</b> (precisa de uns ${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G)`);
 
       // Passo 4: a potência.
       por('conta-4', `juntar: 4 × ${dez(25, true)} J ÷ ${comMilhar(SEGUNDOS_PARA_JUNTAR)} s = ${cientifico(potencia(ENERGIA_DO_FLARE, SEGUNDOS_PARA_JUNTAR), { html: true })} W`);
@@ -1888,7 +3020,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // 14. Controles.
+    // 15. Controles: os botões, os controles deslizantes, arrastar a região ativa e tocar na legenda do passo 6.
     // -------------------------------------------------------------------------
     el('bt-longe').addEventListener('click', () => mostrarVisao(false));
     el('bt-perto').addEventListener('click', () => mostrarVisao(true));
@@ -1903,11 +3035,13 @@
     }
 
     /** Muda um ou mais valores (dentro dos limites) e põe os controles de acordo. */
-    function definir({ area = estado.area, espessura = estado.espessura, B = estado.B, liberacao = estado.liberacao } = {}) {
+    function definir({ area = estado.area, espessura = estado.espessura, B = estado.B, liberacao = estado.liberacao, lon = estado.lon, lat = estado.lat } = {}) {
       estado.area = limitar(doisAlgarismos(area), 0.05, 4);
       estado.espessura = limitar(Math.round(espessura), 5, 100);
       estado.B = limitar(Math.round(B / 10) * 10, 50, 1000);
       estado.liberacao = limitar(Math.round(liberacao / 10) * 10, 100, 900);
+      estado.lon = limitar(lon, -1.4, 1.4);
+      estado.lat = limitar(lat, -1, 1);
       el('c-area').value = Math.log10(estado.area).toFixed(2);
       el('c-espessura').value = estado.espessura;
       el('c-b').value = estado.B;
@@ -1919,6 +3053,12 @@
     el('c-espessura').addEventListener('input', () => definir({ espessura: Number(el('c-espessura').value) }));
     el('c-b').addEventListener('input', () => definir({ B: Number(el('c-b').value) }));
     el('c-liberacao').addEventListener('input', () => definir({ liberacao: Number(el('c-liberacao').value) }));
+    /** Solta um flare agora: o ciclo vai para logo antes do gatilho. */
+    function soltarFlare() {
+      estado.tempo += ((GATILHO - 0.35 - tempoDoFlare()) % CICLO_DO_FLARE + CICLO_DO_FLARE) % CICLO_DO_FLARE;
+      if (estado.pausado) alternarPausa();
+    }
+    el('bt-soltar').addEventListener('click', soltarFlare);
     function alternarPausa() {
       estado.pausado = !estado.pausado;
       el('bt-pausar').textContent = estado.pausado ? 'Continuar' : 'Pausar';
@@ -1930,17 +3070,62 @@
       else if (evento.key === 'ArrowRight') { if (estado.perto) mostrarPasso(estado.passo + 1); else mostrarVisao(true); }
       else if (evento.key === 'ArrowLeft') { if (estado.perto && estado.passo > 0) mostrarPasso(estado.passo - 1); else mostrarVisao(false); }
     });
+    /** Destaca um produto no passo 6 (ou tira o destaque, com o mesmo produto ou nenhum). */
+    function destacar(produto) {
+      estado.destaque = produto && estado.destaque !== produto && PRODUTOS.includes(produto) ? produto : null;
+      if (estado.pausado) desenhar();
+    }
+
+    // Arrastar a região ativa pelo disco (de longe); tocar na legenda do passo 6.
+    let arrastando = false;
+    function regiaoNoPonteiro(evento) {
+      const d = cameraDoDisco();
+      let X = (evento.clientX - d.cx) / d.R, Y = (d.cy - evento.clientY) / d.R;
+      const r = Math.hypot(X, Y);
+      if (r > 0.98) { X *= 0.98 / r; Y *= 0.98 / r; }
+      return { lon: Math.atan2(X, Math.sqrt(Math.max(0, 1 - X * X - Y * Y))), lat: Math.asin(limitar(Y, -1, 1)) };
+    }
+    function pertoDaRegiao(evento) {
+      if (estado.cena !== 'longe' || estado.ver > 0.05) return false;
+      const P0 = vistaDoSol().P;
+      return Math.hypot(evento.clientX - P0.x, evento.clientY - P0.y) < 30;
+    }
+    function zonaDaLegenda(evento) {
+      if (estado.cena !== 'p6') return null;
+      return zonasDaLegenda.find((z) => evento.clientX >= z.x && evento.clientX <= z.x + z.w && evento.clientY >= z.y && evento.clientY <= z.y + z.h) || null;
+    }
+    tela.addEventListener('pointerdown', (evento) => {
+      const zona = zonaDaLegenda(evento);
+      if (zona) { destacar(zona.chave); return; }
+      if (!pertoDaRegiao(evento)) return;
+      arrastando = true;
+      try { tela.setPointerCapture(evento.pointerId); } catch { /* sem captura, o arrasto continua funcionando */ }
+    });
+    tela.addEventListener('pointermove', (evento) => {
+      if (arrastando) {
+        definir(regiaoNoPonteiro(evento));
+        return;
+      }
+      tela.style.cursor = pertoDaRegiao(evento) ? 'grab' : zonaDaLegenda(evento) ? 'pointer' : '';
+    });
+    tela.addEventListener('pointerup', () => { arrastando = false; });
+    tela.addEventListener('pointercancel', () => { arrastando = false; });
 
     // -------------------------------------------------------------------------
-    // 15. Laço da animação.
+    // 16. Laço da animação.
     // -------------------------------------------------------------------------
     let anterior = performance.now();
     function quadro(agora) {
       const intervalo = Math.min((agora - anterior) / 1000, 0.1);
       anterior = agora;
-      if (estado.viagem < 1) estado.viagem = Math.min(1, estado.viagem + intervalo / DURACAO_DA_VIAGEM);
       const mundo = MUNDO_DA_CENA[estado.cena];
-      const chegou = mundo !== 'disco' || estado.viagem >= 0.5;
+      // A câmera do Sol anda sozinha até o disco inteiro (de longe) ou a região de cima (passo 1).
+      let chegou = true;
+      if (mundo === 'sol') {
+        const alvo = estado.cena === 'p1' ? 1 : 0;
+        estado.ver += limitar(alvo - estado.ver, -intervalo / 1.4, intervalo / 1.4);
+        chegou = Math.abs(alvo - estado.ver) < 0.5;
+      }
       for (const nome of CENAS) {
         const alvo = nome === estado.cena && chegou ? 1 : 0;
         forcaDaCena[nome] += limitar(alvo - forcaDaCena[nome], -intervalo / 0.4, intervalo / 0.4);
@@ -1949,14 +3134,17 @@
         misturas[nome] += limitar((nome === mundo ? 1 : 0) - misturas[nome], -intervalo / 0.6, intervalo / 0.6);
       }
       if (!estado.pausado) estado.tempo += intervalo;
-      if (!estado.perto) atualizarAgora();
+      if (!estado.perto) {
+        atualizarAgora();
+        desenharMini();
+      }
       desenhar();
       requestAnimationFrame(quadro);
     }
 
     // Início.
     mostrarControles();
-    definir({ ...COMECO });
+    definir({ ...COMECO, ...COMECO_DA_REGIAO });
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
