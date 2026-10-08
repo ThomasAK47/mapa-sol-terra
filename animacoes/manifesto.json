@@ -35,6 +35,11 @@
       "arquivo": "corrente-de-anel.html",
       "titulo": "Corrente de anel",
       "descricao": "A corrente de leste para oeste em volta da Terra que enfraquece o campo no chão nas tempestades: o magnetômetro, o campo da corrente, a conta ΔB ≈ I/r, a deriva dos prótons e dos elétrons, a energia guardada, a inflação do campo e o arco SAR."
+    },
+    {
+      "arquivo": "flare-solar.html",
+      "titulo": "Flare solar",
+      "descricao": "O brilho súbito de uma área pequena do Sol, perto das manchas: como se classifica em Hα, o plasma comprimido, a energia guardada no campo (B²/2μ₀), um dia para juntar e minutos para soltar, o modelo do ponto neutro e o que chega à Terra."
     }
   ]
 }

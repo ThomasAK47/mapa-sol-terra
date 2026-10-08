@@ -48,8 +48,9 @@ pedidas pela pessoa usuária, um commit para cada:
 - zonas editáveis: nome, descrição, largura, zona nova e exclusão;
 - vento solar radial, contornando o primeiro anel do campo da Terra;
 - animações de verdade: `animacoes/magnetopausa.html`, a série do campo
-  geomagnético, em três partes, `animacoes/vento-solar-bz.html` e
-  `animacoes/corrente-de-anel.html` (veja "Contrato das animações");
+  geomagnético, em três partes, `animacoes/vento-solar-bz.html`,
+  `animacoes/corrente-de-anel.html` e `animacoes/flare-solar.html` (veja
+  "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados".
 
@@ -573,6 +574,44 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     conferidos no teste com a lei de Biot–Savart.
   - Para testar: `definir({ I, r, queda, E, energia, densidade, borda, satR,
     satAngulo })` também é do escopo global.
+- **`flare-solar.html`** (feita; a física é a seção 5.2.2, "The phenomenon of
+  the solar flare", do livro da pessoa usuária, colada de um PDF): o brilho
+  súbito de uma área pequena do Sol, que solta em minutos a energia que o
+  campo juntou durante cerca de um dia.
+  - **Do PDF:** "4xlO2 5 J" é 4 × 10²⁵ J (10²⁵ de luz + 3 × 10²⁵ de
+    partículas). As densidades vieram como 10⁴ → 10⁷ e 10² elétrons/m³ e
+    parecem ter perdido algarismos: a tela mostra como vieram, com aviso, e só
+    a razão (× 1 000) entra na conta. A legenda da fig. 5.3 (espectro), que
+    veio no meio do texto colado, é de outra seção e ficou de fora.
+  - Cada cena tem o seu "mundo" (`MUNDO_DA_CENA`): o disco em Hα (de longe e
+    passo 1, com a câmera viajando até a região ativa), o corte da atmosfera
+    (passo 2), o campo de lado (bipolo no passo 3; modelo do ponto neutro nos
+    passos 5 e 6), o gráfico (passo 4) e o caminho do Sol à Terra (passo 7).
+    Os mundos trocam por transparência (`misturas`); cada um tem a sua
+    projeção (`usar(mundo)`, `tx`, `ty`).
+  - As texturas do Sol (`TEXTURA_DO_DISCO`, `TEXTURA_DA_REGIAO`) são feitas
+    uma vez, com números "aleatórios" que se repetem (`sorteador`).
+  - Os sete passos:
+    1. a classe pela área em Hα (S, 1 a 4) e as manchas e plages;
+    2. a compressão: 10¹⁴ km³ ÷ (1 milésimo do disco × 20 km) ≈ 3 300, da
+       mesma ordem dos × 1 000 da densidade; frio (10⁴ K) e quente
+       (10⁷–10⁸ K);
+    3. B²/2μ₀ × 10¹⁴ km³ contra os 4 × 10²⁵ J (com 500 G sobra 2,5 vezes;
+       só passa a partir de ~320 G);
+    4. P = E/t: juntar em um dia × soltar em 300 s (288 vezes mais rápido);
+    5. o ponto neutro acima das manchas N e S (linhas de sentidos opostos que
+       se encontram);
+    6. o que sai: prótons e plasma para fora; elétrons para baixo (raios X de
+       frenagem e Hα nos pés); coroa aquecida (raios X moles e UV);
+    7. o que chega à Terra, com a luz em 8,3 min.
+  - **Assumido, e avisado na tela:** o raio do Sol (696 000 km); os limites
+    usuais das classes (100, 250, 600 e 1 200 milionésimos do hemisfério),
+    convertidos para milésimos do disco (`LIMITES_DAS_CLASSES`); 500 G e
+    300 s como exemplos de "centenas de gauss" e "poucas centenas de
+    segundos"; 150 milhões de km e 300 000 km/s. As texturas, o modelo, as
+    partículas e os tempos das cenas são esquemas; o tempo é acelerado.
+  - Para testar: `definir({ area, espessura, B, liberacao })` também é do
+    escopo global; `estado.tempo` escolhe o momento do ciclo.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
