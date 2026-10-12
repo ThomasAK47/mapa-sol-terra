@@ -433,7 +433,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Flare solar<span class="longo">: o brilho súbito que solta, em minutos, a energia do campo</span></h1>
+    <h1>Flare solar<span class="longo" data-texto="titulo-complemento">: o brilho súbito que solta, em minutos, a energia do campo</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -446,7 +446,7 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>Um brilho súbito no Sol</h2>
+        <h2 data-texto="resumo-titulo">Um brilho súbito no Sol</h2>
         <p>Um brilho súbito numa área pequena do Sol, perto das manchas: em minutos, sai como luz e partículas a
           energia que o <b>campo magnético</b> juntou em cerca de um dia.</p>
         <div class="mini so-largo">
@@ -454,33 +454,33 @@
           <p class="mini-legenda"><span id="l-agora"></span><span class="chaves"><span class="cor-brilho">brilho</span><span class="cor-energia">energia</span></span></p>
         </div>
         <dl class="leituras">
-          <div><dt>Classe (área em H<i>α</i>)</dt><dd id="l-classe"></dd></div>
-          <div><dt>A região</dt><dd id="l-posicao"></dd></div>
+          <div><dt data-texto="leitura-l-classe">Classe (área em H<i>α</i>)</dt><dd id="l-classe"></dd></div>
+          <div><dt data-texto="leitura-l-posicao">A região</dt><dd id="l-posicao"></dd></div>
         </dl>
       </section>
 
       <!-- Visão de perto: sete passos. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>Onde aparece e como se classifica</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">Onde aparece e como se classifica</span></button>
           <div class="passo-corpo">
             <div class="formula pequena">classe pela área em <span class="halfa">H<i>α</i></span><small>656,2 nm</small></div>
             <div class="conta" id="conta-1"></div>
             <div class="valor" id="valor-1"></div>
-            <p class="explicacao">Um flare é um aumento súbito do brilho de uma área pequena da fotosfera, que dura de
+            <p class="explicacao" data-texto="passo-1-explicacao">Um flare é um aumento súbito do brilho de uma área pequena da fotosfera, que dura de
               alguns minutos a várias horas. Ele é classificado de 1 a 4 pela área do brilho, com o Sol visto na luz
               H<i>α</i> (656,2 nm); os muito pequenos são chamados de S (subflare). Os flares costumam aparecer perto
               das manchas solares e das plages, regiões com emissão mais forte de cálcio K e H<i>α</i>.</p>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>O brilho visível: plasma comprimido</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">O brilho visível: plasma comprimido</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><i>V</i> = área × espessura</div>
             <div class="conta" id="conta-2"></div>
             <div class="conta" id="conta-2b"></div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">O flare visto na luz visível é relativamente frio, uns 10<sup>4</sup> K, e a maior
+            <p class="explicacao" data-texto="passo-2-explicacao">O flare visto na luz visível é relativamente frio, uns 10<sup>4</sup> K, e a maior
               parte fica nos 5 000 km de baixo (pode subir até a coroa baixa). O brilho vem do aumento da densidade do
               plasma. A região pode cobrir um milésimo do disco e ter só 20 km de espessura: o plasma foi muito
               comprimido e antes ocupava uns 10<sup>14</sup> km³. Ao mesmo tempo surge plasma quente, de 10<sup>7</sup>
@@ -488,64 +488,64 @@
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>A energia: guardada no campo</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">A energia: guardada no campo</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><i>E</i> = <span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span> · <i>V</i></div>
             <div class="conta" id="conta-3"></div>
             <div class="conta" id="conta-3b"></div>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">Um flare típico libera 10<sup>25</sup> J (10<sup>32</sup> erg) em radiação e,
+            <p class="explicacao" data-texto="passo-3-explicacao">Um flare típico libera 10<sup>25</sup> J (10<sup>32</sup> erg) em radiação e,
               provavelmente, mais 3 × 10<sup>25</sup> J em partículas. É quase certo que essa energia fica guardada no
               campo magnético e é liberada quando o campo se aniquila. Perto das manchas, o campo tem centenas de
               gauss; no volume de 10<sup>14</sup> km³, a energia magnética passa com folga os 4 × 10<sup>25</sup> J.</p>
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Um dia para juntar, minutos para soltar</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Um dia para juntar, minutos para soltar</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><i>P</i> = <span class="fr"><span><i>E</i></span><span><i>t</i></span></span><small>potência, em watts</small></div>
             <div class="conta" id="conta-4"></div>
             <div class="conta" id="conta-4b"></div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">A energia leva cerca de um dia para se juntar numa região, mas sai em poucas centenas
+            <p class="explicacao" data-texto="passo-4-explicacao">A energia leva cerca de um dia para se juntar numa região, mas sai em poucas centenas
               de segundos. Por isso algum “gatilho” precisa agir, e o campo precisa ter tomado uma forma da qual a
               aniquilação possa começar.</p>
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>O ponto neutro</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">O ponto neutro</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="junto">campos opostos se encontram</span> → <span class="junto">o campo colapsa</span></div>
             <div class="valor" id="valor-5"></div>
-            <p class="explicacao">A forma exata do campo não é conhecida; a figura 5.4 do livro mostra uma possibilidade.
+            <p class="explicacao" data-texto="passo-5-explicacao">A forma exata do campo não é conhecida; a figura 5.4 do livro mostra uma possibilidade.
               Nela, a conversão da energia magnética começa num ponto neutro, acima de duas manchas de polaridades
               opostas. Quando o campo colapsa, as partículas ganham energia e se afastam do ponto neutro ao longo das
               linhas de campo.</p>
           </div>
         </li>
         <li class="passo" data-passo="5">
-          <button class="passo-titulo" type="button"><span class="numero">6</span>O que sai do flare</button>
+          <button class="passo-titulo" type="button"><span class="numero">6</span><span data-texto="passo-6-titulo">O que sai do flare</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="junto">luz e partículas,</span> <span class="junto">cada uma de um lugar</span></div>
             <div class="valor" id="valor-6"></div>
             <ul class="explicacao">
-              <li><b>Prótons</b> vão para fora e podem causar um evento de prótons solares na Terra.</li>
-              <li><b>Elétrons</b> que descem são freados na cromosfera, mais densa: <b>raios X</b> de frenagem
+              <li data-texto="passo-6-item-1"><b>Prótons</b> vão para fora e podem causar um evento de prótons solares na Terra.</li>
+              <li data-texto="passo-6-item-2"><b>Elétrons</b> que descem são freados na cromosfera, mais densa: <b>raios X</b> de frenagem
                 (Bremsstrahlung).</li>
-              <li>O hidrogênio ionizado pelas colisões se recombina: <b>H<i>α</i></b>, o flare visto em H<i>α</i>.</li>
-              <li>A coroa aquecida emite <b>raios X moles e UV</b>.</li>
-              <li>O <b>plasma</b> lançado reforça o vento solar.</li>
-              <li>Muitos <b>surtos de rádio</b> também se explicam assim.</li>
+              <li data-texto="passo-6-item-3">O hidrogênio ionizado pelas colisões se recombina: <b>H<i>α</i></b>, o flare visto em H<i>α</i>.</li>
+              <li data-texto="passo-6-item-4">A coroa aquecida emite <b>raios X moles e UV</b>.</li>
+              <li data-texto="passo-6-item-5">O <b>plasma</b> lançado reforça o vento solar.</li>
+              <li data-texto="passo-6-item-6">Muitos <b>surtos de rádio</b> também se explicam assim.</li>
             </ul>
           </div>
         </li>
         <li class="passo" data-passo="6">
-          <button class="passo-titulo" type="button"><span class="numero">7</span>O que chega à Terra</button>
+          <button class="passo-titulo" type="button"><span class="numero">7</span><span data-texto="passo-7-titulo">O que chega à Terra</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="junto">a luz chega primeiro;</span> <span class="junto">as partículas, depois</span></div>
             <div class="conta" id="conta-7"></div>
             <div class="valor" id="valor-7"></div>
-            <p class="explicacao">Os raios X, ao chegar à Terra, causam distúrbios súbitos na baixa ionosfera; os raios X
+            <p class="explicacao" data-texto="passo-7-explicacao">Os raios X, ao chegar à Terra, causam distúrbios súbitos na baixa ionosfera; os raios X
               moles e o ultravioleta também têm consequências aqui. Os detalhes da figura 5.4 não devem ser tomados ao
               pé da letra, mas há semelhanças marcantes entre o flare e a subtempestade na magnetosfera da Terra.</p>
           </div>
@@ -554,8 +554,8 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste a região ativa pelo disco: perto da borda, os laços e o plasma lançado aparecem de lado.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem e o que produz</button>
+      <p class="dica" data-texto="dica">Arraste a região ativa pelo disco: perto da borda, os laços e o plasma lançado aparecem de lado.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: de onde vem e o que produz</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -577,13 +577,13 @@
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
          Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle" data-cenas="longe p1 p2"><span class="nome">área <small>do brilho</small></span><output id="o-area"></output>
+      <label class="controle" data-cenas="longe p1 p2"><span class="nome" data-texto="controle-c-area">área <small>do brilho</small></span><output id="o-area"></output>
         <input id="c-area" type="range" min="-1.3" max="0.6" step="0.01" value="0"></label>
-      <label class="controle" data-cenas="p2"><span class="nome">espessura <small>da região</small></span><output id="o-espessura"></output>
+      <label class="controle" data-cenas="p2"><span class="nome" data-texto="controle-c-espessura">espessura <small>da região</small></span><output id="o-espessura"></output>
         <input id="c-espessura" type="range" min="5" max="100" step="1" value="20"></label>
-      <label class="controle" data-cenas="p3"><span class="nome"><i>B</i> <small>campo perto das manchas</small></span><output id="o-b"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-b"><i>B</i> <small>campo perto das manchas</small></span><output id="o-b"></output>
         <input id="c-b" type="range" min="50" max="1000" step="10" value="500"></label>
-      <label class="controle" data-cenas="p4"><span class="nome"><i>t</i> <small>tempo para soltar</small></span><output id="o-liberacao"></output>
+      <label class="controle" data-cenas="p4"><span class="nome" data-texto="controle-c-liberacao"><i>t</i> <small>tempo para soltar</small></span><output id="o-liberacao"></output>
         <input id="c-liberacao" type="range" min="100" max="900" step="10" value="300"></label>
       <div class="botoes">
         <button id="bt-soltar" type="button" class="botao principal" data-cenas="longe p1">Soltar um flare</button>
@@ -594,6 +594,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -602,6 +610,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -1745,8 +1846,8 @@
       ctx.beginPath();
       ctx.arc(lupa.x, lupa.y, lupa.r, 0, Math.PI * 2);
       ctx.stroke();
-      escrever('lupa: a região vista de cima', lupa.x, lupa.y - lupa.r - 12, { tamanho: 11.5, cor: '#d8d8d8', alinhar: 'center', placa: true });
-      if (brilhoDoFlare(t) > 0.15) escrever('as fitas do flare', lupa.x, lupa.y + lupa.r - 14, { tamanho: 11, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
+      escrever(T_`lupa: a região vista de cima`, lupa.x, lupa.y - lupa.r - 12, { tamanho: 11.5, cor: '#d8d8d8', alinhar: 'center', placa: true });
+      if (brilhoDoFlare(t) > 0.15) escrever(T_`as fitas do flare`, lupa.x, lupa.y + lupa.r - 14, { tamanho: 11, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
       ctx.globalAlpha = 1;
     }
     /** Onde a região está no disco: perto do centro (vista de cima), perto da borda (de lado) ou no meio. */
@@ -1771,8 +1872,8 @@
       ctx.globalAlpha = alfa;
       // O nome da região: abaixo dela, se ela está na metade de cima do disco; acima, se está embaixo.
       const embaixo = vista.P.y < vista.cy, linhas = [
-        { texto: 'região ativa (arraste)', tamanho: 11.5, cor: '#e8e8e8' },
-        { texto: `flare classe ${classeDoFlare(estado.area)}`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+        { texto: T_`região ativa (arraste)`, tamanho: 11.5, cor: '#e8e8e8' },
+        { texto: T_`flare classe ${classeDoFlare(estado.area)}`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
       ];
       const y = embaixo ? vista.P.y + 40 : vista.P.y - 40 - alturaDoBloco(linhas) + 14;
       escreverBloco(linhas, vista.P.x, y, 'center');
@@ -1781,9 +1882,9 @@
       if (d > 0.6 && d < 4.2) {
         const h = 40 + 320 * d, c = naTelaDoSol(vista, pontoNoSol(vista.base, 0, 0, h)), raio = (12 + 0.34 * h) * vista.k;
         const dentro = c.x > cena.x + 20 && c.x < cena.x + cena.w - 20 && c.y > cena.y + ESPACO_DO_TITULO + 20 && c.y < cena.y + cena.h - 20;
-        if (dentro && raio > 18) escrever('plasma lançado', c.x, c.y - raio * 0.6, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
+        if (dentro && raio > 18) escrever(T_`plasma lançado`, c.x, c.y - raio * 0.6, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
       }
-      if (claraoDoFlare(t) > 0.2) escrever('o clarão do gatilho', vista.P.x + 22, vista.P.y + (embaixo ? -26 : 26), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
+      if (claraoDoFlare(t) > 0.2) escrever(T_`o clarão do gatilho`, vista.P.x + 22, vista.P.y + (embaixo ? -26 : 26), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
       ctx.globalAlpha = 1;
     }
 
@@ -1806,12 +1907,12 @@
       ctx.restore();
       for (const m of MANCHAS) {
         const p = naRegiao(vista, m.u, m.polo === 'N' ? m.penumbra + 7 : -(m.penumbra + 7));
-        escrever(`mancha (polaridade ${m.polo})`, p.x, p.y, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+        escrever(T_`mancha (polaridade ${m.polo})`, p.x, p.y, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
       }
       const plage = naRegiao(vista, -44, -30);
-      escrever('plage: cálcio K e Hα mais fortes', plage.x, plage.y, { tamanho: 11.5, cor: '#ffe6d6', alinhar: 'center', placa: true });
+      escrever(T_`plage: cálcio K e Hα mais fortes`, plage.x, plage.y, { tamanho: 11.5, cor: '#ffe6d6', alinhar: 'center', placa: true });
       const fita = naRegiao(vista, noPico.d + noPico.W / 2 + 2, noPico.L / 2);
-      escrever(brilhoDoFlare(t) > 0.1 ? `as fitas do flare: ${emMilesimos(estado.area)} do disco` : `área medida: ${emMilesimos(estado.area)} do disco`,
+      escrever(brilhoDoFlare(t) > 0.1 ? T_`as fitas do flare: ${emMilesimos(estado.area)} do disco` : T_`área medida: ${emMilesimos(estado.area)} do disco`,
         fita.x + 6, fita.y - 4, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
       // A escala: 20 000 km.
       const barra = 20 * vista.k, x0 = cena.x + 18, y0 = cena.y + cena.h - 20;
@@ -1831,7 +1932,7 @@
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(xc - 10, yc - 22, total + 20, 58, 10); else ctx.rect(xc - 10, yc - 22, total + 20, 58);
       ctx.fill();
-      escrever('classe pela área (limites usuais)', xc + total / 2, yc - 11, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'center' });
+      escrever(T_`classe pela área (limites usuais)`, xc + total / 2, yc - 11, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'center' });
       LIMITES_DAS_CLASSES.forEach((limite, i) => {
         const x = xc + i * (caixa + 6), atual = limite.classe === classe;
         ctx.fillStyle = atual ? '#ededed' : 'rgba(255, 255, 255, 0.08)';
@@ -1853,7 +1954,7 @@
         ctx.arc(px, py, 5, 0, Math.PI * 2);
         ctx.stroke();
         ponto(px, py, Math.max(0.8, r * Math.sqrt(estado.area / 1000)), '#ffffff');
-        escrever('o disco inteiro', x, y + r + 12, { tamanho: 10.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
+        escrever(T_`o disco inteiro`, x, y + r + 12, { tamanho: 10.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
       }
       ctx.globalAlpha = 1;
     }
@@ -2016,7 +2117,7 @@
       // O frio: 10⁴ K.
       if (frio > 0.01) {
         aditivo(() => brilho(x, y(TEMPERATURA_FRIA), 14, COR_HALFA, 0.9 * frio));
-        escrever('frio: 10⁴ K', x - 12, y(TEMPERATURA_FRIA), { tamanho: 11.5, cor: '#ffd2c4', peso: 600, alinhar: 'right', placa: true });
+        escrever(T_`frio: 10⁴ K`, x - 12, y(TEMPERATURA_FRIA), { tamanho: 11.5, cor: '#ffd2c4', peso: 600, alinhar: 'right', placa: true });
       }
       // O quente: de 10⁷ a 10⁸ K.
       if (quente > 0.01) {
@@ -2025,7 +2126,7 @@
           ctx.fillStyle = `rgba(${COR_RAIOS_X}, ${0.7 * quente})`;
           ctx.fillRect(x - 7, y2, 14, y1 - y2);
         });
-        escrever('quente: 10⁷ a 10⁸ K', x - 12, (y1 + y2) / 2, { tamanho: 11.5, cor: VIOLETA, peso: 600, alinhar: 'right', placa: true });
+        escrever(T_`quente: 10⁷ a 10⁸ K`, x - 12, (y1 + y2) / 2, { tamanho: 11.5, cor: VIOLETA, peso: 600, alinhar: 'right', placa: true });
       }
       ctx.globalAlpha = 1;
     }
@@ -2040,16 +2141,16 @@
       const xm = -BLOCO.x + 6, zm = -BLOCO.z, alturaMarca = ALTURA_DO_BRILHO_KM / 1000;
       seta(ox(xm, 0, zm), oy(xm, 0, zm), ox(xm, alturaMarca, zm), oy(xm, alturaMarca, zm), { cor: '#ffffff', espessura: 1.4, ponta: 6 });
       escrever('5 000 km', ox(xm, alturaMarca, zm) + 6, oy(xm, alturaMarca, zm) - 4, { tamanho: 11, cor: '#ffffff', placa: true });
-      escrever('fotosfera', ox(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), oy(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), { tamanho: 11.5, cor: '#ffe2d0', placa: true });
-      escrever('cromosfera', ox(BLOCO.x - 2, 1, -BLOCO.z), oy(BLOCO.x - 2, 1, -BLOCO.z) + 2, { tamanho: 11, cor: '#ffd2c4', alinhar: 'right', placa: true });
-      escrever('coroa', cena.x + 16, cena.y + ESPACO_DO_TITULO + 150, { tamanho: 11.5, cor: '#c8c8c8', placa: true });
+      escrever(T_`fotosfera`, ox(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), oy(-BLOCO.x + 4, -BLOCO.fundo * 0.55, -BLOCO.z), { tamanho: 11.5, cor: '#ffe2d0', placa: true });
+      escrever(T_`cromosfera`, ox(BLOCO.x - 2, 1, -BLOCO.z), oy(BLOCO.x - 2, 1, -BLOCO.z) + 2, { tamanho: 11, cor: '#ffd2c4', alinhar: 'right', placa: true });
+      escrever(T_`coroa`, cena.x + 16, cena.y + ESPACO_DO_TITULO + 150, { tamanho: 11.5, cor: '#c8c8c8', placa: true });
       ctx.globalAlpha = alfa * visivel;
       if (k < 0.35) {
-        escrever(`antes: ${dez(14)} km³ (um cubo de ${comMilhar(doisAlgarismos(LADO_DO_CUBO_KM))} km)`, ox(0, BASE_DA_CAMADA + cubo, cubo / 2), oy(0, BASE_DA_CAMADA + cubo, cubo / 2) - 14,
+        escrever(T_`antes: ${dez(14)} km³ (um cubo de ${comMilhar(doisAlgarismos(LADO_DO_CUBO_KM))} km)`, ox(0, BASE_DA_CAMADA + cubo, cubo / 2), oy(0, BASE_DA_CAMADA + cubo, cubo / 2) - 14,
           { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
       }
       if (k > 0.7) {
-        escrever(`depois: ${emMilesimos(estado.area)} do disco × ${estado.espessura} km`, ox(W / 2, BASE_DA_CAMADA, -W / 2) + 10, oy(W / 2, BASE_DA_CAMADA, -W / 2) + 16,
+        escrever(T_`depois: ${emMilesimos(estado.area)} do disco × ${estado.espessura} km`, ox(W / 2, BASE_DA_CAMADA, -W / 2) + 10, oy(W / 2, BASE_DA_CAMADA, -W / 2) + 16,
           { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
         // A lupa: a espessura da camada, vista de bem perto.
         if (largo) {
@@ -2074,15 +2175,15 @@
         }
       }
       if (brilhoAgora > 0.3 && !largo) {
-        escrever('frio: 10⁴ K (o brilho visível)', ox(-W / 2, 4, -W / 2), oy(-W / 2, 4, -W / 2) - 6, { tamanho: 11.5, cor: '#ffd2c4', placa: true });
-        escrever('quente: 10⁷ a 10⁸ K', ox(0, 30, 0), oy(0, 30, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
+        escrever(T_`frio: 10⁴ K (o brilho visível)`, ox(-W / 2, 4, -W / 2), oy(-W / 2, 4, -W / 2) - 6, { tamanho: 11.5, cor: '#ffd2c4', placa: true });
+        escrever(T_`quente: 10⁷ a 10⁸ K`, ox(0, 30, 0), oy(0, 30, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
       }
-      if (brilhoAgora > 0.3 && largo) escrever('laços quentes (raios X moles)', ox(0, 34, 0), oy(0, 34, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
+      if (brilhoAgora > 0.3 && largo) escrever(T_`laços quentes (raios X moles)`, ox(0, 34, 0), oy(0, 34, 0), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center', placa: true });
       ctx.globalAlpha = alfa;
       // O resumo da conta: o volume e a densidade.
       const caixa = escreverBloco([
-        { texto: `volume: ${comMilhar(doisAlgarismos(quantasVezesMenor(estado.area, estado.espessura)))} vezes menor`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
-        { texto: 'densidade: × 1 000 (do texto)', tamanho: 12, cor: '#d8d8d8' },
+        { texto: T_`volume: ${comMilhar(doisAlgarismos(quantasVezesMenor(estado.area, estado.espessura)))} vezes menor`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+        { texto: T_`densidade: × 1 000 (do texto)`, tamanho: 12, cor: '#d8d8d8' },
       ], cena.x + 16, cena.y + ESPACO_DO_TITULO + 18, 'left');
       // A densidade numa barrinha (escala de 10), que enche com a compressão.
       const bx = caixa.x + 10, by = caixa.y + caixa.h + 8, bw = caixa.w - 20;
@@ -2090,7 +2191,7 @@
       ctx.fillRect(bx, by, bw, 6);
       ctx.fillStyle = `rgba(${COR_HALFA}, 0.9)`;
       ctx.fillRect(bx, by, bw * (0.15 + 0.85 * k), 6);
-      escrever(`${dez(Math.log10(DENSIDADE_ANTES))} → ${dez(Math.log10(DENSIDADE_DEPOIS))} elétrons/m³ (do PDF)`, bx, by + 16, { tamanho: 10.5, cor: '#a9a9a9' });
+      escrever(T_`${dez(Math.log10(DENSIDADE_ANTES))} → ${dez(Math.log10(DENSIDADE_DEPOIS))} elétrons/m³ (do PDF)`, bx, by + 16, { tamanho: 10.5, cor: '#a9a9a9' });
       ctx.globalAlpha = 1;
     }
 
@@ -2212,11 +2313,11 @@
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
     }
-    const NOME_DO_CAMPO_NO_PASSO3 = 'linhas do campo (da N para a S)';
+    const NOME_DO_CAMPO_NO_PASSO3 = T_`linhas do campo (da N para a S)`;
     /** O quadro da energia: o campo × o flare, e a régua do campo com o mínimo de ~320 G. */
     function desenharQuadroDaEnergia(alfa, legenda) {
       const campo = energiaDoCampo(estado.B), maior = Math.max(campo, ENERGIA_DO_FLARE), basta = campo >= ENERGIA_DO_FLARE;
-      const textoDoCampo = `no campo (${estado.B} G): ${cientifico(campo)} J`;
+      const textoDoCampo = T_`no campo (${estado.B} G): ${cientifico(campo)} J`;
       const w = Math.min(240, Math.max(150, cena.w * 0.3));
       const larguraDoQuadro = Math.max(w, larguraDoTexto(textoDoCampo, 11.5, 600));
       const x = cena.x + cena.w - 16 - larguraDoQuadro;
@@ -2233,13 +2334,13 @@
       barra.addColorStop(1, 'rgba(200, 235, 255, 0.95)');
       ctx.fillStyle = barra;
       ctx.fillRect(x, y + 17, Math.max(2, (w * campo) / maior), 10);
-      escrever('o flare solta: 4 × 10²⁵ J', x, y + 44, { tamanho: 11.5, cor: '#ffffff', peso: 600 });
+      escrever(T_`o flare solta: 4 × 10²⁵ J`, x, y + 44, { tamanho: 11.5, cor: '#ffffff', peso: 600 });
       const wl = (w * ENERGIA_LUZ) / maior, wp = (w * ENERGIA_PARTICULAS) / maior;
       ctx.fillStyle = 'rgba(255, 245, 230, 0.92)';
       ctx.fillRect(x, y + 53, Math.max(1, wl), 10);
       ctx.fillStyle = `rgba(${COR_PROTON}, 0.92)`;
       ctx.fillRect(x + wl, y + 53, Math.max(1, wp), 10);
-      escrever('luz (1) + partículas (3)', x, y + 73, { tamanho: 10.5, cor: '#a9a9a9' });
+      escrever(T_`luz (1) + partículas (3)`, x, y + 73, { tamanho: 10.5, cor: '#a9a9a9' });
       // A régua do campo: de 0 a 1 000 G, com o mínimo para o flare.
       const ry = y + 104, xr = (G) => x + (w * G) / 1000;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
@@ -2248,11 +2349,11 @@
       ctx.fillRect(xr(CAMPO_MINIMO_G), ry - 2, w - (xr(CAMPO_MINIMO_G) - x), 4);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(xr(CAMPO_MINIMO_G) - 0.75, ry - 8, 1.5, 16);
-      escrever(`mínimo: ~${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G`, xr(CAMPO_MINIMO_G), ry - 15, { tamanho: 10.5, cor: '#d8d8d8', alinhar: 'center' });
+      escrever(T_`mínimo: ~${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G`, xr(CAMPO_MINIMO_G), ry - 15, { tamanho: 10.5, cor: '#d8d8d8', alinhar: 'center' });
       ponto(xr(estado.B), ry, 5, basta ? AZUL : VERMELHO);
       escrever('0', x, ry + 13, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'center' });
       escrever('1 000 G', x + w, ry + 13, { tamanho: 9.5, cor: '#8f8f8f', alinhar: 'right' });
-      escrever(basta ? `sobra: ${numero(campo / ENERGIA_DO_FLARE, 1)} vezes` : 'não basta', x + w / 2, ry + 30, { tamanho: 12, cor: basta ? '#ffffff' : VERMELHO, peso: 600, alinhar: 'center' });
+      escrever(basta ? T_`sobra: ${numero(campo / ENERGIA_DO_FLARE, 1)} vezes` : T_`não basta`, x + w / 2, ry + 30, { tamanho: 12, cor: basta ? '#ffffff' : VERMELHO, peso: 600, alinhar: 'center' });
       ctx.globalAlpha = 1;
     }
     function desenharPasso3(alfa) {
@@ -2260,7 +2361,7 @@
       const cubo = LADO_DO_CUBO_KM / 1000;
       ctx.globalAlpha = alfa;
       escrever(`${dez(14)} km³`, tx(cubo / 2) - 8, ty(cubo) + 14, { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
-      const legenda = desenharLegenda([[AMOSTRAS.campo, NOME_DO_CAMPO_NO_PASSO3], [AMOSTRAS.energia, 'energia por m³ (B²/2μ₀)']]);
+      const legenda = desenharLegenda([[AMOSTRAS.campo, NOME_DO_CAMPO_NO_PASSO3], [AMOSTRAS.energia, T_`energia por m³ (B²/2μ₀)`]]);
       desenharQuadroDaEnergia(alfa, legenda);
       ctx.globalAlpha = 1;
     }
@@ -2476,23 +2577,23 @@
       if (alturaLivre() < 170) return;
       const t = estado.tempo % CICLO_DA_RECONEXAO, m = estadoDoModelo(t), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
-      escrever('ponto neutro: B = 0', tx(0) + 14, ty(m.yX) - 16, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
-      escrever(curto ? 'o campo colapsa' : 'o campo entra pelos dois lados e colapsa', tx(-16) - 6, ty(m.yX), { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
-      escrever(curto ? '↑ campo' : 'campo para cima ↑', tx(-9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, alinhar: 'right', placa: true });
-      escrever(curto ? 'campo ↓' : '↓ campo para baixo', tx(9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, placa: true });
-      escrever(curto ? 'partículas ganham energia' : 'as partículas ganham energia e seguem as linhas', tx(0), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-      escrever(curto ? 'polaridades opostas' : 'duas manchas de polaridades opostas', tx(0), ty(-1.5) + 16, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
-      desenharLegenda([[AMOSTRAS.campo, 'campo magnético'], [AMOSTRAS.proton, 'próton'], [AMOSTRAS.eletron, 'elétron']]);
+      escrever(T_`ponto neutro: B = 0`, tx(0) + 14, ty(m.yX) - 16, { tamanho: 12, cor: '#ffffff', peso: 600, placa: true });
+      escrever(curto ? T_`o campo colapsa` : T_`o campo entra pelos dois lados e colapsa`, tx(-16) - 6, ty(m.yX), { tamanho: 11.5, cor: '#ffffff', alinhar: 'right', placa: true });
+      escrever(curto ? T_`↑ campo` : T_`campo para cima ↑`, tx(-9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, alinhar: 'right', placa: true });
+      escrever(curto ? T_`campo ↓` : T_`↓ campo para baixo`, tx(9), ty(m.yX + 40), { tamanho: 11.5, cor: AZUL, peso: 600, placa: true });
+      escrever(curto ? T_`partículas ganham energia` : T_`as partículas ganham energia e seguem as linhas`, tx(0), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+      escrever(curto ? T_`polaridades opostas` : T_`duas manchas de polaridades opostas`, tx(0), ty(-1.5) + 16, { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'center', placa: true });
+      desenharLegenda([[AMOSTRAS.campo, T_`campo magnético`], [AMOSTRAS.proton, T_`próton`], [AMOSTRAS.eletron, T_`elétron`]]);
       ctx.globalAlpha = 1;
     }
     const EXPLICACAO_DO_DESTAQUE = {
-      protons: 'Prótons vão para fora e podem causar, na Terra, um evento de prótons solares.',
-      eletrons: 'Elétrons descem pelas linhas e são freados na cromosfera, mais densa.',
-      raiosx: 'Freados, os elétrons produzem raios X de Bremsstrahlung: na Terra, distúrbios súbitos na baixa ionosfera.',
-      halfa: 'O hidrogênio ionizado pelas colisões se recombina e emite Hα: as fitas do flare visto em Hα.',
-      coroa: 'A coroa aquecida emite raios X moles e ultravioleta.',
-      plasma: 'O plasma lançado acima do flare reforça o vento solar.',
-      radio: 'Muitos surtos de rádio também podem ser explicados por um modelo assim.',
+      protons: T_`Prótons vão para fora e podem causar, na Terra, um evento de prótons solares.`,
+      eletrons: T_`Elétrons descem pelas linhas e são freados na cromosfera, mais densa.`,
+      raiosx: T_`Freados, os elétrons produzem raios X de Bremsstrahlung: na Terra, distúrbios súbitos na baixa ionosfera.`,
+      halfa: T_`O hidrogênio ionizado pelas colisões se recombina e emite Hα: as fitas do flare visto em Hα.`,
+      coroa: T_`A coroa aquecida emite raios X moles e ultravioleta.`,
+      plasma: T_`O plasma lançado acima do flare reforça o vento solar.`,
+      radio: T_`Muitos surtos de rádio também podem ser explicados por um modelo assim.`,
     };
     function desenharPasso6(alfa) {
       zonasDaLegenda = [];
@@ -2500,23 +2601,23 @@
       const t = estado.tempo % CICLO_DA_RECONEXAO, m = estadoDoModelo(t), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
       const nome = (produto, texto, x, y, opcoes) => { ctx.save(); ctx.globalAlpha = alfa * (destaque(produto) > 0.5 ? 1 : 0.3); escrever(texto, x, y, { ...opcoes, placa: true }); ctx.restore(); };
-      nome('protons', curto ? 'prótons → fora' : 'prótons → para fora', tx(2), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: LARANJA, peso: 600 });
+      nome('protons', curto ? T_`prótons → fora` : T_`prótons → para fora`, tx(2), ty(TOPO_DO_DESENHO - 6), { tamanho: 11.5, cor: LARANJA, peso: 600 });
       const solta = m.soltas[m.soltas.length - 1];
-      if (solta) nome('plasma', curto ? 'plasma lançado' : 'plasma lançado → vento solar', tx(-6), ty(solta.fundo + 6), { tamanho: 11.5, cor: '#ffd9bf', alinhar: 'right' });
-      nome('radio', 'surtos de rádio', tx(9), ty(m.yX + 26), { tamanho: 11, cor: '#dcdcff' });
-      nome('coroa', curto ? 'raios X moles e UV' : 'coroa aquecida: raios X moles e UV', tx(0), ty(m.yX - 10), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center' });
+      if (solta) nome('plasma', curto ? T_`plasma lançado` : T_`plasma lançado → vento solar`, tx(-6), ty(solta.fundo + 6), { tamanho: 11.5, cor: '#ffd9bf', alinhar: 'right' });
+      nome('radio', T_`surtos de rádio`, tx(9), ty(m.yX + 26), { tamanho: 11, cor: '#dcdcff' });
+      nome('coroa', curto ? T_`raios X moles e UV` : T_`coroa aquecida: raios X moles e UV`, tx(0), ty(m.yX - 10), { tamanho: 11.5, cor: VIOLETA, alinhar: 'center' });
       const ultimo = m.lacos[m.lacos.length - 1];
       if (ultimo) {
-        nome('eletrons', curto ? 'elétrons descem' : 'elétrons descem pelas linhas', tx(ultimo.D + 3), ty(alturaDoLaco(ultimo.D) * 0.75), { tamanho: 11.5, cor: '#f0f0f0' });
-        nome('raiosx', curto ? 'raios X e Hα' : 'pés: raios X (frenagem) e Hα', tx(-ultimo.D - 3), ty(3.5), { tamanho: 11.5, cor: VERMELHO, peso: 600, alinhar: 'right' });
-        if (!curto && m.lacos.length > 2) nome('halfa', 'as fitas se afastam', tx(ultimo.D + 4), ty(3.5), { tamanho: 11, cor: '#ffd2c4' });
+        nome('eletrons', curto ? T_`elétrons descem` : T_`elétrons descem pelas linhas`, tx(ultimo.D + 3), ty(alturaDoLaco(ultimo.D) * 0.75), { tamanho: 11.5, cor: '#f0f0f0' });
+        nome('raiosx', curto ? T_`raios X e Hα` : T_`pés: raios X (frenagem) e Hα`, tx(-ultimo.D - 3), ty(3.5), { tamanho: 11.5, cor: VERMELHO, peso: 600, alinhar: 'right' });
+        if (!curto && m.lacos.length > 2) nome('halfa', T_`as fitas se afastam`, tx(ultimo.D + 4), ty(3.5), { tamanho: 11, cor: '#ffd2c4' });
       }
       const legenda = desenharLegenda([
-        [AMOSTRAS.proton, 'prótons', 'protons'], [AMOSTRAS.eletron, 'elétrons', 'eletrons'], [AMOSTRAS.raiosx, 'raios X', 'raiosx'],
-        [AMOSTRAS.halfa, 'Hα', 'halfa'], [AMOSTRAS.coroa, 'raios X moles e UV', 'coroa'], [AMOSTRAS.plasma, 'plasma', 'plasma'], [AMOSTRAS.radio, 'rádio', 'radio'],
+        [AMOSTRAS.proton, T_`prótons`, 'protons'], [AMOSTRAS.eletron, T_`elétrons`, 'eletrons'], [AMOSTRAS.raiosx, T_`raios X`, 'raiosx'],
+        [AMOSTRAS.halfa, T_`Hα`, 'halfa'], [AMOSTRAS.coroa, T_`raios X moles e UV`, 'coroa'], [AMOSTRAS.plasma, T_`plasma`, 'plasma'], [AMOSTRAS.radio, T_`rádio`, 'radio'],
       ]);
       if (estado.destaque) escrever(EXPLICACAO_DO_DESTAQUE[estado.destaque], cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-      else if (legenda) escrever(curto ? 'toque na legenda' : 'toque na legenda para destacar', legenda.x + 8, legenda.y + legenda.h + 14, { tamanho: 11, cor: '#a9a9a9', placa: true });
+      else if (legenda) escrever(curto ? T_`toque na legenda` : T_`toque na legenda para destacar`, legenda.x + 8, legenda.y + legenda.h + 14, { tamanho: 11, cor: '#a9a9a9', placa: true });
       ctx.globalAlpha = 1;
     }
 
@@ -2579,7 +2680,7 @@
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(q.esquerda - 10, q.topo - 8, q.direita - q.esquerda + 20, q.base - q.topo + 16, 10); else ctx.rect(q.esquerda - 10, q.topo - 8, q.direita - q.esquerda + 20, q.base - q.topo + 16);
       ctx.fill();
-      if (comNomes) escrever(`potência: soltar é ${comMilhar(SEGUNDOS_PARA_JUNTAR / estado.liberacao)} vezes juntar (escala de 10)`, q.esquerda, q.topo + 4, { tamanho: 11, cor: '#c8c8c8' });
+      if (comNomes) escrever(T_`potência: soltar é ${comMilhar(SEGUNDOS_PARA_JUNTAR / estado.liberacao)} vezes juntar (escala de 10)`, q.esquerda, q.topo + 4, { tamanho: 11, cor: '#c8c8c8' });
       const h = Math.min(11, (q.base - q.topo - 44) / 2), y1 = q.topo + 16, y2 = y1 + h + 8;
       for (let e = 19; e <= 25; e++) {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
@@ -2596,8 +2697,8 @@
           if (fim + 8 + larguraDoTexto(texto, 11, 600) < q.direita) escrever(texto, fim + 8, y, { tamanho: 11, cor, peso: 600 });
           else escrever(texto, fim - 6, y, { tamanho: 11, cor: '#151515', peso: 700, alinhar: 'right', contorno: false });
         };
-        nomeDaBarra(`juntar (1 dia): ${cientifico(juntar)} W`, x(juntar), y1 + h / 2, AZUL);
-        nomeDaBarra(`soltar (${estado.liberacao} s): ${cientifico(soltar)} W`, x(soltar), y2 + h / 2, '#ffe2c8');
+        nomeDaBarra(T_`juntar (1 dia): ${cientifico(juntar)} W`, x(juntar), y1 + h / 2, AZUL);
+        nomeDaBarra(T_`soltar (${estado.liberacao} s): ${cientifico(soltar)} W`, x(soltar), y2 + h / 2, '#ffe2c8');
       }
     }
     function desenharGrafico(alfa) {
@@ -2637,11 +2738,11 @@
       }
       tracejado(g2.naTelaX(0), detalhe.topo, g2.naTelaX(0), detalhe.base, 'rgba(255, 255, 255, 0.45)', [4, 4]);
       if (comNomes) {
-        escrever('energia guardada no campo (esquema)', principal.esquerda, principal.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
-        escrever('cerca de um dia juntando', g1.naTelaX(-13), g1.naTelaY(energiaGuardada(-13)) - 22, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-        escrever('gatilho', g1.naTelaX(0) - 6, principal.topo + 12, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'right', placa: true });
-        escrever(largo ? 'de perto: os segundos depois do gatilho' : 'de perto', detalhe.esquerda, detalhe.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
-        escrever(`soltando: ${tLib} s`, g2.naTelaX(tLib / 2) + 10, g2.naTelaY(0.62), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
+        escrever(T_`energia guardada no campo (esquema)`, principal.esquerda, principal.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
+        escrever(T_`cerca de um dia juntando`, g1.naTelaX(-13), g1.naTelaY(energiaGuardada(-13)) - 22, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+        escrever(T_`gatilho`, g1.naTelaX(0) - 6, principal.topo + 12, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'right', placa: true });
+        escrever(largo ? T_`de perto: os segundos depois do gatilho` : T_`de perto`, detalhe.esquerda, detalhe.topo - 14, { tamanho: 11, cor: '#a9a9a9' });
+        escrever(T_`soltando: ${tLib} s`, g2.naTelaX(tLib / 2) + 10, g2.naTelaY(0.62), { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
         if (largo) tracejado(g1.naTelaX(0.3), g1.naTelaY(0.6), detalhe.esquerda - 4, g2.naTelaY(0.6), 'rgba(255, 255, 255, 0.3)', [2, 4]);
       }
       if (faixa) desenharPotencias({ esquerda: area.esquerda + 10, direita: area.direita - 10, topo: area.base - faixa, base: area.base }, comNomes, segundoAgora === null ? 'juntar' : 'soltar');
@@ -2785,23 +2886,23 @@
       if (alturaLivre() < 170) return;
       const t = tempoDaViagem(), curto = cena.w < 560;
       ctx.globalAlpha = alfa;
-      escrever('Sol (Hα)', tx(SOL.x + SOL.r) - 10, ty(SOL.y - SOL.r * 0.55), { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'right', placa: true });
-      escrever('flare', tx(FLARE_NO_SOL.x) + 14, ty(FLARE_NO_SOL.y) - 18, { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
-      escrever('Terra', tx(TERRA.x), ty(TERRA.y - TERRA.r) + 14, { tamanho: 11.5, cor: '#c8d8ee', alinhar: 'center', placa: true });
+      escrever(T_`Sol (Hα)`, tx(SOL.x + SOL.r) - 10, ty(SOL.y - SOL.r * 0.55), { tamanho: 11.5, cor: '#ffe2d0', alinhar: 'right', placa: true });
+      escrever(T_`flare`, tx(FLARE_NO_SOL.x) + 14, ty(FLARE_NO_SOL.y) - 18, { tamanho: 11.5, cor: '#ffffff', peso: 600, placa: true });
+      escrever(T_`Terra`, tx(TERRA.x), ty(TERRA.y - TERRA.r) + 14, { tamanho: 11.5, cor: '#c8d8ee', alinhar: 'center', placa: true });
       // O relógio da luz: enquanto a frente de luz viaja, ele conta de 0 a 8,3 minutos.
       const minutos = Math.min(1, t / CHEGADA.luz) * TEMPO_DA_LUZ / 60;
       escreverBloco([
-        { texto: t < CHEGADA.luz ? `a luz viaja: ${numero(minutos, 1)} min` : `a luz chegou: ${numero(TEMPO_DA_LUZ / 60, 1)} min`, tamanho: 12.5, cor: VIOLETA, peso: 600 },
-        { texto: curto ? 'partículas: depois' : 'prótons e plasma: depois (o texto não diz quanto)', tamanho: 11, cor: '#d8d8d8' },
+        { texto: t < CHEGADA.luz ? T_`a luz viaja: ${numero(minutos, 1)} min` : T_`a luz chegou: ${numero(TEMPO_DA_LUZ / 60, 1)} min`, tamanho: 12.5, cor: VIOLETA, peso: 600 },
+        { texto: curto ? T_`partículas: depois` : T_`prótons e plasma: depois (o texto não diz quanto)`, tamanho: 11, cor: '#d8d8d8' },
       ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
       // O que acontece na Terra, na ordem em que chega.
       const acima = [], abaixo = [];
       if (t >= CHEGADA.luz) {
-        acima.push({ texto: curto ? 'raios X: baixa ionosfera' : 'raios X: distúrbio súbito na baixa ionosfera', tamanho: 11.5, cor: VIOLETA, peso: 600 });
-        acima.push({ texto: curto ? 'raios X moles e UV também' : 'raios X moles e UV: também afetam a Terra', tamanho: 11, cor: '#d8d8d8' });
+        acima.push({ texto: curto ? T_`raios X: baixa ionosfera` : T_`raios X: distúrbio súbito na baixa ionosfera`, tamanho: 11.5, cor: VIOLETA, peso: 600 });
+        acima.push({ texto: curto ? T_`raios X moles e UV também` : T_`raios X moles e UV: também afetam a Terra`, tamanho: 11, cor: '#d8d8d8' });
       }
-      if (t >= CHEGADA.protons) abaixo.push({ texto: curto ? 'prótons: evento de prótons' : 'prótons: evento de prótons solares', tamanho: 11.5, cor: LARANJA, peso: 600 });
-      if (t >= CHEGADA.plasma) abaixo.push({ texto: curto ? 'plasma: vento mais forte' : 'plasma: reforça o vento solar', tamanho: 11.5, cor: '#ffd9bf', peso: 600 });
+      if (t >= CHEGADA.protons) abaixo.push({ texto: curto ? T_`prótons: evento de prótons` : T_`prótons: evento de prótons solares`, tamanho: 11.5, cor: LARANJA, peso: 600 });
+      if (t >= CHEGADA.plasma) abaixo.push({ texto: curto ? T_`plasma: vento mais forte` : T_`plasma: reforça o vento solar`, tamanho: 11.5, cor: '#ffd9bf', peso: 600 });
       if (acima.length) escreverBloco(acima, tx(TERRA.x), ty(TERRA.y + TERRA.r) - 30 - (acima.length - 1) * 17, 'center');
       if (abaixo.length) escreverBloco(abaixo, tx(TERRA.x), ty(TERRA.y - TERRA.r) + 42, 'center');
       // A linha do tempo: as três chegadas, fora de escala.
@@ -2812,14 +2913,14 @@
       ctx.moveTo(x0, yl);
       ctx.lineTo(x1, yl);
       ctx.stroke();
-      for (const [chave, cor, nomeLongo, nomeCurto] of [['luz', VIOLETA, 'luz: 8,3 min', 'luz'], ['protons', LARANJA, 'prótons', 'prótons'], ['plasma', '#ffd9bf', 'plasma', 'plasma']]) {
+      for (const [chave, cor, nomeLongo, nomeCurto] of [['luz', VIOLETA, T_`luz: 8,3 min`, T_`luz`], ['protons', LARANJA, T_`prótons`, T_`prótons`], ['plasma', '#ffd9bf', T_`plasma`, T_`plasma`]]) {
         const chegou = t >= CHEGADA[chave];
         ponto(xt(CHEGADA[chave]), yl, chegou ? 4.5 : 3, chegou ? cor : 'rgba(255, 255, 255, 0.35)');
         escrever(curto ? nomeCurto : nomeLongo, xt(CHEGADA[chave]), yl - 12, { tamanho: 10.5, cor: chegou ? cor : '#8f8f8f', alinhar: 'center' });
       }
       ponto(xt(Math.min(t, CICLO_DA_VIAGEM - 1.5)), yl, 2.5, '#ffffff');
-      if (!curto) escrever('(fora de escala)', x1 + 8, yl, { tamanho: 10, cor: '#8f8f8f' });
-      desenharLegenda([[AMOSTRAS.luz, 'luz: raios X, UV e Hα'], [AMOSTRAS.proton, 'prótons'], [AMOSTRAS.plasma, 'plasma']]);
+      if (!curto) escrever(T_`(fora de escala)`, x1 + 8, yl, { tamanho: 10, cor: '#8f8f8f' });
+      desenharLegenda([[AMOSTRAS.luz, T_`luz: raios X, UV e Hα`], [AMOSTRAS.proton, T_`prótons`], [AMOSTRAS.plasma, T_`plasma`]]);
       ctx.globalAlpha = 1;
     }
 
@@ -2879,22 +2980,22 @@
       el(id).innerHTML = html;         // só textos fixos e números desta página
     }
 
-    por('nota', `Esquema fora de escala, com o tempo acelerado. As densidades vieram do PDF como ${dez(Math.log10(DENSIDADE_ANTES), true)} →
+    por('nota', H_`Esquema fora de escala, com o tempo acelerado. As densidades vieram do PDF como ${dez(Math.log10(DENSIDADE_ANTES), true)} →
       ${dez(Math.log10(DENSIDADE_DEPOIS), true)} e ${dez(Math.log10(DENSIDADE_QUENTE), true)} elétrons/m³ e parecem ter perdido algarismos: confira no livro.
       Acréscimos: o raio do Sol (${comMilhar(RAIO_DO_SOL_KM)} km), os limites das classes, ${COMECO.B} G e ${COMECO.liberacao} s como exemplos e
       os 8,3 min da luz até a Terra. A textura do Sol, as proeminências, as fitas e os laços são desenhos.`);
     const SUBTITULOS = {
-      longe: 'De longe: o Sol visto na luz Hα (656,2 nm).<span class="longo"> Tempo acelerado.</span>',
-      p1: 'De perto: a região ativa vista de cima, em Hα.',
-      p2: 'De perto: um pedaço da atmosfera do Sol.<span class="longo"> Esquema.</span>',
-      p3: 'De perto: o campo acima das duas manchas, de lado.<span class="longo"> Esquema.</span>',
-      p4: 'De perto: a energia guardada ao longo do tempo.<span class="longo"> Esquema.</span>',
-      p5: 'De perto: o modelo da figura 5.4, de lado.<span class="longo"> Uma possibilidade.</span>',
-      p6: 'De perto: de onde sai cada produto.<span class="longo"> Esquema.</span>',
-      p7: 'De perto: do Sol à Terra.<span class="longo"> Fora de escala.</span>',
+      longe: H_`De longe: o Sol visto na luz Hα (656,2 nm).<span class="longo"> Tempo acelerado.</span>`,
+      p1: H_`De perto: a região ativa vista de cima, em Hα.`,
+      p2: H_`De perto: um pedaço da atmosfera do Sol.<span class="longo"> Esquema.</span>`,
+      p3: H_`De perto: o campo acima das duas manchas, de lado.<span class="longo"> Esquema.</span>`,
+      p4: H_`De perto: a energia guardada ao longo do tempo.<span class="longo"> Esquema.</span>`,
+      p5: H_`De perto: o modelo da figura 5.4, de lado.<span class="longo"> Uma possibilidade.</span>`,
+      p6: H_`De perto: de onde sai cada produto.<span class="longo"> Esquema.</span>`,
+      p7: H_`De perto: do Sol à Terra.<span class="longo"> Fora de escala.</span>`,
     };
-    const TEXTO_DA_FASE = { junta: 'agora: o campo junta energia', sobe: 'agora: o gatilho, o brilho sobe depressa', apaga: 'agora: o brilho apaga devagar', calmo: 'agora: calmo' };
-    const TEXTO_DA_POSICAO = { centro: 'perto do centro: vista de cima', meio: 'entre o centro e a borda', borda: 'perto da borda: vista de lado' };
+    const TEXTO_DA_FASE = { junta: H_`agora: o campo junta energia`, sobe: H_`agora: o gatilho, o brilho sobe depressa`, apaga: H_`agora: o brilho apaga devagar`, calmo: H_`agora: calmo` };
+    const TEXTO_DA_POSICAO = { centro: H_`perto do centro: vista de cima`, meio: H_`entre o centro e a borda`, borda: H_`perto da borda: vista de lado` };
 
     // O gráfico pequeno do painel: o brilho em Hα e a energia guardada, no ciclo, com o momento de agora.
     const mini = el('mini');
@@ -2952,43 +3053,43 @@
       por('o-liberacao', `${estado.liberacao} s`);
 
       // Visão de longe.
-      por('l-classe', `${classe} · ${emMilesimos(estado.area)} do disco`);
+      por('l-classe', H_`${classe} · ${emMilesimos(estado.area)} do disco`);
       por('l-posicao', TEXTO_DA_POSICAO[posicaoDaRegiao()]);
       atualizarAgora();
 
       // Passo 1.
       por('conta-1', `área do brilho: ${emMilesimos(estado.area)} do disco visível = ${cientifico(areaDoBrilhoKm2(estado.area), { html: true })} km²`);
-      por('valor-1', classe === 'S' ? '<b>classe S</b> (subflare), pelos limites usuais da classificação (acréscimo)'
-        : `<b>classe ${classe}</b>, pelos limites usuais da classificação (acréscimo)`);
+      por('valor-1', classe === 'S' ? H_`<b>classe S</b> (subflare), pelos limites usuais da classificação (acréscimo)`
+        : H_`<b>classe ${classe}</b>, pelos limites usuais da classificação (acréscimo)`);
 
       // Passo 2: a compressão.
       const area = areaDoBrilhoKm2(estado.area), V = volumeDepoisKm3(estado.area, estado.espessura), vezes = quantasVezesMenor(estado.area, estado.espessura);
       por('conta-2', `<i>V</i> = ${cientifico(area, { html: true })} km² × ${estado.espessura} km = ${cientifico(V, { html: true })} km³`);
       por('conta-2b', `antes: ${dez(14, true)} km³ → ${comMilhar(doisAlgarismos(vezes))} vezes menor`);
       const bate = Math.abs(Math.log10(vezes) - 3) <= 0.6;
-      por('valor-2', `densidade: ${dez(Math.log10(DENSIDADE_ANTES), true)} → ${dez(Math.log10(DENSIDADE_DEPOIS), true)} elétrons/m³ (× ${comMilhar(DENSIDADE_DEPOIS / DENSIDADE_ANTES)}): `
-        + (bate ? '<b>mesma ordem de grandeza</b>' : vezes > 1000 ? '<b>bem mais</b> que os × 1 000 do texto' : '<b>bem menos</b> que os × 1 000 do texto'));
+      por('valor-2', H_`densidade: ${dez(Math.log10(DENSIDADE_ANTES), true)} → ${dez(Math.log10(DENSIDADE_DEPOIS), true)} elétrons/m³ (× ${comMilhar(DENSIDADE_DEPOIS / DENSIDADE_ANTES)}): `
+        + (bate ? H_`<b>mesma ordem de grandeza</b>` : vezes > 1000 ? H_`<b>bem mais</b> que os × 1 000 do texto` : H_`<b>bem menos</b> que os × 1 000 do texto`));
 
       // Passo 3: a energia do campo.
       const densidade = densidadeDeEnergia(estado.B), E = energiaDoCampo(estado.B), razao = E / ENERGIA_DO_FLARE;
       por('conta-3', `<i>B</i> = ${estado.B} G = ${numero(estado.B * TESLA_POR_GAUSS, 3)} T → <i>B</i><sup>2</sup>/2<i>μ</i><sub>0</sub> = ${numero(densidade, densidade < 100 ? 1 : 0)} J/m³`);
       por('conta-3b', `${numero(densidade, densidade < 100 ? 1 : 0)} J/m³ × ${dez(23, true)} m³ (${dez(14, true)} km³) = ${cientifico(E, { html: true })} J`);
       por('valor-3', razao >= 1
-        ? `<b>${numero(razao, 1)} vezes</b> os ${dez(25, true)} + 3 × ${dez(25, true)} = 4 × ${dez(25, true)} J: sobra energia`
-        : `só ${numero(razao, 2)} dos 4 × ${dez(25, true)} J: <b>não basta</b> (precisa de uns ${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G)`);
+        ? H_`<b>${numero(razao, 1)} vezes</b> os ${dez(25, true)} + 3 × ${dez(25, true)} = 4 × ${dez(25, true)} J: sobra energia`
+        : H_`só ${numero(razao, 2)} dos 4 × ${dez(25, true)} J: <b>não basta</b> (precisa de uns ${comMilhar(Math.round(CAMPO_MINIMO_G / 10) * 10)} G)`);
 
       // Passo 4: a potência.
       por('conta-4', `juntar: 4 × ${dez(25, true)} J ÷ ${comMilhar(SEGUNDOS_PARA_JUNTAR)} s = ${cientifico(potencia(ENERGIA_DO_FLARE, SEGUNDOS_PARA_JUNTAR), { html: true })} W`);
       por('conta-4b', `soltar: 4 × ${dez(25, true)} J ÷ ${estado.liberacao} s = ${cientifico(potencia(ENERGIA_DO_FLARE, estado.liberacao), { html: true })} W`);
-      por('valor-4', `soltar é <b>${comMilhar(SEGUNDOS_PARA_JUNTAR / estado.liberacao)} vezes</b> mais rápido que juntar`);
+      por('valor-4', H_`soltar é <b>${comMilhar(SEGUNDOS_PARA_JUNTAR / estado.liberacao)} vezes</b> mais rápido que juntar`);
 
       // Passos 5 a 7.
-      por('valor-5', 'no ponto neutro o campo se anula<span class="longo">; dos dois lados, ele aponta em <b>sentidos opostos</b></span>');
-      por('valor-6', 'elétrons → <b>raios X e Hα</b> · prótons e plasma → <b>para fora</b>');
+      por('valor-5', H_`no ponto neutro o campo se anula<span class="longo">; dos dois lados, ele aponta em <b>sentidos opostos</b></span>`);
+      por('valor-6', H_`elétrons → <b>raios X e Hα</b> · prótons e plasma → <b>para fora</b>`);
       por('conta-7', `${comMilhar(DISTANCIA_SOL_TERRA_KM)} km ÷ ${comMilhar(VELOCIDADE_DA_LUZ_KM_S)} km/s = ${comMilhar(TEMPO_DA_LUZ)} s ≈ ${numero(TEMPO_DA_LUZ / 60, 1)} min (acréscimo)`);
-      por('valor-7', 'raios X → <b>distúrbios súbitos na baixa ionosfera</b> · prótons → <b>evento de prótons solares</b>');
+      por('valor-7', H_`raios X → <b>distúrbios súbitos na baixa ionosfera</b> · prótons → <b>evento de prótons solares</b>`);
 
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 7`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 7`);
     }
 
     function mostrarPasso(novo) {
@@ -3005,6 +3106,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -3017,6 +3119,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -3148,6 +3251,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

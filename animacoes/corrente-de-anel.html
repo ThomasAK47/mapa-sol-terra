@@ -415,7 +415,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Corrente de anel<span class="longo">: a corrente em volta da Terra que enfraquece o campo nas tempestades</span></h1>
+    <h1>Corrente de anel<span class="longo" data-texto="titulo-complemento">: a corrente em volta da Terra que enfraquece o campo nas tempestades</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -428,51 +428,51 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>Uma corrente em volta da Terra</h2>
+        <h2 data-texto="resumo-titulo">Uma corrente em volta da Terra</h2>
         <p>Prótons e elétrons presos no <span class="campo">campo da Terra</span> derivam em volta dela, em geral entre 4
           e 6 raios da Terra. Juntos, eles formam uma corrente de leste para oeste, e o campo dela <b>enfraquece o campo
           no chão</b>.</p>
         <dl class="leituras">
-          <div><dt>Corrente</dt><dd id="l-corrente"></dd></div>
-          <div class="so-largo"><dt>Raio do anel</dt><dd id="l-raio"></dd></div>
-          <div><dt>Campo no chão (Δ<i>B</i> ≈ <i>I</i>/<i>r</i>)</dt><dd id="l-chao"></dd></div>
-          <div><dt>O satélite</dt><dd id="l-satelite"></dd></div>
+          <div><dt data-texto="leitura-l-corrente">Corrente</dt><dd id="l-corrente"></dd></div>
+          <div class="so-largo"><dt data-texto="leitura-l-raio">Raio do anel</dt><dd id="l-raio"></dd></div>
+          <div><dt data-texto="leitura-l-chao">Campo no chão (Δ<i>B</i> ≈ <i>I</i>/<i>r</i>)</dt><dd id="l-chao"></dd></div>
+          <div><dt data-texto="leitura-l-satelite">O satélite</dt><dd id="l-satelite"></dd></div>
         </dl>
       </section>
 
       <!-- Visão de perto: sete passos. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>Uma tempestade no magnetômetro</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">Uma tempestade no magnetômetro</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="junto">sobe um pouco</span> → <span class="junto">cai por horas ou dias</span></div>
             <div class="conta" id="conta-1"></div>
             <div class="valor" id="valor-1"></div>
-            <p class="explicacao">Magnetômetros no solo, nas latitudes mais baixas, percebem a corrente de anel. Numa
+            <p class="explicacao" data-texto="passo-1-explicacao">Magnetômetros no solo, nas latitudes mais baixas, percebem a corrente de anel. Numa
               tempestade magnética, o campo na superfície fica mais fraco por horas ou dias. No começo ele pode
               aumentar: é a compressão da magnetosfera com a chegada de mais vento solar (Chapman e Ferraro). A queda
               que vem depois é causada pela corrente de anel.</p>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>A corrente e o campo dela</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">A corrente e o campo dela</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="junto">de leste para oeste</span><span class="longo"> · <span class="junto">contra o campo da Terra</span></span></div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">A corrente circula em volta da Terra de leste para oeste (no sentido horário, vista de
+            <p class="explicacao" data-texto="passo-2-explicacao">A corrente circula em volta da Terra de leste para oeste (no sentido horário, vista de
               cima do polo norte), e o campo magnético dela se opõe ao campo geomagnético. Do chão não dá para saber a
               distância <i>r</i> da corrente; com satélites, dá: um magnetômetro <b>dentro</b> do anel vê o efeito no
               mesmo sentido que o do chão; <b>fora</b> do anel, no sentido oposto.</p>
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>A conta: o campo no centro de um anel</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">A conta: o campo no centro de um anel</span></button>
           <div class="passo-corpo">
             <div class="formula pequena">Δ<i>B</i> = <span class="fr"><span>2π · <i>I</i></span><span>10 · <i>r</i></span></span><small>nT, A, km</small></div>
             <div class="conta" id="conta-3"></div>
             <div class="conta" id="conta-3b"></div>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">A fórmula vem do campo no centro de um anel de corrente, <i>B</i> = μ₀<i>I</i>/2<i>r</i>.
+            <p class="explicacao" data-texto="passo-3-explicacao">A fórmula vem do campo no centro de um anel de corrente, <i>B</i> = μ₀<i>I</i>/2<i>r</i>.
               Correntes induzidas no solo aumentam o efeito, por um fator que depende da condutividade do solo
               (tipicamente 1,5). Daí a relação aproximada <b>Δ<i>B</i> ≈ <i>I</i>/<i>r</i></b>: uma queda de 30 nT
               pode vir de 10<sup>6</sup> A a 4,5 raios da Terra.</p>
@@ -480,12 +480,12 @@
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Quem carrega a corrente</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Quem carrega a corrente</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><span class="vento">prótons: oeste</span><small>e</small>elétrons: leste</div>
             <div class="conta" id="conta-4"></div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">A corrente vem da deriva das partículas presas. Não são os cinturões de Van Allen: são
+            <p class="explicacao" data-texto="passo-4-explicacao">A corrente vem da deriva das partículas presas. Não são os cinturões de Van Allen: são
               partículas de menos energia, principalmente prótons de 10 a 100 keV, e a deriva de cada uma é
               proporcional à energia dela. A corrente fica, em geral, entre 4 e 6 raios da Terra: a convecção traz as
               partículas para dentro, e elas espelham no campo mais forte, perto da Terra. O íon principal é o
@@ -493,12 +493,12 @@
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>A energia da corrente</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">A energia da corrente</span></button>
           <div class="passo-corpo">
             <div class="formula pequena">Δ<i>B</i> ≈ 2,6 × 10<sup>−14</sup> · <i>E</i><small>nT, J</small></div>
             <div class="conta" id="conta-5"></div>
             <div class="valor" id="valor-5"></div>
-            <p class="explicacao">Como a deriva de cada próton é proporcional à energia dele, e todos têm a mesma carga, a
+            <p class="explicacao" data-texto="passo-5-explicacao">Como a deriva de cada próton é proporcional à energia dele, e todos têm a mesma carga, a
               corrente total é proporcional à energia total das partículas da corrente de anel (praticamente a dos
               prótons). Juntando com Δ<i>B</i> ≈ <i>I</i>/<i>r</i>, sai esta relação: o campo no chão diminui na
               proporção da energia guardada na corrente.</p>
@@ -506,12 +506,12 @@
           </div>
         </li>
         <li class="passo" data-passo="5">
-          <button class="passo-titulo" type="button"><span class="numero">6</span>Quando a corrente fica forte</button>
+          <button class="passo-titulo" type="button"><span class="numero">6</span><span data-texto="passo-6-titulo">Quando a corrente fica forte</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><i>β</i> &gt; 1<small>a energia das partículas passa a do campo</small></div>
             <div class="conta" id="conta-6"></div>
             <div class="valor" id="valor-6"></div>
-            <p class="explicacao">A densidade de energia da corrente de anel pode passar a do campo geomagnético
+            <p class="explicacao" data-texto="passo-6-explicacao">A densidade de energia da corrente de anel pode passar a do campo geomagnético
               (2 × 10<sup>−8</sup> J/m³ a 5 raios da Terra). Então o campo se deforma: é a <b>inflação</b> do campo
               geomagnético, um caso de <i>β</i> &gt; 1. Para a corrente ficar estável, é preciso equilíbrio entre a força
               centrífuga nas partículas, a tensão magnética das linhas deformadas e o gradiente da pressão das
@@ -519,11 +519,11 @@
           </div>
         </li>
         <li class="passo" data-passo="6">
-          <button class="passo-titulo" type="button"><span class="numero">7</span>O arco SAR</button>
+          <button class="passo-titulo" type="button"><span class="numero">7</span><span data-texto="passo-7-titulo">O arco SAR</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><span class="sar">630 nm</span><small>emissão vermelha</small></div>
             <div class="valor" id="valor-7"></div>
-            <p class="explicacao">O arco vermelho estável de latitudes médias (arco SAR) tem sido atribuído à corrente de
+            <p class="explicacao" data-texto="passo-7-explicacao">O arco vermelho estável de latitudes médias (arco SAR) tem sido atribuído à corrente de
               anel. Quando ela chega perto o bastante da Terra para encontrar a plasmapausa, formam-se instabilidades que
               mandam energia para a ionosfera. Ali o gás é aquecido em vários milhares de graus, e aparece a emissão de
               630 nm.</p>
@@ -533,8 +533,8 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste o satélite para dentro e para fora do anel. A corrente muda no controle embaixo do desenho.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem e quanto enfraquece</button>
+      <p class="dica" data-texto="dica">Arraste o satélite para dentro e para fora do anel. A corrente muda no controle embaixo do desenho.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: de onde vem e quanto enfraquece</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -556,19 +556,19 @@
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
          Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle" data-cenas="longe p3"><span class="nome"><i>I</i> <small>corrente</small></span><output id="o-i"></output>
+      <label class="controle" data-cenas="longe p3"><span class="nome" data-texto="controle-c-i"><i>I</i> <small>corrente</small></span><output id="o-i"></output>
         <input id="c-i" type="range" min="5" max="7" step="0.01" value="6"></label>
-      <label class="controle" data-cenas="p3"><span class="nome"><i>r</i> <small>raio do anel</small></span><output id="o-r"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-r"><i>r</i> <small>raio do anel</small></span><output id="o-r"></output>
         <input id="c-r" type="range" min="3" max="8" step="0.1" value="4.5"></label>
-      <label class="controle" data-cenas="p1"><span class="nome">queda <small>do campo no chão</small></span><output id="o-queda"></output>
+      <label class="controle" data-cenas="p1"><span class="nome" data-texto="controle-c-queda">queda <small>do campo no chão</small></span><output id="o-queda"></output>
         <input id="c-queda" type="range" min="5" max="200" step="1" value="35"></label>
-      <label class="controle" data-cenas="p4"><span class="nome">energia <small>de cada próton</small></span><output id="o-energia"></output>
+      <label class="controle" data-cenas="p4"><span class="nome" data-texto="controle-c-energia">energia <small>de cada próton</small></span><output id="o-energia"></output>
         <input id="c-energia" type="range" min="10" max="100" step="5" value="50"></label>
-      <label class="controle" data-cenas="p5"><span class="nome"><i>E</i> <small>energia total</small></span><output id="o-e"></output>
+      <label class="controle" data-cenas="p5"><span class="nome" data-texto="controle-c-e"><i>E</i> <small>energia total</small></span><output id="o-e"></output>
         <input id="c-e" type="range" min="13.6" max="16" step="0.01" value="15.13"></label>
-      <label class="controle" data-cenas="p6"><span class="nome">partículas <small>energia por m³</small></span><output id="o-densidade"></output>
+      <label class="controle" data-cenas="p6"><span class="nome" data-texto="controle-c-densidade">partículas <small>energia por m³</small></span><output id="o-densidade"></output>
         <input id="c-densidade" type="range" min="0.2" max="8" step="0.1" value="1"></label>
-      <label class="controle" data-cenas="p7"><span class="nome">borda <small>de dentro da corrente</small></span><output id="o-borda"></output>
+      <label class="controle" data-cenas="p7"><span class="nome" data-texto="controle-c-borda">borda <small>de dentro da corrente</small></span><output id="o-borda"></output>
         <input id="c-borda" type="range" min="2.6" max="6" step="0.1" value="5"></label>
       <div class="botoes">
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
@@ -578,6 +578,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -586,6 +594,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -1201,8 +1302,8 @@
       if (comNomes) {
         const lado = ladoDoSatelite();
         const linhas = [
-          { texto: `satélite a ${numero(estado.satR, 1)} raios`, tamanho: 11.5, cor: '#c8c8c8' },
-          { texto: lado === 'dentro' ? 'dentro do anel: o campo cai' : lado === 'fora' ? 'fora do anel: o campo sobe' : 'no meio da corrente', tamanho: 12.5, cor: '#ffffff', peso: 600 },
+          { texto: T_`satélite a ${numero(estado.satR, 1)} raios`, tamanho: 11.5, cor: '#c8c8c8' },
+          { texto: lado === 'dentro' ? T_`dentro do anel: o campo cai` : lado === 'fora' ? T_`fora do anel: o campo sobe` : T_`no meio da corrente`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
         ];
         // O nome fica do lado de fora do satélite; se não couber, do outro lado; e, no limite, preso à borda.
         const maior = Math.max(...linhas.map((linha) => larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500)));
@@ -1211,8 +1312,8 @@
         else if (!aDireita && sx - 18 - maior - 10 < cena.x) aDireita = true;
         const xNome = aDireita ? Math.min(sx + 18, cena.x + cena.w - maior - 12) : Math.max(sx - 18, cena.x + maior + 12);
         const doMagnetometro = [
-          { texto: 'magnetômetro no chão', tamanho: 11.5, cor: '#c8c8c8' },
-          { texto: `o campo cai ${numero(quedaAgora(), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+          { texto: T_`magnetômetro no chão`, tamanho: 11.5, cor: '#c8c8c8' },
+          { texto: T_`o campo cai ${numero(quedaAgora(), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
         ];
         // Os dois nomes têm duas linhas. Se o do satélite (embaixo dele) encostar no do magnetômetro ou na Terra,
         // ele passa para cima do satélite.
@@ -1227,13 +1328,13 @@
         if (bate(caixaSat, caixaMag) || bate(caixaSat, caixaTerra)) yNome = sy - 44;
         escreverBloco(doMagnetometro, telaX(0), telaY(-1) + 30, 'center');
         escreverBloco(linhas, xNome, yNome, aDireita ? 'left' : 'right');
-        escrever('Sol', cena.x + 14, cena.y + cena.h - 18, { tamanho: 12, cor: LARANJA, peso: 600 });
-        escrever('corrente: de leste para oeste', telaX(0), telaY(estado.r + 1.5) - 14, { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
+        escrever(T_`Sol`, cena.x + 14, cena.y + cena.h - 18, { tamanho: 12, cor: LARANJA, peso: 600 });
+        escrever(T_`corrente: de leste para oeste`, telaX(0), telaY(estado.r + 1.5) - 14, { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
       }
       desenharLegenda([
-        [AMOSTRAS.proton, 'próton: deriva para oeste'],
-        [AMOSTRAS.eletron, 'elétron: deriva para leste'],
-        [AMOSTRAS.corrente, 'a corrente (sentido horário)'],
+        [AMOSTRAS.proton, T_`próton: deriva para oeste`],
+        [AMOSTRAS.eletron, T_`elétron: deriva para leste`],
+        [AMOSTRAS.corrente, T_`a corrente (sentido horário)`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1262,15 +1363,15 @@
         desenharSatelite(x, y);
         seta(x + 21, y + sentido * 13, x + 21, y - sentido * 13, { cor: '#ffffff', espessura: 2, ponta: 7 });
       }
-      escrever(curto ? 'Terra' : 'campo da Terra', x0 + 4, y0 - meia - 11, { tamanho: 11.5, cor: AZUL, alinhar: 'center', placa: true });
-      escrever(curto ? 'corrente' : 'campo da corrente', x0 - 18, y0 + meia * 0.6 + 13, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
-      escrever(curto ? 'dentro: cai' : 'dentro: o campo cai', telaX(dentro.X), telaY(dentro.Y) - 28, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
-      escrever(curto ? 'fora: sobe' : 'fora: o campo sobe', telaX(fora.X), telaY(fora.Y) - 28, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
-      escrever(curto ? 'sai do desenho' : 'a corrente sai do desenho', telaX((corte.de + corte.ate) / 2), telaY(-2.2), { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
-      escrever(curto ? 'entra' : 'e entra do outro lado', telaX(-(corte.de + corte.ate) / 2), telaY(-2.2), { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
+      escrever(curto ? T_`Terra` : T_`campo da Terra`, x0 + 4, y0 - meia - 11, { tamanho: 11.5, cor: AZUL, alinhar: 'center', placa: true });
+      escrever(curto ? T_`corrente` : T_`campo da corrente`, x0 - 18, y0 + meia * 0.6 + 13, { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+      escrever(curto ? T_`dentro: cai` : T_`dentro: o campo cai`, telaX(dentro.X), telaY(dentro.Y) - 28, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
+      escrever(curto ? T_`fora: sobe` : T_`fora: o campo sobe`, telaX(fora.X), telaY(fora.Y) - 28, { tamanho: 11.5, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
+      escrever(curto ? T_`sai do desenho` : T_`a corrente sai do desenho`, telaX((corte.de + corte.ate) / 2), telaY(-2.2), { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
+      escrever(curto ? T_`entra` : T_`e entra do outro lado`, telaX(-(corte.de + corte.ate) / 2), telaY(-2.2), { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
       desenharLegenda([
-        [AMOSTRAS.campo, 'campo da Terra'],
-        [AMOSTRAS.campoDaCorrente, 'campo da corrente'],
+        [AMOSTRAS.campo, T_`campo da Terra`],
+        [AMOSTRAS.campoDaCorrente, T_`campo da corrente`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1282,12 +1383,12 @@
       const a = emRadianos(35), x = telaX(estado.r * Math.cos(a)), y = telaY(estado.r * Math.sin(a));
       seta(telaX(0), telaY(0), x, y, { cor: '#ffffff', espessura: 1.6, ponta: 8 });
       if (comNomes) {
-        escrever(`r = ${numero(estado.r, 1)} raios = ${comMilhar(emKm(estado.r))} km`, (telaX(0) + x) / 2 + 10, (telaY(0) + y) / 2 - 12, { tamanho: 12.5, peso: 600, placa: true });
+        escrever(T_`r = ${numero(estado.r, 1)} raios = ${comMilhar(emKm(estado.r))} km`, (telaX(0) + x) / 2 + 10, (telaY(0) + y) / 2 - 12, { tamanho: 12.5, peso: 600, placa: true });
         escrever(`I = ${emAmperes(estado.I)}`, telaX(0), telaY(-estado.r) + 18, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
         escreverBloco([
-          { texto: 'no centro (eq. 5.45)', tamanho: 11.5, cor: '#c8c8c8' },
-          { texto: `o campo cai ${numero(quedaNoCentro(estado.I, estado.r), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
-          { texto: `com o solo (× 1,5): ${numero(quedaComOSolo(estado.I, estado.r), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+          { texto: T_`no centro (eq. 5.45)`, tamanho: 11.5, cor: '#c8c8c8' },
+          { texto: T_`o campo cai ${numero(quedaNoCentro(estado.I, estado.r), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+          { texto: T_`com o solo (× 1,5): ${numero(quedaComOSolo(estado.I, estado.r), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
         ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
       }
       ctx.globalAlpha = 1;
@@ -1322,10 +1423,10 @@
       // para a esquerda na tela.
       const rP = faixa.de + 0.75, rE = faixa.ate - 0.45, abertura = emRadianos(22);
       arcoComSeta(rP, -Math.PI / 2 + abertura, -Math.PI / 2 - abertura, { cor: LARANJA, espessura: 2.4, ponta: 10 });
-      escrever(`prótons: para oeste (${estado.energia} keV)`, telaX(0), telaY(-rP) + 16, { tamanho: 12, cor: LARANJA, peso: 600, alinhar: 'center', placa: true });
+      escrever(T_`prótons: para oeste (${estado.energia} keV)`, telaX(0), telaY(-rP) + 16, { tamanho: 12, cor: LARANJA, peso: 600, alinhar: 'center', placa: true });
       arcoComSeta(rE, -Math.PI / 2 - abertura, -Math.PI / 2 + abertura, { cor: '#f0f0f0', espessura: 2, ponta: 9 });
-      escrever('elétrons: para leste', telaX(0), telaY(-rE) + 16, { tamanho: 12, cor: '#f0f0f0', peso: 600, alinhar: 'center', placa: true });
-      escrever('as duas derivas dão corrente para oeste', cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
+      escrever(T_`elétrons: para leste`, telaX(0), telaY(-rE) + 16, { tamanho: 12, cor: '#f0f0f0', peso: 600, alinhar: 'center', placa: true });
+      escrever(T_`as duas derivas dão corrente para oeste`, cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
       ctx.globalAlpha = 1;
     }
 
@@ -1334,8 +1435,8 @@
       if (alturaLivre() < 170) return;
       ctx.globalAlpha = alfa;
       escreverBloco([
-        { texto: `energia das partículas: ${cientifico(energiaAgora())} J`, tamanho: 12.5, cor: LARANJA, peso: 600 },
-        { texto: `o campo no chão cai ${numero(quedaAgora(), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+        { texto: T_`energia das partículas: ${cientifico(energiaAgora())} J`, tamanho: 12.5, cor: LARANJA, peso: 600 },
+        { texto: T_`o campo no chão cai ${numero(quedaAgora(), 1)} nT`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
       ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
       ctx.globalAlpha = 1;
     }
@@ -1346,13 +1447,13 @@
       const razao = razaoDeEnergia();
       ctx.globalAlpha = alfa;
       escreverBloco([
-        { texto: `partículas ÷ campo (a 5 raios): ${numero(razao, 2)}`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
+        { texto: T_`partículas ÷ campo (a 5 raios): ${numero(razao, 2)}`, tamanho: 12.5, cor: '#ffffff', peso: 600 },
         razao > 1
-          ? { texto: 'β > 1: o campo infla (tracejado: sem a corrente)', tamanho: 12, cor: LARANJA, peso: 600 }
-          : { texto: 'β < 1: o campo segura as partículas', tamanho: 12, cor: AZUL, peso: 600 },
-        ...(razao > 1 ? [] : [{ texto: 'aumente a energia das partículas no controle', tamanho: 11, cor: '#a9a9a9' }]),
+          ? { texto: T_`β > 1: o campo infla (tracejado: sem a corrente)`, tamanho: 12, cor: LARANJA, peso: 600 }
+          : { texto: T_`β < 1: o campo segura as partículas`, tamanho: 12, cor: AZUL, peso: 600 },
+        ...(razao > 1 ? [] : [{ texto: T_`aumente a energia das partículas no controle`, tamanho: 11, cor: '#a9a9a9' }]),
       ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
-      escrever('equilíbrio: força centrífuga, tensão das linhas e pressão das partículas', cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
+      escrever(T_`equilíbrio: força centrífuga, tensão das linhas e pressão das partículas`, cena.x + cena.w / 2, cena.y + cena.h - 16, { tamanho: 11.5, cor: '#c8c8c8', alinhar: 'center', placa: true });
       ctx.globalAlpha = 1;
     }
 
@@ -1391,14 +1492,14 @@
         }
       }
       if (comNomes) {
-        escrever('plasmapausa (esquema)', telaX(-PLASMAPAUSA), telaY(1.2), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
+        escrever(T_`plasmapausa (esquema)`, telaX(-PLASMAPAUSA), telaY(1.2), { tamanho: 11.5, cor: '#ffffff', alinhar: 'center', placa: true });
         if (arco > 0.3) {
-          escrever('arco SAR: 630 nm', telaX(Math.cos(pe) * 1.1) + 16, telaY(Math.sin(pe) * 1.1) - 10, { tamanho: 12.5, cor: VERMELHO, peso: 600, placa: true });
-          escrever('gás aquecido: vários milhares de graus', telaX(Math.cos(pe) * 1.1) + 16, telaY(Math.sin(pe) * 1.1) + 10, { tamanho: 11, cor: '#e0e0e0', placa: true });
+          escrever(T_`arco SAR: 630 nm`, telaX(Math.cos(pe) * 1.1) + 16, telaY(Math.sin(pe) * 1.1) - 10, { tamanho: 12.5, cor: VERMELHO, peso: 600, placa: true });
+          escrever(T_`gás aquecido: vários milhares de graus`, telaX(Math.cos(pe) * 1.1) + 16, telaY(Math.sin(pe) * 1.1) + 10, { tamanho: 11, cor: '#e0e0e0', placa: true });
         }
         escreverBloco([
-          { texto: `borda de dentro da corrente: ${numero(estado.borda, 1)} raios`, tamanho: 12, cor: '#ffffff', peso: 600 },
-          { texto: encontrouAPlasmapausa() ? 'encontrou a plasmapausa: instabilidades' : 'ainda não chegou à plasmapausa', tamanho: 12, cor: encontrouAPlasmapausa() ? VERMELHO : '#c8c8c8', peso: 600 },
+          { texto: T_`borda de dentro da corrente: ${numero(estado.borda, 1)} raios`, tamanho: 12, cor: '#ffffff', peso: 600 },
+          { texto: encontrouAPlasmapausa() ? T_`encontrou a plasmapausa: instabilidades` : T_`ainda não chegou à plasmapausa`, tamanho: 12, cor: encontrouAPlasmapausa() ? VERMELHO : '#c8c8c8', peso: 600 },
         ], cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
       }
       ctx.globalAlpha = 1;
@@ -1444,11 +1545,11 @@
           escrever(b === 0 ? '0' : `${b > 0 ? '+' : '−'}${Math.abs(b)}`, esquerda - 8, naTelaY(b), { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
         }
         for (let t = 0; t <= ate; t += 12) escrever(`${t} h`, naTelaX(t), base + 13, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
-        escrever('ΔB no chão (nT)', esquerda, topo - 14, { tamanho: 11, cor: '#a9a9a9' });
+        escrever(T_`ΔB no chão (nT)`, esquerda, topo - 14, { tamanho: 11, cor: '#a9a9a9' });
       }
       // A referência do texto: uma queda de 30 nT seria uma tempestade moderada.
       tracejado(esquerda, naTelaY(-30), direita, naTelaY(-30), 'rgba(255, 255, 255, 0.5)', [5, 4]);
-      if (comNomes) escrever('−30 nT: tempestade moderada', direita - 6, naTelaY(-30) + 11, { tamanho: 11, cor: '#c8c8c8', alinhar: 'right', placa: true });
+      if (comNomes) escrever(T_`−30 nT: tempestade moderada`, direita - 6, naTelaY(-30) + 11, { tamanho: 11, cor: '#c8c8c8', alinhar: 'right', placa: true });
       // A curva, até o cursor (que anda com o tempo e recomeça).
       const agora = de + ((estado.tempo * 3) % (ate - de + 6));
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
@@ -1469,10 +1570,10 @@
       ctx.stroke();
       if (agora <= ate) desenharPonto(naTelaX(agora), naTelaY(campoNaTempestade(agora, queda)), { raio: 4 });
       if (comNomes) {
-        escrever('compressão: o campo sobe (Chapman e Ferraro)', naTelaX(0.5) + 8, naTelaY(16), { tamanho: 11.5, cor: '#ffffff', placa: true });
-        escrever(`corrente de anel: o campo cai ${numero(queda, 0)} nT`, naTelaX(9) + 10, naTelaY(-queda) + 2, { tamanho: 11.5, cor: '#ffffff', placa: true });
-        escrever('e volta devagar, em um dia ou dois', naTelaX(30), naTelaY(campoNaTempestade(30, queda)) - 16, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
-        escrever('curva de exemplo (esquema)', (esquerda + direita) / 2, base + 27, { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
+        escrever(T_`compressão: o campo sobe (Chapman e Ferraro)`, naTelaX(0.5) + 8, naTelaY(16), { tamanho: 11.5, cor: '#ffffff', placa: true });
+        escrever(T_`corrente de anel: o campo cai ${numero(queda, 0)} nT`, naTelaX(9) + 10, naTelaY(-queda) + 2, { tamanho: 11.5, cor: '#ffffff', placa: true });
+        escrever(T_`e volta devagar, em um dia ou dois`, naTelaX(30), naTelaY(campoNaTempestade(30, queda)) - 16, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center', placa: true });
+        escrever(T_`curva de exemplo (esquema)`, (esquerda + direita) / 2, base + 27, { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
       }
       ctx.globalAlpha = 1;
     }
@@ -1524,19 +1625,19 @@
       el(id).innerHTML = html;         // só textos fixos e números desta página
     }
 
-    por('nota', `Esquema fora de escala. Algumas fórmulas vieram estragadas do PDF e foram lidas a partir das contas do
+    por('nota', H_`Esquema fora de escala. Algumas fórmulas vieram estragadas do PDF e foram lidas a partir das contas do
       próprio texto: o fator do solo como 1,5 (3/2) e a eq. 5.47 com 10<sup>−14</sup>. Acréscimos: <i>R</i><sub>E</sub> =
       ${comMilhar(RAIO_DA_TERRA_KM)} km, o campo de ${comMilhar(CAMPO_NO_EQUADOR)} nT no equador (para o passo 6) e a
       plasmapausa a ${PLASMAPAUSA} raios. A curva da tempestade, as partículas, as linhas, a inflação e o arco são esquemas.`);
     const SUBTITULOS = {
-      longe: 'De longe: a Terra vista de cima do polo norte; o Sol fica à esquerda.',
-      p1: 'De perto: o campo medido no chão, durante uma tempestade.<span class="longo"> Esquema.</span>',
-      p2: 'De perto: um corte de lado, com o norte em cima.',
-      p3: 'De perto: o anel de corrente, visto de cima.',
-      p4: 'De perto: as partículas da corrente, embaixo da Terra.',
-      p5: 'De perto: a energia guardada nas partículas.',
-      p6: 'De perto: quando a energia das partículas passa a do campo.<span class="longo"> Esquema.</span>',
-      p7: 'De perto: a corrente chegando à plasmapausa.<span class="longo"> Esquema.</span>',
+      longe: H_`De longe: a Terra vista de cima do polo norte; o Sol fica à esquerda.`,
+      p1: H_`De perto: o campo medido no chão, durante uma tempestade.<span class="longo"> Esquema.</span>`,
+      p2: H_`De perto: um corte de lado, com o norte em cima.`,
+      p3: H_`De perto: o anel de corrente, visto de cima.`,
+      p4: H_`De perto: as partículas da corrente, embaixo da Terra.`,
+      p5: H_`De perto: a energia guardada nas partículas.`,
+      p6: H_`De perto: quando a energia das partículas passa a do campo.<span class="longo"> Esquema.</span>`,
+      p7: H_`De perto: a corrente chegando à plasmapausa.<span class="longo"> Esquema.</span>`,
     };
     const nT = (valor, casas = 1) => `${numero(valor, casas)} nT`;
 
@@ -1554,47 +1655,47 @@
       // Visão de longe.
       const lado = ladoDoSatelite();
       por('l-corrente', emAmperes(estado.I));
-      por('l-raio', `${numero(estado.r, 1)} raios da Terra`);
-      por('l-chao', `cai ${nT(queda)}`);
-      por('l-satelite', lado === 'dentro' ? 'dentro: vê o campo cair' : lado === 'fora' ? 'fora: vê o campo subir' : 'no meio da corrente');
+      por('l-raio', H_`${numero(estado.r, 1)} raios da Terra`);
+      por('l-chao', H_`cai ${nT(queda)}`);
+      por('l-satelite', lado === 'dentro' ? H_`dentro: vê o campo cair` : lado === 'fora' ? H_`fora: vê o campo subir` : H_`no meio da corrente`);
 
       // Passo 1.
       por('conta-1', `queda de ${nT(queda, 0)}: ${emAmperes(estado.I)} a ${numero(estado.r, 1)} raios (Δ<i>B</i> ≈ <i>I</i>/<i>r</i>)`);
-      por('valor-1', queda >= 29.5 && queda <= 35.5 ? 'é uma <b>tempestade moderada</b>, como os 30 nT do texto'
-        : `30 nT já seria uma tempestade moderada; aqui, <b>${nT(queda, 0)}</b>`);
+      por('valor-1', queda >= 29.5 && queda <= 35.5 ? H_`é uma <b>tempestade moderada</b>, como os 30 nT do texto`
+        : H_`30 nT já seria uma tempestade moderada; aqui, <b>${nT(queda, 0)}</b>`);
 
       // Passo 2.
-      por('valor-2', 'no chão e dentro do anel: <b>o campo cai</b> · fora<span class="longo"> do anel</span>: <b>o campo sobe</b>');
+      por('valor-2', H_`no chão e dentro do anel: <b>o campo cai</b> · fora<span class="longo"> do anel</span>: <b>o campo sobe</b>`);
 
       // Passo 3: a conta, com os números de agora.
       por('conta-3', `<i>r</i> = ${numero(estado.r, 1)} <i>R</i><sub>E</sub> = ${comMilhar(km)} km`);
       por('conta-3b', `2π × ${comMilhar(estado.I)} ÷ (10 × ${comMilhar(km)}) = ${nT(quedaNoCentro(estado.I, estado.r))}`);
-      por('valor-3', `com o solo (× 1,5): <b>${nT(quedaComOSolo(estado.I, estado.r))}</b><span class="longo">; pela aproximação,</span><span class="curto"> ·</span> <i>I</i>/<i>r</i> = ${nT(queda)}`);
-      por('legenda-3', `<dt>I</dt><dd>a corrente: ${emAmperes(estado.I)}</dd><dt>r</dt><dd>o raio do anel: ${numero(estado.r, 1)} raios da Terra (1 <i>R</i><sub>E</sub> = ${comMilhar(RAIO_DA_TERRA_KM)} km)</dd>`);
+      por('valor-3', H_`com o solo (× 1,5): <b>${nT(quedaComOSolo(estado.I, estado.r))}</b><span class="longo">; pela aproximação,</span><span class="curto"> ·</span> <i>I</i>/<i>r</i> = ${nT(queda)}`);
+      por('legenda-3', `<dt>I</dt><dd>${H_`a corrente: ${emAmperes(estado.I)}`}</dd><dt>r</dt><dd>${H_`o raio do anel: ${numero(estado.r, 1)} raios da Terra (1 <i>R</i><sub>E</sub> = ${comMilhar(RAIO_DA_TERRA_KM)} km)`}</dd>`);
 
       // Passo 4: a deriva é proporcional à energia.
       por('conta-4', `deriva ∝ energia: com ${estado.energia} keV, ${numero(estado.energia / 10, 1)} vezes a de um próton de 10 keV`);
-      por('valor-4', 'prótons para oeste e elétrons para leste: <b>as duas derivas dão corrente para oeste</b>');
+      por('valor-4', H_`prótons para oeste e elétrons para leste: <b>as duas derivas dão corrente para oeste</b>`);
 
       // Passo 5: a energia.
       const E = energiaAgora();
       por('conta-5', `2,6 × 10<sup>−14</sup> × ${cientifico(E, { html: true })} J ≈ ${nT(quedaPelaEnergia(E))}`);
-      por('valor-5', `o campo no chão cai <b>${nT(queda)}</b> (a mesma queda de ${emAmperes(estado.I)} a ${numero(estado.r, 1)} raios)`);
-      por('legenda-5', `<dt>E</dt><dd>a energia total das partículas da corrente de anel, em joules</dd><dt>ΔB</dt><dd>quanto o campo cai no chão, em nT</dd>`);
+      por('valor-5', H_`o campo no chão cai <b>${nT(queda)}</b> (a mesma queda de ${emAmperes(estado.I)} a ${numero(estado.r, 1)} raios)`);
+      por('legenda-5', `<dt>E</dt><dd>${H_`a energia total das partículas da corrente de anel, em joules`}</dd><dt>ΔB</dt><dd>${H_`quanto o campo cai no chão, em nT`}</dd>`);
 
       // Passo 6: a energia do campo a 5 R_E e a das partículas.
       const campo5 = campoDoDipolo(5), razao = razaoDeEnergia();
       por('conta-6', `campo a 5 <i>R</i><sub>E</sub>: ${comMilhar(CAMPO_NO_EQUADOR)} ÷ 5<sup>3</sup> = ${comMilhar(campo5)} nT → <i>B</i><sup>2</sup>/2μ<sub>0</sub> = ${cientifico(densidadeDoCampo(5), { html: true })} J/m³`);
       por('valor-6', razao > 1
-        ? `partículas: ${numero(estado.densidade, 1)} × 10<sup>−8</sup> J/m³, ${numero(razao, 2)} vezes a do campo: <b>β &gt; 1, o campo infla</b>`
-        : `partículas: ${numero(estado.densidade, 1)} × 10<sup>−8</sup> J/m³, ${numero(razao, 2)} da do campo: <b>o campo segura</b>`);
+        ? H_`partículas: ${numero(estado.densidade, 1)} × 10<sup>−8</sup> J/m³, ${numero(razao, 2)} vezes a do campo: <b>β &gt; 1, o campo infla</b>`
+        : H_`partículas: ${numero(estado.densidade, 1)} × 10<sup>−8</sup> J/m³, ${numero(razao, 2)} da do campo: <b>o campo segura</b>`);
 
       // Passo 7.
       por('valor-7', encontrouAPlasmapausa()
-        ? `a corrente começa a ${numero(estado.borda, 1)} raios: <b>encontrou a plasmapausa</b>, e o arco acende`
-        : `a corrente começa a ${numero(estado.borda, 1)} raios: <b>ainda não chegou à plasmapausa</b> (${PLASMAPAUSA} raios, esquema)`);
+        ? H_`a corrente começa a ${numero(estado.borda, 1)} raios: <b>encontrou a plasmapausa</b>, e o arco acende`
+        : H_`a corrente começa a ${numero(estado.borda, 1)} raios: <b>ainda não chegou à plasmapausa</b> (${PLASMAPAUSA} raios, esquema)`);
 
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 7`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 7`);
     }
 
     function mostrarPasso(novo) {
@@ -1611,6 +1712,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -1623,6 +1725,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -1752,6 +1855,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

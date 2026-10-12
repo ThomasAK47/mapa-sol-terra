@@ -52,7 +52,10 @@ pedidas pela pessoa usuária, um commit para cada:
   `animacoes/corrente-de-anel.html` e `animacoes/flare-solar.html` (veja
   "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
-  dos dados): veja "Legibilidade dos cards" e "Modelo de dados".
+  dos dados): veja "Legibilidade dos cards" e "Modelo de dados";
+- textos editáveis das animações (botão "Editar textos" da janela da
+  animação, com prévia e gravação no próprio arquivo): veja "Textos editáveis
+  das animações".
 
 O que vem depois também é decidido por ela:
 
@@ -102,7 +105,8 @@ O que vem depois também é decidido por ela:
 | `js/interacao.js` | Ponteiro: pan, arrastar card, arrastar a alça de conexão (nova conexão), arrastar a alça de tamanho (o card cresce em volta do centro; duplo clique volta a 100%), clique, duplo clique, pinça, mapa andando sozinho perto da borda |
 | `js/painel.js` | Painel lateral (edição e leitura): campos, card pai (sem ele mesmo nem descendentes, agrupado por zona), filhos com recolher/expandir, campo "Animações" (as do card em ordem, cada uma com abrir/subir/tirar, e uma lista do manifesto para acrescentar; uma animação fora do manifesto continua no card, com aviso) ou um botão por animação na leitura, conexões do card |
 | `js/animacoes.js` | Manifesto (`animacoes/manifesto.json`): leitura ao iniciar e quando a janela volta ao foco, `validarManifesto` (função pura, avisos em português), `arquivoDeAnimacaoValido` (regra do nome), `infoDaAnimacao`, `aoMudarManifesto` |
-| `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard(id, indice)`, `abrirAnimacao`, `fecharAnimacao`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", botões 1, 2, 3… quando o card tem várias animações (cada troca descarrega a anterior), fecha com ×/Esc/clique fora/mensagem `fechar-animacao` |
+| `js/janela-animacao.js` | Janela da animação: `abrirAnimacaoDoCard(id, indice)`, `abrirAnimacao`, `fecharAnimacao({ forcar })`, `animacaoAberta`. Confere o arquivo (HEAD), cria o iframe com sandbox, "Recomeçar", botões 1, 2, 3… quando o card tem várias animações (cada troca descarrega a anterior), fecha com ×/Esc/clique fora/mensagem `fechar-animacao`. Botão "Editar textos" (só no modo `edicao`), que abre o editor ao lado; `carregar({ manterLugar })` põe a prévia e o lugar depois do `#`; guarda `ondeEsta` (mensagem `animacao-esta-em`); com textos não salvos, fechar e trocar de animação perguntam antes |
+| `js/editor-textos.js` | Editor dos textos de uma animação: lê o HTML (`lerTextosDaAnimacao`: `data-texto`, `T_`/`H_` achados por `acharTextosNoScript`, o bloco `textos-editados`), agrupa (cabeçalho, passos, controles, "textos que mudam", seções do desenho, "não usa mais"), campos com enfeites (`limparEnfeites`, `execCommand`), marcadores `{0}` conferidos, prévia (`textosDaPrevia`, ~0,9 s sem digitar), procurar, "Só o que está na tela", Salvar (Ctrl+S) / Descartar, conflito (409) |
 | `js/acoes.js` | Operações: cards (criar, excluir, mudar zona, `acrescentarAnimacao`, `removerAnimacao`, `subirAnimacao`, `definirEscalaDoCard`, `definirEscalaDosCards`), zonas (`editarZona`, `criarZonaDepoisDe`, `excluirZona`), hierarquia (`alternarRecolhido`, `expandirCards`, `expandirAte`, `definirPai`), conexões (criar, texto, inverter, seta, excluir, descartar nova), enquadrar, abrir link |
 | `js/barra.js` | Barra de ferramentas, indicador de salvamento, botão de efeitos (`#bt-efeitos`), menu de opções (barra "Tamanho de todos os cards", modo da roda), atalhos (desligados com a janela de animação aberta, exceto Esc e Ctrl+S) |
 | `js/avisos.js` | Toasts, faixas e janelas de confirmação/escolha |
@@ -231,6 +235,17 @@ cards no tamanho 2×), e o ícone da animação ficava escondido. Em `js/cards.j
   - cabeçalho opcional `X-Backup-Antes: <motivo>`;
   - respostas: 200 `{ok, versao}`, 409 (conflito), 400/422 (JSON inválido ou
     sem o formato), 403/415/413.
+- `POST /api/textos-da-animacao` (o editor de textos):
+  - as mesmas checagens de `Host`, `Origin`, `Content-Type` e tamanho (até 2 MB);
+  - corpo `{ arquivo, antes, textos, forcar }`. O nome segue
+    `^[a-z0-9][a-z0-9_-]*\.html$` e o arquivo precisa existir em `animacoes/`;
+  - troca **só** o bloco `<script type="application/json"
+    id="textos-editados">` (regex em bytes; o resto do arquivo e o fim de linha
+    ficam iguais). O JSON sai indentado, em UTF-8, com `<` escrito `<`;
+  - se o bloco do arquivo não for igual a `antes`, responde 409 com os textos
+    atuais (a menos que venha `forcar`);
+  - respostas: 200 `{ok, textos}`, 409, 404 (`animacao-inexistente`), 422
+    (`arquivo-invalido`, `textos-invalidos`, `sem-textos-editaveis`), 403/415/413.
 
 **Gravação e backups:**
 
@@ -241,6 +256,10 @@ cards no tamanho 2×), e o ícone da animação ficava escondido. Em `js/cards.j
 - `seguranca-<carimbo>-<motivo>.json` é feito antes de sobrescrever num
   conflito, de importar, de gravar dados reparados, ou quando uma gravação
   remove mais da metade dos cards (mantém 30).
+- `data/backups/animacoes/<nome>-<carimbo>.html` é a cópia do arquivo da
+  animação antes de cada gravação de textos (mantém 20 por animação). A
+  gravação é atômica, como a dos dados (o `.tmp` fica em `animacoes/` por um
+  instante e não é servido).
 
 **Proteções:**
 
@@ -420,6 +439,69 @@ nos dados.
   chame o `.bat` pelo caminho completo ao testar (como o Explorer faz).
 - **Firefox:** leia `deltaMode` antes de `deltaY` nos eventos de roda. Ele
   informa "linhas" para a roda do mouse.
+
+## Textos editáveis das animações
+
+Pedido da pessoa usuária: trocar os textos das animações (completar uma
+explicação, cortar o que sobra) sem pedir a reescrita numa conversa. **As
+fórmulas e as contas ficam de fora:** essas ela pede numa conversa.
+
+- **No arquivo de cada animação:**
+  - o bloco `<script type="application/json" id="textos-editados">`, logo
+    antes do script principal: `{ versao: 1, painel, gerados, desenho }`, só
+    com as trocas (o original continua no código). Quem grava é o app;
+  - `painel`: elementos com `data-texto="nome"` (chave = o nome). Ao abrir, o
+    trecho comum troca o `innerHTML` deles (depois de `textoSeguro`);
+  - `gerados`: textos do painel montados pelo script, escritos como
+    `` H_`…` `` (chave = o texto, com `{0}`, `{1}`… no lugar de cada `${…}`);
+  - `desenho`: textos do canvas, `` T_`…` `` (mesma regra de chave; texto
+    puro). `T_` anota quando cada texto foi usado (`textosVistos`);
+  - enfeites aceitos: `b`, `strong`→`b`, `i`, `em`→`i`, `sup`, `sub`,
+    `small`, `br` e `span`, só com o atributo `class`. O conteúdo de
+    `script`/`style` é descartado;
+  - o trecho comum (o "1b" do `_modelo.html`, igual ao do CONTRATO.md), logo
+    depois do trecho do Esc. `avisarOndeEsta()` fica no fim de `mostrarVisao` e
+    de `mostrarPasso`; `voltarAoLugarDaPrevia()` na última linha do script.
+- **Por que `T_` e `H_`, com traço:** `T` e `H` colidiam com variáveis das
+  animações (um `const T` local na geo-2 escondia a função, e o passo 1 parava
+  com erro a cada quadro; o flare usa `T` para temperatura e `H` para altura).
+- **Nomes de `data-texto`** (o editor agrupa e rotula por eles):
+  `titulo-complemento`, `resumo-titulo`, `resumo-texto`, `leitura-<id do dd>`,
+  `dica`, `botao-ver-de-perto`, `controle-<id do input>` e, dentro de
+  `[data-passo]`, `passo-N-titulo` (o texto do botão, num `<span>`),
+  `passo-N-explicacao` (`-2` se houver outra), `passo-N-item-K` (ou
+  `passo-N-item-K-<classe>` para as partes de um item, como nas causas do
+  vento solar) e `passo-N-legenda` (os `<dd>` fixos). N começa em 1.
+- **Ficaram de fora, de propósito:** `por('conta-…')`, `o-…`, `formula-…` e
+  `tabela` (a geo-2 tem os cabeçalhos como `H_` dentro dela); objetos com
+  `formula: true` e `escreverFormula`; textos que são só número, símbolo e
+  unidade (`B = ${…}`, `${…} nPa`); os `<dt>` das legendas (os `<dd>` são
+  editáveis, inclusive os montados em `por('legenda-…')`); palavras soltas de
+  funções de formatação (`latitudeEmTexto`, `emRaios`, `vezesMenor`).
+- **As sete animações foram convertidas em 2026-10-12** por um conversor feito
+  para isso (fica fora do repositório). Depois de convertidas, passaram nos
+  testes de antes (94) e por todos os passos sem erro no console. Animações
+  novas já vêm assim, pelo contrato.
+- **No app** (`js/editor-textos.js`, só no modo `edicao`):
+  - lê o HTML da animação com `fetch` e `DOMParser` (documento inerte);
+    `acharTextosNoScript` percorre o script pulando comentários, aspas e
+    expressões regulares, e entra nos `${…}` (há `H_` dentro de templates);
+  - a prévia recria o iframe com `#textos=<JSON>&perto=1&passo=N`
+    (`URLSearchParams`). Mudar só o `#` de uma página aberta não a recarrega:
+    por isso o iframe é sempre recriado;
+  - as mensagens novas, aceitas só do iframe aberto: `animacao-esta-em
+    { perto, passo }` e `textos-na-tela { chaves }`, resposta a
+    `quais-textos-na-tela` (o app pergunta a cada 1 s com o filtro ligado).
+    A conta "na tela" usa os `T_` do último segundo e o painel do passo aberto;
+    os `H_` não entram nela;
+  - campos do painel: `contenteditable` (Enter = `<br>`, colar = texto puro,
+    B/I/x²/x₂ por `execCommand`); do desenho: `<textarea>` de uma linha;
+  - um texto `H_`/`T_` sem algum dos seus marcadores fica com aviso e não entra
+    nas trocas (vale o último valor bom). Texto vazio vale (tira o texto).
+- **Armadilhas:** um campo dentro de um `<details>` fechado não recebe foco
+  (os testes abrem o grupo antes de escrever); não marque com `data-texto` um
+  elemento que o script preenche (o conversor pulou os vazios e os com id
+  usado em `por`).
 
 ## Contrato das animações
 
@@ -647,7 +729,8 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
   agora, resultado, legenda). Cada arquivo é independente: o estilo é copiado,
-  não compartilhado.
+  não compartilhado. Os textos seguem "Textos editáveis das animações"
+  (`data-texto`, `T_`, `H_`, bloco e trecho comum).
   - Com a mesma ideia de teste: `estado`, `mostrarVisao` e `mostrarPasso` no
     escopo global.
   - Na área mínima do contrato (360 × 300 px) o painel ocupa quase tudo e
@@ -680,8 +763,9 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     mensagem explicativa no lugar do iframe.
   - O foco fica no `<dialog>` (`tabindex="-1"`), não no primeiro botão.
   - O Esc na janela usa `stopPropagation`, para não fechar o painel junto.
-- **Mensagem aceita:** só `{ tipo: 'fechar-animacao' }` (o Esc com o foco dentro
-  da animação), e só se `evento.source` for o iframe aberto.
+- **Mensagens aceitas** (só se `evento.source` for o iframe aberto):
+  `{ tipo: 'fechar-animacao' }` (o Esc com o foco dentro da animação) e as duas
+  dos textos editáveis, `animacao-esta-em` e `textos-na-tela`.
 - **Sandbox:** a animação não acessa `localStorage` nem `parent` (dá
   `SecurityError`). Também não abre `alert`, pop-ups ou tela cheia. O contrato
   explica isso a quem escreve as animações.

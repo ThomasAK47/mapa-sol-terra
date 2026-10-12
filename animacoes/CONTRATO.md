@@ -89,7 +89,7 @@ param o script inteiro.
 | Não use | O que fazer em vez disso |
 |---|---|
 | `localStorage`, `sessionStorage`, `indexedDB`, cookies | Guarde o estado em variáveis |
-| `parent`, `top`, `window.opener` | Nada: a animação não tem acesso ao app (a única exceção é a mensagem do Esc, abaixo) |
+| `parent`, `top`, `window.opener` | Nada: a animação não tem acesso ao app (as exceções são as mensagens do Esc e dos textos editáveis, abaixo) |
 | `alert()`, `confirm()`, `prompt()` | Escreva a mensagem na própria tela |
 | `window.open()`, links com `target="_blank"` | Referências vão no Google Docs do card |
 | `<form>` com envio | Botões com JavaScript |
@@ -112,13 +112,169 @@ param o script inteiro.
   });
   ```
 
-  É a única mensagem que o mapa aceita da animação; qualquer outra é ignorada.
+  Além dela, o mapa só aceita as duas mensagens do trecho dos textos editáveis
+  (abaixo); qualquer outra é ignorada.
 
 ### Conteúdo
 
 - A animação é um apoio visual ao estudo.
 - Se ela simplificar escala, tempo ou proporções, diga isso numa frase na
   própria tela (ex.: "tamanhos e distâncias fora de escala").
+
+### Textos editáveis
+
+No mapa, o botão **Editar textos** da janela da animação deixa a pessoa trocar
+os textos (completar uma explicação, tirar uma frase) sem mexer no código. As
+trocas ficam gravadas no próprio arquivo, num bloco JSON. **As fórmulas e as
+contas não são editáveis:** elas só mudam por um pedido numa conversa. Para o
+botão funcionar, a animação precisa de cinco coisas:
+
+1. **Textos fixos do HTML** (legenda, painel, explicações): marque cada um com
+   `data-texto="nome"`. O nome é único no arquivo (minúsculas e hífens).
+   - Dentro do texto valem só estes enfeites: `<b>`, `<i>`, `<sup>`, `<sub>`,
+     `<small>`, `<br>` e `<span class="…">`.
+   - Não marque fórmulas, números nem elementos que o script preenche.
+   - O editor agrupa pelos nomes: `titulo-complemento`, `resumo-titulo`,
+     `resumo-texto`, `leitura-<id>`, `dica`, `botao-ver-de-perto`,
+     `controle-<id>` e, dentro de um elemento com `data-passo="N"` (N a partir
+     de 0), `passo-<N+1>-titulo`, `passo-<N+1>-explicacao`,
+     `passo-<N+1>-item-<K>` e `passo-<N+1>-legenda`. Outros nomes também
+     funcionam.
+2. **Textos do desenho** (canvas): escreva cada um como `` T_`…` ``, com os
+   números em `${…}`:
+
+   ```js
+   escrever(T_`o campo cai ${numero(queda)} nT`, x, y);
+   ```
+
+   Na tela de edição, cada `${…}` aparece como um marcador `{0}`, `{1}`…, que
+   a pessoa mantém ao reescrever. Texto do desenho não tem enfeites.
+3. **Textos do painel montados pelo script:** escreva como `` H_`…` `` (aceita
+   os mesmos enfeites do item 1):
+
+   ```js
+   valor.innerHTML = H_`a parede fica a <b>${numero(r)} raios da Terra</b>`;
+   ```
+
+   Fórmulas e contas ficam fora de `T_` e `H_` (ex.: `` `B = ${b} nT` ``,
+   `` `= ${a} × ${b}` ``). **Não use `T_` nem `H_` como nomes de variáveis.**
+4. **O bloco das trocas, vazio,** logo antes do `<script>` principal:
+
+   ```html
+   <script type="application/json" id="textos-editados">
+   {
+     "versao": 1,
+     "painel": {},
+     "gerados": {},
+     "desenho": {}
+   }
+   </script>
+   ```
+
+5. **O trecho comum,** logo depois do trecho do Esc, sem mudanças. Ele define
+   `T_` e `H_`, aplica as trocas e conversa com o mapa (duas mensagens: onde a
+   animação está e quais textos do desenho estão na tela):
+
+   ```js
+   // -------------------------------------------------------------------------
+   // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+   //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+   //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+   //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+   //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+   //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+   // -------------------------------------------------------------------------
+   const TEXTOS_EDITADOS = (() => {
+     const ler = (json) => {
+       try {
+         const d = JSON.parse(json);
+         return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+       } catch {
+         return null;
+       }
+     };
+     // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+     const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+     const bloco = document.getElementById('textos-editados');
+     return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+   })();
+   const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+   /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+    *  trechos (span), com a classe e nenhum outro atributo. */
+   function textoSeguro(html) {
+     const modelo = document.createElement('template');
+     modelo.innerHTML = String(html);
+     const copiar = (origem, destino) => {
+       for (const no of origem.childNodes) {
+         if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+         else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+           const nome = ENFEITES_PERMITIDOS[no.tagName];
+           if (!nome) {
+             copiar(no, destino);
+             continue;
+           }
+           const novo = document.createElement(nome);
+           const classe = no.getAttribute('class');
+           if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+           copiar(no, novo);
+           destino.append(novo);
+         }
+       }
+     };
+     const saida = document.createElement('div');
+     copiar(modelo.content, saida);
+     return saida.innerHTML;
+   }
+   /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+   const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+   const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+   const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+   /** Um texto do desenho (simples, sem enfeites). */
+   function T_(partes, ...valores) {
+     const chave = chaveDoTexto(partes);
+     textosVistos.set(chave, performance.now());
+     const trocado = TEXTOS_EDITADOS.desenho[chave];
+     return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+   }
+   /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+   function H_(partes, ...valores) {
+     const chave = chaveDoTexto(partes);
+     const trocado = TEXTOS_EDITADOS.gerados[chave];
+     return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+   }
+   // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+   for (const elemento of document.querySelectorAll('[data-texto]')) {
+     const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+     if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+   }
+   /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+   function avisarOndeEsta() {
+     const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+     window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+   }
+   /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+   function voltarAoLugarDaPrevia() {
+     const dados = new URLSearchParams(location.hash.slice(1));
+     if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+       mostrarVisao(true);
+       if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+     }
+     avisarOndeEsta();
+   }
+   // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+   window.addEventListener('message', (evento) => {
+     if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+     const agora = performance.now();
+     const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+     window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
+   });
+   ```
+
+   A prévia da edição recarrega a animação. Para ela voltar à mesma visão e ao
+   mesmo passo, uma animação com passos (`estado.perto`, `estado.passo`,
+   `mostrarVisao(perto)` e `mostrarPasso(n)`) chama `avisarOndeEsta()` no fim
+   de `mostrarVisao` e de `mostrarPasso`. Toda animação chama
+   `voltarAoLugarDaPrevia()` na última linha do script.
 
 ## 5. Esqueleto mínimo
 
@@ -258,6 +414,8 @@ Exemplo com duas animações (repare na vírgula entre os itens):
    - ao redimensionar a janela do navegador, ela se ajusta;
    - clicando dentro da animação e apertando Esc, a janela fecha;
    - no console do navegador (F12 → Console), não há erros em vermelho;
+   - no botão **Editar textos**, os textos aparecem na lista; trocar um deles
+     muda a animação (a prévia) no mesmo passo;
    - se ela usa biblioteca por CDN: sem internet, aparece um aviso.
 3. Também dá para abrir o arquivo direto, em
    `http://127.0.0.1:8000/animacoes/nome-do-arquivo.html`, com o mesmo
@@ -269,6 +427,9 @@ Exemplo com duas animações (repare na vírgula entre os itens):
 - [ ] Fundo preto, 100% da área, sem barras de rolagem
 - [ ] Ajusta ao redimensionar; canvas com `devicePixelRatio`
 - [ ] Trecho do Esc incluído
+- [ ] Textos editáveis: `data-texto` nos textos fixos, `T_` e `H_` nos textos
+      do script (fora das fórmulas), bloco `textos-editados` vazio, trecho
+      comum depois do Esc e `voltarAoLugarDaPrevia()` no fim do script
 - [ ] Nada de `localStorage`, `alert`, `window.open`, formulário com envio ou
       `fetch` de arquivo local
 - [ ] Bibliotecas (se houver) por CDN, com versão fixa e aviso quando não

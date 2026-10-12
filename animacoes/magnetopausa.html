@@ -392,7 +392,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Magnetopausa<span class="longo">: onde o vento solar e o campo da Terra se equilibram</span></h1>
+    <h1>Magnetopausa<span class="longo" data-texto="titulo-complemento">: onde o vento solar e o campo da Terra se equilibram</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -405,7 +405,7 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>A parede vista de longe</h2>
+        <h2 data-texto="resumo-titulo">A parede vista de longe</h2>
         <p>O <span class="vento">vento solar</span> vem do Sol, que fica à esquerda. A linha branca é a
           <b>magnetopausa</b>: a "parede" onde a pressão do vento se iguala à pressão do
           <span class="campo">campo magnético da Terra</span>.</p>
@@ -414,8 +414,8 @@
           <span class="campo"><span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span></span>
         </div>
         <dl class="leituras">
-          <div><dt>Pressão do vento de frente para o Sol</dt><dd id="l-pressao"></dd></div>
-          <div><dt>Distância da parede de frente para o Sol</dt><dd id="l-distancia"></dd></div>
+          <div><dt data-texto="leitura-l-pressao">Pressão do vento de frente para o Sol</dt><dd id="l-pressao"></dd></div>
+          <div><dt data-texto="leitura-l-distancia">Distância da parede de frente para o Sol</dt><dd id="l-distancia"></dd></div>
           <div><dt id="l-ponto-nome"></dt><dd id="l-ponto"></dd></div>
         </dl>
       </section>
@@ -424,12 +424,12 @@
            com os números de agora, o resultado e o que é cada letra. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>Partículas que batem na parede</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">Partículas que batem na parede</span></button>
           <div class="passo-corpo">
             <div class="formula vento"><i>N</i>·<i>v</i>·cos <i>ψ</i></div>
             <div class="conta" id="conta-0"></div>
             <div class="valor" id="valor-0"></div>
-            <p class="explicacao">É o número de partículas que batem, por segundo, em cada m² da magnetopausa.</p>
+            <p class="explicacao" data-texto="passo-1-explicacao">É o número de partículas que batem, por segundo, em cada m² da magnetopausa.</p>
             <dl class="legenda">
               <dt>N</dt><dd id="leg-n"></dd>
               <dt>v</dt><dd id="leg-v"></dd>
@@ -438,7 +438,7 @@
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>Momento que cada partícula entrega</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">Momento que cada partícula entrega</span></button>
           <div class="passo-corpo">
             <div class="formula pequena vento" id="formula-1"></div>
             <div class="conta" id="conta-1"></div>
@@ -450,26 +450,26 @@
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>Pressão do vento solar</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">Pressão do vento solar</span></button>
           <div class="passo-corpo">
             <div class="formula pequena vento">(<i>N</i>·<i>v</i>·cos <i>ψ</i>) × (2·<i>m</i>·<i>v</i>·cos <i>ψ</i>)<br>
               = 2·<i>N</i>·<i>m</i>·<i>v</i><sup>2</sup>·cos<sup>2</sup> <i>ψ</i></div>
             <div class="conta" id="conta-2"></div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">Partículas por segundo vezes o momento de cada uma: é o momento transferido, por segundo,
+            <p class="explicacao" data-texto="passo-3-explicacao">Partículas por segundo vezes o momento de cada uma: é o momento transferido, por segundo,
               a cada m² da magnetopausa. Isso é uma pressão.</p>
             <dl class="legenda">
-              <dt class="unidade">nPa</dt><dd>nanopascal: 1 nPa = 10<sup>−9</sup> Pa (pascal, a unidade de pressão)</dd>
+              <dt class="unidade">nPa</dt><dd data-texto="passo-3-legenda">nanopascal: 1 nPa = 10<sup>−9</sup> Pa (pascal, a unidade de pressão)</dd>
             </dl>
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Pressão magnética do campo da Terra</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Pressão magnética do campo da Terra</span></button>
           <div class="passo-corpo">
             <div class="formula campo"><span class="fr"><span><i>B</i><sup>2</sup></span><span>2<i>μ</i><sub>0</sub></span></span></div>
             <div class="conta" id="conta-3"></div>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">Do outro lado da parede, o campo magnético da Terra empurra de volta. Quanto mais perto
+            <p class="explicacao" data-texto="passo-4-explicacao">Do outro lado da parede, o campo magnético da Terra empurra de volta. Quanto mais perto
               da Terra, mais forte é o campo.</p>
             <dl class="legenda">
               <dt>B</dt><dd id="leg-b"></dd>
@@ -478,7 +478,7 @@
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>Equilíbrio: onde fica a parede</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">Equilíbrio: onde fica a parede</span></button>
           <div class="passo-corpo">
             <div class="formula pequena">
               <span class="vento">2·<i>N</i>·<i>m</i>·<i>v</i><sup>2</sup>·cos<sup>2</sup> <i>ψ</i></span> =
@@ -489,12 +489,12 @@
               <div class="barra"><span class="campo">campo</span><span class="trilho"><span class="nivel campo" id="barra-campo"></span></span><span class="num" id="num-campo"></span></div>
             </div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">As duas pressões só se igualam numa distância, porque o campo cai depressa ao se afastar
+            <p class="explicacao" data-texto="passo-5-explicacao">As duas pressões só se igualam numa distância, porque o campo cai depressa ao se afastar
               da Terra: <i>B</i> = <i>B</i><sub>0</sub>·(<i>R</i><sub>T</sub>/<i>r</i>)<sup>3</sup>. Mude <i>N</i> ou <i>v</i>
               e veja a parede procurar o novo lugar.</p>
             <dl class="legenda">
               <dt>B<sub>0</sub></dt><dd id="leg-b0"></dd>
-              <dt>R<sub>T</sub>, r</dt><dd>raio da Terra e distância até o centro dela</dd>
+              <dt>R<sub>T</sub>, r</dt><dd data-texto="passo-5-legenda">raio da Terra e distância até o centro dela</dd>
             </dl>
           </div>
         </li>
@@ -502,9 +502,9 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Mude <i>N</i> e <i>v</i>, embaixo do desenho, e veja a parede se mover. Arraste o ponto sobre a
+      <p class="dica" data-texto="dica">Mude <i>N</i> e <i>v</i>, embaixo do desenho, e veja a parede se mover. Arraste o ponto sobre a
         linha branca para escolher onde olhar de perto.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: como a conta é feita</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -523,11 +523,11 @@
 
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle"><span class="nome"><i>N</i><small>densidade</small></span><output id="o-n"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-n"><i>N</i><small>densidade</small></span><output id="o-n"></output>
         <input id="c-n" type="range" min="1" max="30" step="0.5" value="5"></label>
-      <label class="controle"><span class="nome"><i>v</i><small>velocidade</small></span><output id="o-v"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-v"><i>v</i><small>velocidade</small></span><output id="o-v"></output>
         <input id="c-v" type="range" min="250" max="800" step="10" value="400"></label>
-      <label class="controle"><span class="nome"><i>ψ</i><small>ponto na parede</small></span><output id="o-psi"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-psi"><i>ψ</i><small>ponto na parede</small></span><output id="o-psi"></output>
         <input id="c-psi" type="range" min="0" max="80" step="1" value="0"></label>
       <div class="botoes">
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
@@ -538,6 +538,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -546,6 +554,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -1020,7 +1121,7 @@
       ctx.moveTo(terra.x, yMedida - 4); ctx.lineTo(terra.x, yMedida + 4);
       ctx.stroke();
       // O texto fica no meio da medida; se for mais largo que ela, começa no nariz (para não cruzar a parede).
-      const textoDaMedida = `${numero(r0)} raios da Terra`;
+      const textoDaMedida = T_`${numero(r0)} raios da Terra`;
       ctx.font = `500 12px ${FONTE}`;
       const cabeNaMedida = ctx.measureText(textoDaMedida).width + 12 <= terra.x - nariz;
       const yDoTexto = yMedida + ladoDaMedida * 19;
@@ -1038,7 +1139,7 @@
       ctx.arc(terra.x, terra.y, raioDaTerra, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = alfa * longeDoZoom;
-      escrever('Terra', terra.x, terra.y - ladoDaMedida * (raioDaTerra + 9), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      escrever(T_`Terra`, terra.x, terra.y - ladoDaMedida * (raioDaTerra + 9), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
 
       // Vento solar: riscos laranja que vêm da esquerda e voltam ao bater na parede.
       ctx.lineCap = 'round';
@@ -1083,11 +1184,11 @@
       const alturaLivre = cena.h - ESPACO_DO_TITULO;
       if (alturaLivre > 150) {                                      // em telas muito baixas, a legenda não cabe
         seta(cena.x + 18, noAlto, cena.x + 60, noAlto, { cor: `rgb(${COR_VENTO})`, espessura: 1.5, ponta: 6 });
-        escrever('vento solar', cena.x + 68, noAlto, { tamanho: 12.5, cor: `rgb(${COR_VENTO})`, peso: 600 });
-        if (alturaLivre > 200) escrever('o Sol fica bem longe, à esquerda', cena.x + 18, noAlto + 17, { tamanho: 11, cor: '#747474' });
+        escrever(T_`vento solar`, cena.x + 68, noAlto, { tamanho: 12.5, cor: `rgb(${COR_VENTO})`, peso: 600 });
+        if (alturaLivre > 200) escrever(T_`o Sol fica bem longe, à esquerda`, cena.x + 18, noAlto + 17, { tamanho: 11, cor: '#747474' });
       }
       if (r0 * S > 46) {
-        escrever('campo da Terra', telaX(r0 * 0.85), telaY(ladoDaMedida * r0 * 0.78), { tamanho: 12.5, cor: `rgb(${COR_CAMPO})`, alinhar: 'center', peso: 600 });
+        escrever(T_`campo da Terra`, telaX(r0 * 0.85), telaY(ladoDaMedida * r0 * 0.78), { tamanho: 12.5, cor: `rgb(${COR_CAMPO})`, alinhar: 'center', peso: 600 });
       }
       // "magnetopausa", acompanhando a curva no flanco de cima (ou no de baixo, se o ponto marcado estiver ali).
       const q = pontoDaCurva(2.3);
@@ -1095,7 +1196,7 @@
       ctx.save();
       ctx.translate(telaX(q.x * r0), telaY(flanco * q.y * r0));
       ctx.rotate(-flanco * (Math.PI / 2 - q.psi));
-      escrever('magnetopausa', 0, -flanco * 16, { tamanho: 12.5, alinhar: 'center', peso: 600 });
+      escrever(T_`magnetopausa`, 0, -flanco * 16, { tamanho: 12.5, alinhar: 'center', peso: 600 });
       ctx.restore();
 
       // O ponto escolhido: de onde o vento chega, a perpendicular à parede e o ângulo ψ entre os dois.
@@ -1367,9 +1468,9 @@
         ctx.beginPath();
         ctx.moveTo(feixe.a.x, feixe.a.y); ctx.lineTo(feixe.b.x, feixe.b.y);
         ctx.stroke();
-        escrever('feixe de 1 m²', feixe.inicio + 34, feixe.a.y - 14, { tamanho: 12, cor: `rgb(${COR_VENTO})`, placa: true });
+        escrever(T_`feixe de 1 m²`, feixe.inicio + 34, feixe.a.y - 14, { tamanho: 12, cor: `rgb(${COR_VENTO})`, placa: true });
         // O texto do trecho fica encostado no meio dele, do lado do campo.
-        const texto = deFrente ? 'cobre 1 m² de parede' : `cobre ${numero(1 / Math.cos(psi), 2)} m² de parede (1/cos ψ)`;
+        const texto = deFrente ? T_`cobre 1 m² de parede` : T_`cobre ${numero(1 / Math.cos(psi), 2)} m² de parede (1/cos ψ)`;
         escrever(texto, C.x - n.x * 24 + 8, C.y - n.y * 24, { tamanho: 12, peso: 600, placa: true });
       }
 
@@ -1379,9 +1480,9 @@
       // Os nomes dos dois lados. Nos passos de pressão, a fórmula de cada lado aparece junto do nome.
       const corDoVento = `rgb(${COR_VENTO})`, corDoCampo = `rgb(${COR_CAMPO})`;
       const cabeMais = alturaLivre > 170;                           // em telas muito baixas, só os nomes
-      const blocoDoVento = [{ texto: 'vento solar', tamanho: 13, cor: corDoVento, peso: 600 }];
+      const blocoDoVento = [{ texto: T_`vento solar`, tamanho: 13, cor: corDoVento, peso: 600 }];
       if (cabeMais && (passo === 2 || passo === 4)) blocoDoVento.push({ texto: '2·N·m·v²·cos² ψ', tamanho: 15, cor: corDoVento, formula: true });
-      const blocoDoCampo = [{ texto: 'campo da Terra', tamanho: 13, cor: corDoCampo, peso: 600 }];
+      const blocoDoCampo = [{ texto: T_`campo da Terra`, tamanho: 13, cor: corDoCampo, peso: 600 }];
       if (cabeMais) blocoDoCampo.push({ texto: `B = ${emNanotesla(c.B)}`, tamanho: 11.5, cor: '#a9a9a9' });
       if (cabeMais && passo >= 3) blocoDoCampo.push({ texto: 'B²/2μ₀', tamanho: 15, cor: corDoCampo, formula: true });
       const dentro = (ponto, bloco) => ({
@@ -1404,7 +1505,7 @@
         // No passo 2, "vento solar" fica no começo do caminho da partícula em destaque (se couber).
         const comeco = C.x - percursoDaParticula(C) - 16;
         ctx.globalAlpha = alfa;
-        if (comeco - 76 > cena.x) escrever('vento solar', comeco, C.y, { tamanho: 13, cor: corDoVento, alinhar: 'right', peso: 600 });
+        if (comeco - 76 > cena.x) escrever(T_`vento solar`, comeco, C.y, { tamanho: 13, cor: corDoVento, alinhar: 'right', peso: 600 });
         ctx.globalAlpha = alfa * 0.75;
       } else {
         ctx.globalAlpha = alfa;
@@ -1416,7 +1517,7 @@
       ctx.save();
       ctx.translate(C.x + paraCima.x * noAlto - n.x * 14, C.y + paraCima.y * noAlto - n.y * 14);
       ctx.rotate(giroLegivel(Math.atan2(paraCima.y, paraCima.x)));
-      escrever('magnetopausa', 0, 0, { tamanho: 12.5, alinhar: 'center', peso: 600 });
+      escrever(T_`magnetopausa`, 0, 0, { tamanho: 12.5, alinhar: 'center', peso: 600 });
       ctx.restore();
       ctx.restore();
       ctx.globalAlpha = 1;
@@ -1528,7 +1629,7 @@
         ctx.save();
         ctx.translate(C.x + n.x * 104 - n.y * paraASaida * 11, C.y + n.y * 104 + n.x * paraASaida * 11);
         ctx.rotate(giroLegivel(Math.atan2(n.y, n.x)));
-        escrever('perpendicular à parede', 0, 0, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(T_`perpendicular à parede`, 0, 0, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
         ctx.restore();
       }
 
@@ -1537,7 +1638,7 @@
       const ladoDaPerpendicular = Math.abs(n.y) > 0.02 ? Math.sign(n.y) : (estado.lado > 0 ? -1 : 1);
       const ladoDoAntes = quaseDeFrente ? -ladoDaPerpendicular : ladoDaPerpendicular;
       const cabeAntes = (texto) => percurso - 6 - larguraComPalavra(texto, formulaDe('+')).total >= 84;
-      const palavraAntes = cabeAntes('antes') ? 'antes' : '';
+      const palavraAntes = cabeAntes(T_`antes`) ? T_`antes` : '';
       if (cabeAntes(palavraAntes)) {
         ctx.globalAlpha = alfa * (chegando ? 1 : 0.5);
         const meia = larguraComPalavra(palavraAntes, formulaDe('+')).total / 2;
@@ -1549,11 +1650,11 @@
         if (deFrente) paraFora = lateral.y * ladoDaPerpendicular > 0 ? 1 : -1;  // de frente: do lado oposto ao do "antes"
         const porFora = psi < 1.13;                                             // perto de 65°, a saída encosta na parede
         const afasta = porFora ? paraFora * 22 : -paraFora * 34;
-        const meia = larguraComPalavra('depois', formulaDe('−')).total / 2;
+        const meia = larguraComPalavra(T_`depois`, formulaDe('−')).total / 2;
         const perto = porFora ? 44 / Math.cos(psi) : 60;                        // mais perto do impacto que isso, não cabe
         const centro = Math.min(Math.max(perto + meia, saida * 0.5 + 30), saida + tamanho + 24 - meia);
         ctx.globalAlpha = alfa * depoisDoImpacto;
-        escreverComPalavra('depois', formulaDe('−'), C.x + volta.x * centro + lateral.x * afasta, C.y + volta.y * centro + lateral.y * afasta,
+        escreverComPalavra(T_`depois`, formulaDe('−'), C.x + volta.x * centro + lateral.x * afasta, C.y + volta.y * centro + lateral.y * afasta,
           giroLegivel(Math.atan2(volta.y, volta.x)), corDoVento);
       }
 
@@ -1562,7 +1663,7 @@
         ctx.globalAlpha = alfa * depoisDoImpacto;
         seta(C.x - n.x * 6, C.y - n.y * 6, C.x - n.x * 66, C.y - n.y * 66, { cor: '#ffffff', espessura: 3, ponta: 10 });
         escreverFormula(deFrente ? '2·m·v' : '2·m·v·cos ψ', C.x - n.x * 76 + 4, C.y - n.y * 76 + (estado.lado > 0 ? 16 : -16), { tamanho: 16, alinhar: 'left' });
-        escrever('fica com a parede', C.x - n.x * 76 + 4, C.y - n.y * 76 + (estado.lado > 0 ? 34 : -34), { tamanho: 11, cor: '#a9a9a9' });
+        escrever(T_`fica com a parede`, C.x - n.x * 76 + 4, C.y - n.y * 76 + (estado.lado > 0 ? 34 : -34), { tamanho: 11, cor: '#a9a9a9' });
         const clarao = (tempo - 1.9) / 0.5;
         if (clarao < 1) {
           ctx.strokeStyle = `rgba(255, 236, 200, ${1 - clarao})`;
@@ -1649,7 +1750,7 @@
       ctx.fill();
       ctx.restore();
       ctx.globalAlpha = alfa;
-      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      escrever(T_`você está olhando aqui`, x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
       ctx.globalAlpha = 1;
     }
 
@@ -1684,10 +1785,10 @@
 
     // Textos que não mudam, mas dependem dos valores da seção 2.
     const CAMPO_USADO = `${comMilhar(FATOR_DO_CAMPO * CAMPO_NA_SUPERFICIE * 1e9)} nT`;
-    por('leg-m', `massa de cada partícula (aqui, a do próton: ${cientifico(MASSA)} kg)`);
-    por('leg-mu', `permeabilidade magnética do vácuo: ${cientifico(MU0)} T·m/A`);
-    por('leg-b0', `campo na superfície da Terra, no equador (valor usado: ${CAMPO_USADO})`);
-    por('nota', `Valores usados: <i>m</i> = massa do próton; campo de dipolo, <i>B</i> = <i>B</i><sub>0</sub>·(<i>R</i><sub>T</sub>/<i>r</i>)<sup>3</sup>,
+    por('leg-m', H_`massa de cada partícula (aqui, a do próton: ${cientifico(MASSA)} kg)`);
+    por('leg-mu', H_`permeabilidade magnética do vácuo: ${cientifico(MU0)} T·m/A`);
+    por('leg-b0', H_`campo na superfície da Terra, no equador (valor usado: ${CAMPO_USADO})`);
+    por('nota', H_`Valores usados: <i>m</i> = massa do próton; campo de dipolo, <i>B</i> = <i>B</i><sub>0</sub>·(<i>R</i><sub>T</sub>/<i>r</i>)<sup>3</sup>,
       com <i>B</i><sub>0</sub> = ${CAMPO_USADO}. A forma da parede é uma aproximação: a mesma conta, repetida em cada ponto.
       Partículas e linhas de campo são um esquema.`);
 
@@ -1699,50 +1800,50 @@
       const densidade = `${numero(estado.N, estado.N % 1 ? 1 : 0)} por cm³`;
       const N = cientifico(estado.N * 1e6), v = cientifico(estado.v * 1e3);      // em partículas por m³ e em m/s
       por('subtitulo', estado.perto
-        ? 'De perto: um pedaço da parede<span class="longo">. Partículas e setas fora de escala.</span><span class="curto">, fora de escala.</span>'
-        : 'De longe: a parede inteira em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>');
+        ? H_`De perto: um pedaço da parede<span class="longo">. Partículas e setas fora de escala.</span><span class="curto">, fora de escala.</span>`
+        : H_`De longe: a parede inteira em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>`);
       por('o-n', densidade);
       por('o-v', `${estado.v} km/s`);
       por('o-psi', angulo);
 
       // Visão de longe.
       por('l-pressao', emNanopascal(pressaoDoVento(estado.N, estado.v, 0)));
-      por('l-distancia', `${numero(estado.r0NaTela)} raios da Terra`);
-      por('l-ponto-nome', deFrente ? 'No ponto marcado (de frente: <i>ψ</i> = 0°)' : `No ponto marcado (<i>ψ</i> = ${angulo})`);
-      por('l-ponto', `${numero(c.r)} raios da Terra`);
+      por('l-distancia', H_`${numero(estado.r0NaTela)} raios da Terra`);
+      por('l-ponto-nome', deFrente ? H_`No ponto marcado (de frente: <i>ψ</i> = 0°)` : H_`No ponto marcado (<i>ψ</i> = ${angulo})`);
+      por('l-ponto', H_`${numero(c.r)} raios da Terra`);
 
       // Visão de perto: em cada passo, a conta com os números de agora e o resultado.
       // Passo 1: N·v·cos ψ.
       por('conta-0', `= ${N} · ${v} · ${cosseno}`);
-      por('valor-0', `= ${cientifico(c.fluxo)} partículas por m² por segundo`);
-      por('leg-n', `partículas por m³ (${densidade} = ${N})`);
-      por('leg-v', `velocidade delas, em m/s (${estado.v} km/s = ${v})`);
-      por('leg-psi', `ângulo entre o vento e a perpendicular à parede (${deFrente ? 'aqui, 0°: cos <i>ψ</i> = 1' : `${angulo}: cos <i>ψ</i> = ${cosseno}`})`);
+      por('valor-0', H_`= ${cientifico(c.fluxo)} partículas por m² por segundo`);
+      por('leg-n', H_`partículas por m³ (${densidade} = ${N})`);
+      por('leg-v', H_`velocidade delas, em m/s (${estado.v} km/s = ${v})`);
+      por('leg-psi', H_`ângulo entre o vento e a perpendicular à parede (${deFrente ? 'aqui, 0°: cos <i>ψ</i> = 1' : `${angulo}: cos <i>ψ</i> = ${cosseno}`})`);
       // Passo 2: 2·m·v·cos ψ.
       por('formula-1', deFrente
         ? '<small>antes</small>+<i>m</i>·<i>v</i><br><small>depois</small>−<i>m</i>·<i>v</i><br><small>variação</small>2·<i>m</i>·<i>v</i>'
         : '<small>antes</small>+<i>m</i>·<i>v</i>·cos <i>ψ</i><br><small>depois</small>−<i>m</i>·<i>v</i>·cos <i>ψ</i><br><small>variação</small>2·<i>m</i>·<i>v</i>·cos <i>ψ</i>');
       por('conta-1', `= 2 · ${cientifico(MASSA)} · ${v}${deFrente ? '' : ` · ${cosseno}`}`);
-      por('valor-1', `= ${cientifico(c.momento)} kg·m/s por partícula`);
+      por('valor-1', H_`= ${cientifico(c.momento)} kg·m/s por partícula`);
       por('explicacao-1', deFrente
-        ? 'De frente (<i>ψ</i> = 0), a partícula chega com +<i>m</i>·<i>v</i> e volta com −<i>m</i>·<i>v</i>. A diferença, 2·<i>m</i>·<i>v</i>, fica com a parede.'
-        : 'Com a parede inclinada, só conta a parte da velocidade perpendicular a ela, <i>v</i>·cos <i>ψ</i>: essa parte se inverte, e a parte ao longo da parede não muda.');
+        ? H_`De frente (<i>ψ</i> = 0), a partícula chega com +<i>m</i>·<i>v</i> e volta com −<i>m</i>·<i>v</i>. A diferença, 2·<i>m</i>·<i>v</i>, fica com a parede.`
+        : H_`Com a parede inclinada, só conta a parte da velocidade perpendicular a ela, <i>v</i>·cos <i>ψ</i>: essa parte se inverte, e a parte ao longo da parede não muda.`);
       // Passo 3: os dois resultados anteriores, multiplicados.
       por('conta-2', `= ${cientifico(c.fluxo)} · ${cientifico(c.momento)}`);
       por('valor-2', `= ${cientifico(c.vento)} Pa = ${emNanopascal(c.vento)}`);
       // Passo 4: B²/2μ₀.
       por('conta-3', `= (${cientifico(c.B)})<sup>2</sup> ÷ (2 · ${cientifico(MU0)})`);
       por('valor-3', `= ${cientifico(c.campo)} Pa = ${emNanopascal(c.campo)}`);
-      por('leg-b', `campo da Terra neste ponto, a ${numero(c.r, 2)} raios da Terra: ${numero(c.B * 1e9, 1)} nT = ${cientifico(c.B)} T`);
+      por('leg-b', H_`campo da Terra neste ponto, a ${numero(c.r, 2)} raios da Terra: ${numero(c.B * 1e9, 1)} nT = ${cientifico(c.B)} T`);
       // Passo 5: o equilíbrio.
       por('valor-4', deFrente
-        ? `De frente para o Sol, a parede fica a <b>${numero(c.r)} raios da Terra</b>.`
-        : `Neste ponto (<i>ψ</i> = ${angulo}), a parede fica a <b>${numero(c.r)} raios da Terra</b>; de frente para o Sol, a ${numero(estado.r0NaTela)}.`);
+        ? H_`De frente para o Sol, a parede fica a <b>${numero(c.r)} raios da Terra</b>.`
+        : H_`Neste ponto (<i>ψ</i> = ${angulo}), a parede fica a <b>${numero(c.r)} raios da Terra</b>; de frente para o Sol, a ${numero(estado.r0NaTela)}.`);
       por('num-vento', emNanopascal(c.vento));
       por('num-campo', emNanopascal(c.campo));
       el('barra-vento').style.width = larguraDaBarra(c.vento);
       el('barra-campo').style.width = larguraDaBarra(c.campo);
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 5`);
     }
 
     function mostrarPasso(novo) {
@@ -1759,6 +1860,7 @@
       document.querySelector('.conteudo').scrollTop = 0;
       atualizarPainel();
       medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -1774,6 +1876,7 @@
       }
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -1907,6 +2010,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

@@ -431,7 +431,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>O vento solar e o B<sub>z</sub><span class="longo">: quando a energia do Sol entra na Terra</span></h1>
+    <h1>O vento solar e o B<sub>z</sub><span class="longo" data-texto="titulo-complemento">: quando a energia do Sol entra na Terra</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -444,100 +444,100 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>Norte protege, sul expõe</h2>
+        <h2 data-texto="resumo-titulo">Norte protege, sul expõe</h2>
         <p>O <span class="vento">vento solar</span> traz do Sol um campo magnético, o IMF. O <b>B<sub>z</sub></b> é a
           parte norte–sul dele: quando aponta para o sul, a Terra fica exposta; quando aponta para o norte, fica
           protegida.</p>
         <dl class="leituras">
-          <div><dt>B<sub>z</sub> que sai agora</dt><dd id="l-bz"></dd></div>
-          <div><dt>B<sub>z</sub> chegando à Terra</dt><dd id="l-chegando"></dd></div>
-          <div class="so-largo"><dt>Campo da Terra, do lado do Sol</dt><dd class="campo">para o norte</dd></div>
-          <div><dt>O que acontece</dt><dd id="l-resultado"></dd></div>
+          <div><dt data-texto="leitura-l-bz">B<sub>z</sub> que sai agora</dt><dd id="l-bz"></dd></div>
+          <div><dt data-texto="leitura-l-chegando">B<sub>z</sub> chegando à Terra</dt><dd id="l-chegando"></dd></div>
+          <div class="so-largo"><dt data-texto="leitura-x">Campo da Terra, do lado do Sol</dt><dd class="campo">para o norte</dd></div>
+          <div><dt data-texto="leitura-l-resultado">O que acontece</dt><dd id="l-resultado"></dd></div>
         </dl>
       </section>
 
       <!-- Visão de perto: seis passos. Em cada um: a fórmula ou a ideia, os números de agora e a explicação. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>Um plasma que sai do Sol</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">Um plasma que sai do Sol</span></button>
           <div class="passo-corpo">
             <div class="formula pequena vento"><i>v</i> ≈ 400 km/s <small>e</small> <i>N</i> ≈ 5 por cm<sup>3</sup></div>
             <div class="conta" id="conta-1"></div>
             <div class="valor" id="valor-1"></div>
-            <p class="explicacao">O vento solar é um fluxo contínuo de prótons e elétrons que sai do Sol. Ele é um
+            <p class="explicacao" data-texto="passo-1-explicacao">O vento solar é um fluxo contínuo de prótons e elétrons que sai do Sol. Ele é um
               <b>plasma</b>, um gás de cargas elétricas, e por isso conduz eletricidade muito bem.</p>
             <dl class="legenda" id="legenda-1"></dl>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>O campo congelado no vento</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">O campo congelado no vento</span></button>
           <div class="passo-corpo">
             <div class="formula pequena vento"><i>B</i> ≈ 5 nT <small>numa CME:</small> <i>B</i> &gt; 30 nT</div>
             <div class="conta" id="conta-2"></div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">O campo interplanetário (<b>IMF</b>) é o campo magnético do Sol arrastado pelo vento
+            <p class="explicacao" data-texto="passo-2-explicacao">O campo interplanetário (<b>IMF</b>) é o campo magnético do Sol arrastado pelo vento
               solar. Como o plasma conduz quase perfeitamente, o campo fica "congelado" nele e viaja junto, como tinta
               misturada na água de um rio.</p>
             <dl class="legenda" id="legenda-2"></dl>
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>Uma seta em 3D: os eixos do GSM</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">Uma seta em 3D: os eixos do GSM</span></button>
           <div class="passo-corpo">
             <div class="formula pequena vento">|<i>B</i>| = √(<i>B</i><sub>x</sub><sup>2</sup> + <i>B</i><sub>y</sub><sup>2</sup> + <i>B</i><sub>z</sub><sup>2</sup>)</div>
             <div class="conta" id="conta-3"></div>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">O IMF é uma seta em 3D. No sistema GSM (o usado no OMNI), ela é decomposta em três
+            <p class="explicacao" data-texto="passo-3-explicacao">O IMF é uma seta em 3D. No sistema GSM (o usado no OMNI), ela é decomposta em três
               eixos: <b>x</b> aponta da Terra para o Sol; <b>y</b>, para o lado do entardecer; <b>z</b>, para o norte,
               alinhado com o eixo magnético da Terra. O B<sub>z</sub> é só uma parte da seta.</p>
             <dl class="legenda" id="legenda-3"></dl>
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Por que o sinal importa</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Por que o sinal importa</span></button>
           <div class="passo-corpo">
             <div class="formula pequena"><i>B</i><sub>z</sub> &gt; 0<small>norte</small> <i>B</i><sub>z</sub> &lt; 0<small>sul</small></div>
             <div class="conta" id="conta-4"></div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">O campo da Terra, do lado que olha para o Sol, aponta para o norte. Com
+            <p class="explicacao" data-texto="passo-4-explicacao">O campo da Terra, do lado que olha para o Sol, aponta para o norte. Com
               B<sub>z</sub> <b>norte</b>, os dois campos apontam no mesmo sentido: eles não se conectam, e o vento
               solar contorna a Terra; pouca energia entra. Com B<sub>z</sub> <b>sul</b>, os campos apontam em sentidos
               opostos: eles podem se ligar (é a reconexão), e a energia entra.</p>
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>A regra para o catálogo</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">A regra para o catálogo</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra"><span class="longo">Dst ≤ −100 nT exige </span><span class="junto"><i>B</i><sub>z</sub> &lt; −10 nT</span>
               <span class="junto">por mais de 3 h</span></div>
             <div class="conta" id="conta-5"></div>
             <div class="valor" id="valor-5"></div>
-            <p class="explicacao">Uma tempestade intensa (Dst ≤ −100 nT) exige B<sub>z</sub> sul forte e duradouro,
+            <p class="explicacao" data-texto="passo-5-explicacao">Uma tempestade intensa (Dst ≤ −100 nT) exige B<sub>z</sub> sul forte e duradouro,
               tipicamente abaixo de −10 nT por mais de 3 horas (Gonzalez e Tsurutani, 1987; retomado em Gonzalez et al.,
               1994). B<sub>z</sub> sul forte por poucos minutos não basta.</p>
             <dl class="legenda" id="legenda-5"></dl>
           </div>
         </li>
         <li class="passo" data-passo="5">
-          <button class="passo-titulo" type="button"><span class="numero">6</span><span>De onde vem o B<sub>z</sub> sul forte</span></button>
+          <button class="passo-titulo" type="button"><span class="numero">6</span><span data-texto="passo-6-titulo">De onde vem o B<sub>z</sub> sul forte</span></button>
           <div class="passo-corpo">
             <ul class="causas">
-              <li><b>CME</b><span class="nome-longo"> (ejeção de massa coronal)</span><span class="como">: nuvem de plasma lançada do Sol, com campo forte
-                e organizado.</span><span class="efeito">As tempestades mais intensas (ex.: −412 nT em maio de 2024).</span></li>
-              <li><b>CIR</b><span class="nome-longo"> (região de interação corrotante)</span><span class="como">: o vento rápido de um buraco coronal
-                alcançando o vento lento à frente.</span><span class="efeito">Tempestades moderadas, raramente abaixo de
+              <li><b>CME</b><span class="nome-longo" data-texto="passo-6-item-1-nome-longo"> (ejeção de massa coronal)</span><span class="como" data-texto="passo-6-item-1-como">: nuvem de plasma lançada do Sol, com campo forte
+                e organizado.</span><span class="efeito" data-texto="passo-6-item-1-efeito">As tempestades mais intensas (ex.: −412 nT em maio de 2024).</span></li>
+              <li><b>CIR</b><span class="nome-longo" data-texto="passo-6-item-2-nome-longo"> (região de interação corrotante)</span><span class="como" data-texto="passo-6-item-2-como">: o vento rápido de um buraco coronal
+                alcançando o vento lento à frente.</span><span class="efeito" data-texto="passo-6-item-2-efeito">Tempestades moderadas, raramente abaixo de
                 −150 nT.</span></li>
             </ul>
-            <p class="explicacao">Os valores das tempestades são do índice Dst.</p>
+            <p class="explicacao" data-texto="passo-6-explicacao">Os valores das tempestades são do índice Dst.</p>
           </div>
         </li>
       </ol>
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste a seta <span class="vento">laranja</span>, à esquerda, para mudar o B<sub>z</sub> (ou use o
+      <p class="dica" data-texto="dica">Arraste a seta <span class="vento">laranja</span>, à esquerda, para mudar o B<sub>z</sub> (ou use o
         controle embaixo do desenho). A mudança chega à Terra com o vento.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: o vento, o campo e a regra</button>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: o vento, o campo e a regra</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -558,21 +558,21 @@
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
          Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle" data-cenas="p3"><span class="nome"><i>B</i><sub>x</sub><small>para o Sol</small></span><output id="o-bx"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-bx"><i>B</i><sub>x</sub><small>para o Sol</small></span><output id="o-bx"></output>
         <input id="c-bx" type="range" min="-40" max="40" step="0.1" value="-2.4"></label>
-      <label class="controle" data-cenas="p3"><span class="nome"><i>B</i><sub>y</sub><small>para o entardecer</small></span><output id="o-by"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-by"><i>B</i><sub>y</sub><small>para o entardecer</small></span><output id="o-by"></output>
         <input id="c-by" type="range" min="-40" max="40" step="0.1" value="3.2"></label>
-      <label class="controle" data-cenas="longe p3 p4"><span class="nome"><i>B</i><sub>z</sub><small>norte (+) ou sul (−)</small></span><output id="o-bz"></output>
+      <label class="controle" data-cenas="longe p3 p4"><span class="nome" data-texto="controle-c-bz"><i>B</i><sub>z</sub><small>norte (+) ou sul (−)</small></span><output id="o-bz"></output>
         <input id="c-bz" type="range" min="-40" max="40" step="0.1" value="-3"></label>
-      <label class="controle" data-cenas="p1"><span class="nome"><i>N</i> <small>densidade</small></span><output id="o-n"></output>
+      <label class="controle" data-cenas="p1"><span class="nome" data-texto="controle-c-n"><i>N</i> <small>densidade</small></span><output id="o-n"></output>
         <input id="c-n" type="range" min="1" max="20" step="1" value="5"></label>
-      <label class="controle" data-cenas="p1"><span class="nome"><i>v</i> <small>velocidade</small></span><output id="o-v"></output>
+      <label class="controle" data-cenas="p1"><span class="nome" data-texto="controle-c-v"><i>v</i> <small>velocidade</small></span><output id="o-v"></output>
         <input id="c-v" type="range" min="250" max="1000" step="10" value="400"></label>
-      <label class="controle" data-cenas="p2"><span class="nome"><i>B</i> <small>intensidade do IMF</small></span><output id="o-b"></output>
+      <label class="controle" data-cenas="p2"><span class="nome" data-texto="controle-c-b"><i>B</i> <small>intensidade do IMF</small></span><output id="o-b"></output>
         <input id="c-b" type="range" min="0.5" max="40" step="0.5" value="5"></label>
-      <label class="controle" data-cenas="p5"><span class="nome"><i>B</i><sub>z</sub><small>no intervalo sul</small></span><output id="o-bzsul"></output>
+      <label class="controle" data-cenas="p5"><span class="nome" data-texto="controle-c-bzsul"><i>B</i><sub>z</sub><small>no intervalo sul</small></span><output id="o-bzsul"></output>
         <input id="c-bzsul" type="range" min="-40" max="0" step="1" value="-15"></label>
-      <label class="controle" data-cenas="p5"><span class="nome">duração <small>do intervalo sul</small></span><output id="o-duracao"></output>
+      <label class="controle" data-cenas="p5"><span class="nome" data-texto="controle-c-duracao">duração <small>do intervalo sul</small></span><output id="o-duracao"></output>
         <input id="c-duracao" type="range" min="0.25" max="12" step="0.25" value="5"></label>
       <div class="botoes">
         <button id="bt-tipico" type="button" class="botao" data-cenas="p1 p2">Valores típicos</button>
@@ -583,6 +583,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -591,6 +599,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -1422,9 +1523,9 @@
     /** O que está acontecendo na Terra, em palavras (para o desenho e para o painel). */
     function resultadoNaTerra(bz) {
       const valor = Number(bz.toFixed(1));
-      if (valor < 0) return { curto: 'os campos se ligam', longo: 'sentidos opostos: os campos se ligam', energia: 'Terra exposta: a energia entra' };
-      if (valor > 0) return { curto: 'não se ligam', longo: 'mesmo sentido: os campos não se ligam', energia: 'Terra protegida: pouca energia entra' };
-      return { curto: 'sem parte norte–sul', longo: 'Bz = 0: o campo não tem parte norte–sul', energia: 'nada a ligar' };
+      if (valor < 0) return { curto: H_`os campos se ligam`, longo: T_`sentidos opostos: os campos se ligam`, energia: T_`Terra exposta: a energia entra` };
+      if (valor > 0) return { curto: H_`não se ligam`, longo: T_`mesmo sentido: os campos não se ligam`, energia: T_`Terra protegida: pouca energia entra` };
+      return { curto: H_`sem parte norte–sul`, longo: T_`Bz = 0: o campo não tem parte norte–sul`, energia: T_`nada a ligar` };
     }
     /** As linhas tracejadas onde o sentido do Bz muda (a mudança anda com o vento). */
     function desenharFrentes(comNomes) {
@@ -1433,7 +1534,7 @@
         const x = telaX(linha.x + ESPACO_ENTRE_LINHAS / 2);
         if (x < cena.x || x > cena.x + cena.w) continue;
         tracejado(x, cena.y + ESPACO_DO_TITULO + 10, x, cena.y + cena.h - 6, 'rgba(255, 255, 255, 0.55)', [3, 5], 1.2);
-        if (comNomes) escrever('o novo Bz chega com o vento', x + 6, cena.y + cena.h - 22, { tamanho: 11.5, cor: '#d8d8d8', placa: true });
+        if (comNomes) escrever(T_`o novo Bz chega com o vento`, x + 6, cena.y + cena.h - 22, { tamanho: 11.5, cor: '#d8d8d8', placa: true });
       }
     }
 
@@ -1459,32 +1560,32 @@
       const ponta = telaY(alturaDaSeta(estado.bz));
       tracejado(x, telaY(maximo), x, telaY(-maximo), 'rgba(255, 255, 255, 0.18)', [2, 4]);
       if (comNomes) {
-        escrever('norte', x, telaY(maximo) - 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
-        escrever('sul', x, telaY(-maximo) + 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        escrever(T_`norte`, x, telaY(maximo) - 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
+        escrever(T_`sul`, x, telaY(-maximo) + 9, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
       }
       if (Math.abs(ponta - y0) > 3) seta(x, y0, x, ponta, { cor: LARANJA, espessura: 3.2, ponta: 11 });
       desenharPonto(x, ponta, { anel: true, raio: 4.5 });
       if (comNomes) {
         const embaixo = ponta > y0;                          // com o Bz sul, o rótulo vai embaixo da ponta
         escreverBloco([
-          { texto: 'Bz que sai agora', tamanho: 11.5, cor: '#c8c8c8' },
+          { texto: T_`Bz que sai agora`, tamanho: 11.5, cor: '#c8c8c8' },
           { texto: descreverBz(estado.bz), tamanho: 13.5, cor: LARANJA, peso: 600 },
         ], x + 16, ponta + (embaixo ? 14 : -30));
       }
 
       if (comNomes) {
         // Os nomes, presos às coisas.
-        escrever('magnetopausa', telaX(-3.4), telaY(alturaDaParede(-3.4)) - 12, { tamanho: 12, cor: '#ffffff', alinhar: 'center', placa: true });
-        escrever('campo da Terra', telaX(4.2), telaY(5.6), { tamanho: 12, cor: AZUL, alinhar: 'center', placa: true });
+        escrever(T_`magnetopausa`, telaX(-3.4), telaY(alturaDaParede(-3.4)) - 12, { tamanho: 12, cor: '#ffffff', alinhar: 'center', placa: true });
+        escrever(T_`campo da Terra`, telaX(4.2), telaY(5.6), { tamanho: 12, cor: AZUL, alinhar: 'center', placa: true });
         // O que está acontecendo na frente da Terra, no alto, à direita.
         const chegando = bzChegando(), r = resultadoNaTerra(chegando);
         const linhas = [
-          { texto: `Bz chegando à Terra: ${descreverBz(chegando)}`, tamanho: 12, cor: '#c8c8c8' },
+          { texto: T_`Bz chegando à Terra: ${descreverBz(chegando)}`, tamanho: 12, cor: '#c8c8c8' },
           { texto: r.longo, tamanho: 12.5, cor: '#ffffff', peso: 600 },
           { texto: r.energia, tamanho: 12.5, cor: chegando < -0.05 ? LARANJA : AZUL, peso: 600 },
         ];
         // No alto, à direita; se não couber ao lado da legenda (telas estreitas), embaixo.
-        const larguraDaLegenda = 66 + larguraDoTexto('campos ligados: a energia entra', 11.5) + 10;
+        const larguraDaLegenda = 66 + larguraDoTexto(T_`campos ligados: a energia entra`, 11.5) + 10;
         const larguraDoResultado = Math.max(...linhas.map((linha) => larguraDoTexto(linha.texto, linha.tamanho, linha.peso ?? 500))) + 20;
         if (larguraDaLegenda + larguraDoResultado + 24 <= cena.w) escreverBloco(linhas, cena.x + cena.w - 16, cena.y + ESPACO_DO_TITULO + 16, 'right');
         else escreverBloco(linhas, cena.x + cena.w - 16, cena.y + cena.h - alturaDoBloco(linhas) - 2, 'right');
@@ -1492,9 +1593,9 @@
 
       // A legenda: só o que não tem nome no próprio desenho.
       desenharLegenda([
-        [AMOSTRAS.vento, 'vento solar (o Sol fica à esquerda)'],
-        [AMOSTRAS.imf, 'campo que o vento traz (IMF)'],
-        ...(misturas.ligacao > 0.2 ? [[AMOSTRAS.ligada, 'campos ligados: a energia entra']] : []),
+        [AMOSTRAS.vento, T_`vento solar (o Sol fica à esquerda)`],
+        [AMOSTRAS.imf, T_`campo que o vento traz (IMF)`],
+        ...(misturas.ligacao > 0.2 ? [[AMOSTRAS.ligada, T_`campos ligados: a energia entra`]] : []),
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1639,14 +1740,14 @@
         ctx.beginPath();
         ctx.arc(x + 4, y, raioP, 0, Math.PI * 2);
         ctx.fill();
-        escrever('próton (carga +)', x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
-        x += 24 + larguraDoTexto('próton (carga +)', 11.5);
+        escrever(T_`próton (carga +)`, x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        x += 24 + larguraDoTexto(T_`próton (carga +)`, 11.5);
         ctx.fillStyle = '#f0f0f0';
         ctx.beginPath();
         ctx.arc(x + 4, y, raioE, 0, Math.PI * 2);
         ctx.fill();
-        escrever('elétron (carga −)', x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
-        x += 24 + larguraDoTexto('elétron (carga −)', 11.5);
+        escrever(T_`elétron (carga −)`, x + 12, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        x += 24 + larguraDoTexto(T_`elétron (carga −)`, 11.5);
         if (comCampo) {
           ctx.strokeStyle = LARANJA;
           ctx.lineWidth = 1.4;
@@ -1654,15 +1755,15 @@
           ctx.moveTo(x, y);
           ctx.lineTo(x + 18, y);
           ctx.stroke();
-          escrever('linha do IMF', x + 24, y, { tamanho: 11.5, cor: '#c8c8c8' });
+          escrever(T_`linha do IMF`, x + 24, y, { tamanho: 11.5, cor: '#c8c8c8' });
         }
         const direita = j.x + j.w - 6;
         const texto = `${comMilhar(estado.v)} km/s`;
         escrever(texto, direita, y, { tamanho: 12, peso: 600, alinhar: 'right' });
         seta(direita - larguraDoTexto(texto, 12, 600) - 40, y, direita - larguraDoTexto(texto, 12, 600) - 10, y, { cor: '#ffffff', espessura: 1.6, ponta: 7 });
-        if (!comCampo && j.w > 520) escrever('esquema: as partículas de verdade são muito menores que as bolinhas', j.x + j.w / 2, j.y + 14,
+        if (!comCampo && j.w > 520) escrever(T_`esquema: as partículas de verdade são muito menores que as bolinhas`, j.x + j.w / 2, j.y + 14,
           { tamanho: 11, cor: '#8f8f8f', alinhar: 'center' });
-        if (comCampo && j.w > 520) escrever('as partículas marcadas andam junto com a linha: o campo está "congelado" no plasma', j.x + j.w / 2, j.y + 14,
+        if (comCampo && j.w > 520) escrever(T_`as partículas marcadas andam junto com a linha: o campo está "congelado" no plasma`, j.x + j.w / 2, j.y + 14,
           { tamanho: 11, cor: '#bdbdbd', alinhar: 'center', placa: true });
       }
       ctx.globalAlpha = 1;
@@ -1700,9 +1801,9 @@
       ctx.globalAlpha = alfa;
 
       const EIXOS = [
-        { v: [1, 0, 0], nome: 'x: para o Sol' },
-        { v: [0, 1, 0], nome: 'y: para o entardecer' },
-        { v: [0, 0, 1], nome: 'z: para o norte (eixo magnético)' },
+        { v: [1, 0, 0], nome: T_`x: para o Sol` },
+        { v: [0, 1, 0], nome: T_`y: para o entardecer` },
+        { v: [0, 0, 1], nome: T_`z: para o norte (eixo magnético)` },
       ];
       // A metade de trás dos eixos (tracejada) vem antes da Terra; a da frente, depois.
       const desenharEixo = (eixo, frente) => {
@@ -1747,7 +1848,7 @@
         if (Math.abs(estado.by) >= 0.05) rotuloNaPonta(`By = ${comSinal(estado.by)} nT`, terra, ny, { tamanho: 11.5, cor: LARANJA });
         if (Math.abs(estado.bz) >= 0.05) rotuloNaPonta(`Bz = ${comSinal(estado.bz)} nT`, terra, nz, { tamanho: 13, cor: '#ffd394', peso: 700 });
         if (B > 0.05) rotuloNaPonta(`IMF: |B| = ${numero(B, 1)} nT`, terra, ponta, { tamanho: 12.5, cor: LARANJA, peso: 600 });
-        escrever(`cada eixo: ${comMilhar(escala)} nT · arraste o desenho para girar`, cena.x + cena.w / 2, cena.y + cena.h - 14,
+        escrever(T_`cada eixo: ${comMilhar(escala)} nT · arraste o desenho para girar`, cena.x + cena.w / 2, cena.y + cena.h - 14,
           { tamanho: 11, cor: '#8f8f8f', alinhar: 'center' });
       }
       ctx.globalAlpha = 1;
@@ -1764,10 +1865,10 @@
       // O campo da Terra, logo dentro da parede: para o norte.
       const xDentro = telaX(-8.55), xFora = telaX(-11.5), meio = telaY(0), meia = Math.max(16, 1.2 * S);
       seta(xDentro, meio + meia, xDentro, meio - meia, { cor: AZUL, espessura: 3, ponta: 11 });
-      escrever('campo da Terra: norte', xDentro + 12, meio - meia * 0.4, { tamanho: 12, cor: AZUL, peso: 600, placa: true });
+      escrever(T_`campo da Terra: norte`, xDentro + 12, meio - meia * 0.4, { tamanho: 12, cor: AZUL, peso: 600, placa: true });
       // O IMF que chega, logo fora da parede.
       if (sentido !== 0) seta(xFora, meio + sentido * meia, xFora, meio - sentido * meia, { cor: LARANJA, espessura: 3, ponta: 11 });
-      escrever(sentido < 0 ? 'IMF: Bz sul' : sentido > 0 ? 'IMF: Bz norte' : 'IMF: Bz = 0', xFora - 12, meio + meia * 0.4,
+      escrever(sentido < 0 ? T_`IMF: Bz sul` : sentido > 0 ? T_`IMF: Bz norte` : T_`IMF: Bz = 0`, xFora - 12, meio + meia * 0.4,
         { tamanho: 12, cor: LARANJA, peso: 600, alinhar: 'right', placa: true });
       // Com Bz sul, os campos se ligam ali.
       if (misturas.ligacao > 0.3) {
@@ -1785,15 +1886,15 @@
       const r = resultadoNaTerra(chegando);
       const linhas = [
         { texto: r.longo, tamanho: 12.5, cor: '#ffffff', peso: 600 },
-        { texto: sentido < 0 ? 'a energia entra' : sentido > 0 ? 'o vento contorna a Terra: pouca energia entra' : 'nada a ligar',
+        { texto: sentido < 0 ? T_`a energia entra` : sentido > 0 ? T_`o vento contorna a Terra: pouca energia entra` : T_`nada a ligar`,
           tamanho: 12.5, cor: sentido < 0 ? LARANJA : AZUL, peso: 600 },
       ];
       escreverBloco(linhas, cena.x + 18, cena.y + cena.h - 18 - alturaDoBloco(linhas) + 14);
       desenharLegenda([
-        [AMOSTRAS.imf, 'campo que o vento traz (IMF)'],
-        [AMOSTRAS.campo, 'campo da Terra'],
-        [AMOSTRAS.parede, 'magnetopausa'],
-        [AMOSTRAS.ligada, 'campos ligados: a energia entra'],
+        [AMOSTRAS.imf, T_`campo que o vento traz (IMF)`],
+        [AMOSTRAS.campo, T_`campo da Terra`],
+        [AMOSTRAS.parede, T_`magnetopausa`],
+        [AMOSTRAS.ligada, T_`campos ligados: a energia entra`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1839,9 +1940,9 @@
           escrever(bz === 0 ? '0' : comSinal(bz, 0), esquerda - 8, naTelaY(bz), { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
         }
         for (let t = 0; t <= 24; t += 3) escrever(`${t} h`, naTelaX(t), base + 13, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
-        escrever('Bz (nT)', esquerda - 8, topo - 14, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
-        escrever('norte', direita - 6, naTelaY(0) - 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
-        escrever('sul', direita - 6, naTelaY(0) + 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
+        escrever(T_`Bz (nT)`, esquerda - 8, topo - 14, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
+        escrever(T_`norte`, direita - 6, naTelaY(0) - 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
+        escrever(T_`sul`, direita - 6, naTelaY(0) + 10, { tamanho: 10.5, cor: '#a9a9a9', alinhar: 'right', placa: true });
       }
 
       // O que ficou abaixo de −10 nT: pintado (mais forte no maior trecho seguido).
@@ -1900,22 +2001,22 @@
         ctx.setLineDash([]);
         if (comNomes) {
           const atende = trecho.horas > HORAS_MINIMAS;
-          escrever(`${emHoras(trecho.horas)} seguidas abaixo de −10 nT`, (x1 + x2) / 2, y - 13,
+          escrever(T_`${emHoras(trecho.horas)} seguidas abaixo de −10 nT`, (x1 + x2) / 2, y - 13,
             { tamanho: 12, cor: '#ffffff', peso: 600, alinhar: 'center', placa: true });
           escrever('3 h', x3 + 6, y + 9, { tamanho: 10.5, cor: '#a9a9a9' });
           // O veredito, no alto do gráfico.
           escreverBloco([
-            { texto: atende ? '✓ mais de 3 h: atende à condição' : '✗ menos de 3 h: não basta', tamanho: 12.5, cor: atende ? '#ffffff' : '#c8c8c8', peso: 600 },
-            { texto: atende ? 'pode haver tempestade intensa (Dst ≤ −100 nT)' : 'Bz sul forte por pouco tempo não basta', tamanho: 11.5, cor: '#a9a9a9' },
+            { texto: atende ? T_`✓ mais de 3 h: atende à condição` : T_`✗ menos de 3 h: não basta`, tamanho: 12.5, cor: atende ? '#ffffff' : '#c8c8c8', peso: 600 },
+            { texto: atende ? T_`pode haver tempestade intensa (Dst ≤ −100 nT)` : T_`Bz sul forte por pouco tempo não basta`, tamanho: 11.5, cor: '#a9a9a9' },
           ], esquerda + 14, topo + 18);
         }
       } else if (comNomes) {
         escreverBloco([
-          { texto: '✗ o Bz não passou de −10 nT', tamanho: 12.5, cor: '#c8c8c8', peso: 600 },
-          { texto: 'não atende à condição', tamanho: 11.5, cor: '#a9a9a9' },
+          { texto: T_`✗ o Bz não passou de −10 nT`, tamanho: 12.5, cor: '#c8c8c8', peso: 600 },
+          { texto: T_`não atende à condição`, tamanho: 11.5, cor: '#a9a9a9' },
         ], esquerda + 14, topo + 18);
       }
-      if (comNomes) escrever('curva inventada · arraste para mudar o nível e a duração do Bz sul', (esquerda + direita) / 2, base + 27,
+      if (comNomes) escrever(T_`curva inventada · arraste para mudar o nível e a duração do Bz sul`, (esquerda + direita) / 2, base + 27,
         { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
       ctx.globalAlpha = 1;
     }
@@ -2009,13 +2110,13 @@
       ctx.fill();
       ctx.restore();
       if (comNomes) {
-        escrever('CME', caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
-        escrever('ejeção de massa coronal', caixa.x + 14 + larguraDoTexto('CME', 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
-        escrever('Terra', xTerra, meioY + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
+        escrever(T_`CME`, caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
+        escrever(T_`ejeção de massa coronal`, caixa.x + 14 + larguraDoTexto(T_`CME`, 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`Terra`, xTerra, meioY + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
         const y = caixa.y + caixa.h - textoEmbaixo + 12;
-        escrever('nuvem de plasma com campo forte e organizado', caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
-        escrever('as tempestades mais intensas', caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
-        escrever('ex.: −412 nT em maio de 2024', caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
+        escrever(T_`nuvem de plasma com campo forte e organizado`, caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        escrever(T_`as tempestades mais intensas`, caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
+        escrever(T_`ex.: −412 nT em maio de 2024`, caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
       }
     }
 
@@ -2069,13 +2170,13 @@
       ctx.fill();
       ctx.restore();
       if (comNomes) {
-        escrever('CIR', caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
-        escrever('região de interação corrotante', caixa.x + 14 + larguraDoTexto('CIR', 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
-        escrever('Terra', xTerra, cy + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
+        escrever(T_`CIR`, caixa.x + 14, caixa.y + 18, { tamanho: 14, peso: 700 });
+        escrever(T_`região de interação corrotante`, caixa.x + 14 + larguraDoTexto(T_`CIR`, 14, 700) + 8, caixa.y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`Terra`, xTerra, cy + 16, { tamanho: 11, cor: AZUL, alinhar: 'center' });
         const y = caixa.y + caixa.h - textoEmbaixo + 12;
-        escrever('o vento rápido de um buraco coronal alcança o lento', caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
-        escrever('tempestades moderadas', caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
-        escrever('raramente abaixo de −150 nT', caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
+        escrever(T_`o vento rápido de um buraco coronal alcança o lento`, caixa.x + 14, y, { tamanho: 11.5, cor: '#c8c8c8' });
+        escrever(T_`tempestades moderadas`, caixa.x + 14, y + 17, { tamanho: 12, cor: '#ffffff', peso: 600 });
+        escrever(T_`raramente abaixo de −150 nT`, caixa.x + 14, y + 33, { tamanho: 11.5, cor: LARANJA });
       }
     }
 
@@ -2125,18 +2226,18 @@
       el(id).innerHTML = html;         // só textos fixos e números desta página
     }
 
-    por('nota', `Fora de escala: o Sol fica bem longe, à esquerda. O desenho é um corte de lado, com o norte em cima:
+    por('nota', H_`Fora de escala: o Sol fica bem longe, à esquerda. O desenho é um corte de lado, com o norte em cima:
       nele aparece só o B<sub>z</sub>. Magnetopausa, linhas, partículas, a ligação dos campos e as cenas da CME e da CIR
       são esquemas; a curva do passo 5 é inventada. Acréscimos: 150 milhões de km do Sol à Terra e
       ${comMilhar(CAMPO_NA_SUPERFICIE)} nT na superfície da Terra, para comparar.`);
     const SUBTITULOS = {
-      longe: 'De longe: o vento solar chega à Terra trazendo o campo do Sol.<span class="longo"> Fora de escala.</span>',
-      p1: 'De perto: o vento solar, um plasma de prótons e elétrons.<span class="longo"> Fora de escala.</span>',
-      p2: 'De perto: o campo do Sol viaja congelado no vento (o IMF).',
-      p3: 'De perto: a seta do campo e os três eixos do GSM.<span class="longo"> Arraste para girar.</span>',
-      p4: 'De perto: o lado da Terra que olha para o Sol.',
-      p5: 'De perto: quanto e por quanto tempo o B<sub>z</sub> precisa ficar no sul.<span class="longo"> Curva inventada.</span>',
-      p6: 'De perto: de onde vem o B<sub>z</sub> sul forte.<span class="longo"> Esquema.</span>',
+      longe: H_`De longe: o vento solar chega à Terra trazendo o campo do Sol.<span class="longo"> Fora de escala.</span>`,
+      p1: H_`De perto: o vento solar, um plasma de prótons e elétrons.<span class="longo"> Fora de escala.</span>`,
+      p2: H_`De perto: o campo do Sol viaja congelado no vento (o IMF).`,
+      p3: H_`De perto: a seta do campo e os três eixos do GSM.<span class="longo"> Arraste para girar.</span>`,
+      p4: H_`De perto: o lado da Terra que olha para o Sol.`,
+      p5: H_`De perto: quanto e por quanto tempo o B<sub>z</sub> precisa ficar no sul.<span class="longo"> Curva inventada.</span>`,
+      p6: H_`De perto: de onde vem o B<sub>z</sub> sul forte.<span class="longo"> Esquema.</span>`,
     };
     /** O valor de um campo, com sinal, em HTML ("−3,3 nT"). */
     const nT = (valor) => `${comSinal(valor)} nT`;
@@ -2157,48 +2258,48 @@
 
       // Visão de longe.
       por('l-bz', descreverBz(estado.bz));
-      por('l-chegando', mudancaACaminho() ? `${descreverBz(chegando)} <small>(o novo vem a caminho)</small>` : descreverBz(chegando));
+      por('l-chegando', mudancaACaminho() ? H_`${descreverBz(chegando)} <small>(o novo vem a caminho)</small>` : descreverBz(chegando));
       por('l-resultado', resultado.curto);
 
       // Passo 1: o tempo de viagem do Sol até a Terra.
       const t = tempoDeViagem(estado.v);
       por('conta-1', `tempo = ${comMilhar(DISTANCIA_SOL_TERRA)} km ÷ ${comMilhar(estado.v)} km/s = ${comMilhar(t)} s`);
-      por('valor-1', `≈ <b>${emDias(t)}</b> do Sol até a Terra (${comMilhar(t / 3600)} horas)`);
-      por('legenda-1', `<dt>v</dt><dd>velocidade do vento: agora ${comMilhar(estado.v)} km/s (típico: ${VELOCIDADE_TIPICA})</dd>
-        <dt>N</dt><dd>densidade: ${estado.N} ${estado.N === 1 ? 'próton' : 'prótons'} por cm³ (e quase o mesmo número de elétrons; típico: ${DENSIDADE_TIPICA})</dd>
-        <dt class="unidade">150 mi km</dt><dd>distância média do Sol à Terra (acréscimo, para a conta)</dd>`);
+      por('valor-1', H_`≈ <b>${emDias(t)}</b> do Sol até a Terra (${comMilhar(t / 3600)} horas)`);
+      por('legenda-1', `<dt>v</dt><dd>${H_`velocidade do vento: agora ${comMilhar(estado.v)} km/s (típico: ${VELOCIDADE_TIPICA})`}</dd>
+        <dt>N</dt><dd>${H_`densidade: ${estado.N} ${estado.N === 1 ? 'próton' : 'prótons'} por cm³ (e quase o mesmo número de elétrons; típico: ${DENSIDADE_TIPICA})`}</dd>
+        <dt class="unidade">150 mi km</dt><dd>${H_`distância média do Sol à Terra (acréscimo, para a conta)`}</dd>`);
 
       // Passo 2: o IMF, comparado com o campo na superfície da Terra.
       const mostrado = Number(B.toFixed(1));       // a conta usa o valor mostrado, para dar para refazer à mão
       por('conta-2', B > 0.05 ? `${comMilhar(CAMPO_NA_SUPERFICIE)} nT ÷ ${numero(mostrado, 1)} nT = ${comMilhar(CAMPO_NA_SUPERFICIE / mostrado)}` : 'sem campo, não há o que comparar');
       por('valor-2', B > 0.05
-        ? `o IMF é <b>${comMilhar(CAMPO_NA_SUPERFICIE / mostrado)} vezes</b> mais fraco que o campo na superfície da Terra${B > CAMPO_NUMA_CME ? ' (forte como dentro de uma CME)' : ''}`
+        ? H_`o IMF é <b>${comMilhar(CAMPO_NA_SUPERFICIE / mostrado)} vezes</b> mais fraco que o campo na superfície da Terra${B > CAMPO_NUMA_CME ? ' (forte como dentro de uma CME)' : ''}`
         : '');
-      por('legenda-2', `<dt>B</dt><dd>intensidade do IMF: agora ${numero(B, 1)} nT (típico perto da Terra: ${CAMPO_TIPICO} nT; numa CME, mais de ${CAMPO_NUMA_CME} nT)</dd>
-        <dt class="unidade">${comMilhar(CAMPO_NA_SUPERFICIE)} nT</dt><dd>o campo na superfície da Terra, no equador (das animações do campo geomagnético)</dd>`);
+      por('legenda-2', `<dt>B</dt><dd>${H_`intensidade do IMF: agora ${numero(B, 1)} nT (típico perto da Terra: ${CAMPO_TIPICO} nT; numa CME, mais de ${CAMPO_NUMA_CME} nT)`}</dd>
+        <dt class="unidade">${comMilhar(CAMPO_NA_SUPERFICIE)} nT</dt><dd>${H_`o campo na superfície da Terra, no equador (das animações do campo geomagnético)`}</dd>`);
 
       // Passo 3: o tamanho da seta, pelas três partes.
       const parte = (valor) => (valor < 0 ? `(${comSinal(valor)})` : numero(valor, 1));
       const soma = estado.bx ** 2 + estado.by ** 2 + estado.bz ** 2;
       por('conta-3', `√(${parte(estado.bx)}<sup>2</sup> + ${parte(estado.by)}<sup>2</sup> + ${parte(estado.bz)}<sup>2</sup>) = √${numero(soma, 2)}`);
-      por('valor-3', `|B| = <b>${numero(B, 1)} nT</b>; o B<sub>z</sub> é só uma parte: ${descreverBz(estado.bz)}`);
-      por('legenda-3', `<dt>B<sub>x</sub></dt><dd>para o Sol: ${nT(estado.bx)}</dd><dt>B<sub>y</sub></dt><dd>para o lado do entardecer: ${nT(estado.by)}</dd>
-        <dt>B<sub>z</sub></dt><dd>para o norte (+) ou para o sul (−): ${nT(estado.bz)}</dd><dt>|B|</dt><dd>o tamanho da seta</dd>`);
+      por('valor-3', H_`|B| = <b>${numero(B, 1)} nT</b>; o B<sub>z</sub> é só uma parte: ${descreverBz(estado.bz)}`);
+      por('legenda-3', `<dt>B<sub>x</sub></dt><dd>${H_`para o Sol: ${nT(estado.bx)}`}</dd><dt>B<sub>y</sub></dt><dd>${H_`para o lado do entardecer: ${nT(estado.by)}`}</dd>
+        <dt>B<sub>z</sub></dt><dd>${H_`para o norte (+) ou para o sul (−): ${nT(estado.bz)}`}</dd><dt>|B|</dt><dd>${H_`o tamanho da seta`}</dd>`);
 
       // Passo 4: o sentido dos dois campos, na frente da Terra.
       por('conta-4', `campo da Terra, do lado do Sol: para o norte (+) · B<sub>z</sub> chegando: ${descreverBz(chegando)}`);
-      por('valor-4', chegando < -0.05 ? 'sentidos opostos: <b>podem se ligar, e a energia entra</b>'
-        : chegando > 0.05 ? 'mesmo sentido: <b>não se ligam; pouca energia entra</b>' : 'B<sub>z</sub> = 0: o campo não tem parte norte–sul');
+      por('valor-4', chegando < -0.05 ? H_`sentidos opostos: <b>podem se ligar, e a energia entra</b>`
+        : chegando > 0.05 ? H_`mesmo sentido: <b>não se ligam; pouca energia entra</b>` : H_`B<sub>z</sub> = 0: o campo não tem parte norte–sul`);
 
       // Passo 5: a regra.
       const trecho = trechoDoPasso5();
       por('conta-5', `maior trecho seguido com B<sub>z</sub> abaixo de −10 nT: ${emHoras(trecho.horas)}`);
-      por('valor-5', trecho.horas > HORAS_MINIMAS ? 'mais de 3 h: <b>atende à condição</b> de uma tempestade intensa'
-        : trecho.horas > 0 ? 'menos de 3 h: <b>não basta</b>' : 'o B<sub>z</sub> não passou de −10 nT: <b>não atende</b>');
-      por('legenda-5', `<dt>Dst</dt><dd>o índice das tempestades: quanto mais negativo, mais intensa</dd>
-        <dt class="unidade">a curva</dt><dd>inventada, só para mostrar a regra: B<sub>z</sub> de ${comSinal(estado.bzSul, 0)} nT por ${duracaoEscolhida(estado.duracao)}, com pequenas oscilações</dd>`);
+      por('valor-5', trecho.horas > HORAS_MINIMAS ? H_`mais de 3 h: <b>atende à condição</b> de uma tempestade intensa`
+        : trecho.horas > 0 ? H_`menos de 3 h: <b>não basta</b>` : H_`o B<sub>z</sub> não passou de −10 nT: <b>não atende</b>`);
+      por('legenda-5', `<dt>Dst</dt><dd>${H_`o índice das tempestades: quanto mais negativo, mais intensa`}</dd>
+        <dt class="unidade">a curva</dt><dd>${H_`inventada, só para mostrar a regra: B<sub>z</sub> de ${comSinal(estado.bzSul, 0)} nT por ${duracaoEscolhida(estado.duracao)}, com pequenas oscilações`}</dd>`);
 
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 6`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 6`);
     }
 
     function mostrarPasso(novo) {
@@ -2215,6 +2316,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -2227,6 +2329,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -2385,6 +2488,7 @@
     atualizarLinhasDoIMF(0);
     misturas.ligacao = alvoDaLigacao(bzChegando());
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

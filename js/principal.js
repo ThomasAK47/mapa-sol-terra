@@ -19,6 +19,7 @@ import { iniciarCards, renderizarAgora } from './cards.js';
 import * as ceu from './ceu.js';
 import { iniciarConexoes } from './conexoes.js';
 import * as editorConexao from './editor-conexao.js';
+import * as editorTextos from './editor-textos.js';
 import * as efeitos from './efeitos.js';
 import * as estado from './estado.js';
 import { iniciarFundo } from './fundo.js';
@@ -65,7 +66,7 @@ async function iniciarApp() {
 
   // Ferramentas para investigar problemas pelo console do navegador (F12).
   window.mapaDepuracao = {
-    estado, camera, persistencia, acoes, editorConexao, hierarquia, busca, animacoes, janelaAnimacao, efeitos,
+    estado, camera, persistencia, acoes, editorConexao, editorTextos, hierarquia, busca, animacoes, janelaAnimacao, efeitos,
     zonas, ceu, medirPanZoom,
   };
 

@@ -419,7 +419,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Linhas de campo<span class="longo">: a forma delas e onde tocam o chão</span></h1>
+    <h1>Linhas de campo<span class="longo" data-texto="titulo-complemento">: a forma delas e onde tocam o chão</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -432,14 +432,14 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>As linhas do campo de dipolo</h2>
+        <h2 data-texto="resumo-titulo">As linhas do campo de dipolo</h2>
         <p>Uma <span class="campo">linha de campo</span> é o caminho de quem anda sempre na direção da seta do
           campo (o caminho que um polo norte solto seguiria). No dipolo, todas têm a mesma forma: sobem até
           <i>R</i><sub>0</sub> sobre o equador magnético e descem em direção aos polos.</p>
         <div class="formula central campo"><i>R</i> = <i>R</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i></div>
         <dl class="leituras">
-          <div><dt><span class="longo">Altura da linha sobre o equador (<i>R</i><sub>0</sub>)</span><span class="curto"><i>R</i><sub>0</sub>: altura no equador</span></dt><dd id="l-r0"></dd></div>
-          <div><dt><span class="longo">Latitude magnética onde ela toca o chão</span><span class="curto">Toca o chão em</span></dt><dd id="l-chao"></dd></div>
+          <div><dt data-texto="leitura-l-r0"><span class="longo">Altura da linha sobre o equador (<i>R</i><sub>0</sub>)</span><span class="curto"><i>R</i><sub>0</sub>: altura no equador</span></dt><dd id="l-r0"></dd></div>
+          <div><dt data-texto="leitura-l-chao"><span class="longo">Latitude magnética onde ela toca o chão</span><span class="curto">Toca o chão em</span></dt><dd id="l-chao"></dd></div>
           <div><dt id="l-ponto-nome"></dt><dd id="l-ponto"></dd></div>
         </dl>
       </section>
@@ -448,23 +448,23 @@
            com os números de agora, o resultado e a explicação. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>Um pedacinho da linha</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">Um pedacinho da linha</span></button>
           <div class="passo-corpo">
             <div class="formula"><span class="fr"><span><i>r</i>·d<i>λ</i></span><span>d<i>r</i></span></span> =
               <span class="campo"><span class="fr"><span><i>B</i><sub>λ</sub></span><span><i>B</i><sub>r</sub></span></span></span></div>
             <div class="conta" id="conta-0"></div>
             <div class="valor" id="valor-0"></div>
-            <p class="explicacao">Num pedacinho da linha, você se afasta d<i>r</i> na direção radial e anda
+            <p class="explicacao" data-texto="passo-1-explicacao">Num pedacinho da linha, você se afasta d<i>r</i> na direção radial e anda
               <i>r</i>·d<i>λ</i> na horizontal (um arco: ângulo × raio). Como a linha segue a seta, a inclinação do
               caminho, horizontal ÷ radial, tem de ser igual à do campo.</p>
             <dl class="legenda">
-              <dt class="unidade">branco</dt><dd>o pedacinho do caminho</dd>
-              <dt class="unidade campo">azul</dt><dd>a seta do campo e as duas partes dela</dd>
+              <dt class="unidade">branco</dt><dd data-texto="passo-1-legenda">o pedacinho do caminho</dd>
+              <dt class="unidade campo">azul</dt><dd data-texto="passo-1-legenda-2">a seta do campo e as duas partes dela</dd>
             </dl>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>A inclinação do campo</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">A inclinação do campo</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo"><span class="fr"><span><i>B</i><sub>λ</sub></span><span><i>B</i><sub>r</sub></span></span> =
               <span class="fr"><span>cos <i>λ</i></span><span>−2·sen <i>λ</i></span></span> =
@@ -472,19 +472,19 @@
             <div class="conta" id="conta-1"></div>
             <div class="formula pequena"><span class="fr"><span>d<i>r</i></span><span><i>r</i></span></span> = −2·tan <i>λ</i>·d<i>λ</i></div>
             <div class="valor" id="valor-1"></div>
-            <p class="explicacao">Substituindo as duas partes do campo, os <i>M</i>/<i>r</i><sup>3</sup> se cancelam:
+            <p class="explicacao" data-texto="passo-2-explicacao">Substituindo as duas partes do campo, os <i>M</i>/<i>r</i><sup>3</sup> se cancelam:
               a inclinação da seta só depende da latitude, não da distância (no desenho, as setas são paralelas).
               Juntando com o passo 1 e separando as variáveis, fica <i>r</i> de um lado e <i>λ</i> do outro.</p>
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>Somando os pedacinhos</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">Somando os pedacinhos</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo">ln <i>r</i> = 2·ln cos <i>λ</i> + constante<br>
               <i>r</i> = <i>r</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i></div>
             <div class="conta" id="conta-2"></div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">Integrando os dois lados (a integral de tan <i>λ</i> é −ln cos <i>λ</i>) e tirando o
+            <p class="explicacao" data-texto="passo-3-explicacao">Integrando os dois lados (a integral de tan <i>λ</i> é −ln cos <i>λ</i>) e tirando o
               logaritmo. No equador (<i>λ</i> = 0), cos 0 = 1 e <i>r</i> = <i>r</i><sub>0</sub>: cada valor de
               <i>r</i><sub>0</sub> define uma linha diferente. No desenho, cada degrau é um pedacinho de 5°.</p>
             <dl class="legenda">
@@ -493,23 +493,23 @@
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Onde a linha toca o chão</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Onde a linha toca o chão</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo">cos <i>λ</i><sub>E</sub> = <span class="fr"><span>1</span><span>√<i>R</i><sub>0</sub></span></span></div>
             <div class="conta" id="conta-3"></div>
             <div class="valor" id="valor-3"></div>
             <div class="tabela" id="tabela" role="group" aria-label="Linhas de exemplo"></div>
-            <p class="explicacao">Em raios da Terra (<i>R</i> = <i>r</i>/<i>R</i><sub>E</sub>), a linha é
+            <p class="explicacao" data-texto="passo-4-explicacao">Em raios da Terra (<i>R</i> = <i>r</i>/<i>R</i><sub>E</sub>), a linha é
               <i>R</i> = <i>R</i><sub>0</sub>·cos<sup>2</sup> <i>λ</i>. No chão, <i>R</i> = 1. Quanto maior
               <i>R</i><sub>0</sub>, mais perto do polo a linha toca o chão.</p>
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>De 6 a 10 raios: a oval auroral</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">De 6 a 10 raios: a oval auroral</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo" id="formula-4"></div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">Tudo o que acontece entre 6 e 10 raios da Terra (corrente de anel externa, plasma
+            <p class="explicacao" data-texto="passo-5-explicacao">Tudo o que acontece entre 6 e 10 raios da Terra (corrente de anel externa, plasma
               sheet, borda da magnetosfera) está ligado ao solo nessa faixa de latitude magnética. É ali que fica a
               oval auroral, e é ali que ficam os magnetômetros que compõem o índice AE: as linhas de campo levam a
               informação lá de cima até essas estações. É por isso que o AE "enxerga" as subtempestades da
@@ -520,8 +520,8 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste o ponto: a linha que passa por ele acende. Ou use os controles embaixo do desenho.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+      <p class="dica" data-texto="dica">Arraste o ponto: a linha que passa por ele acende. Ou use os controles embaixo do desenho.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: como a conta é feita</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -540,9 +540,9 @@
 
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle"><span class="nome"><i>R<sub>0</sub></i><small>altura da linha no equador</small></span><output id="o-r0"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-r0"><i>R<sub>0</sub></i><small>altura da linha no equador</small></span><output id="o-r0"></output>
         <input id="c-r0" type="range" min="1.1" max="10" step="0.05" value="4"></label>
-      <label class="controle"><span class="nome"><i>λ</i><small>ponto na linha</small></span><output id="o-lat"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-lat"><i>λ</i><small>ponto na linha</small></span><output id="o-lat"></output>
         <input id="c-lat" type="range" min="-60" max="60" step="1" value="30"></label>
       <div class="botoes">
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
@@ -552,6 +552,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -560,6 +568,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -574,8 +675,8 @@
       { R0: 1.12, nome: '' },
       { R0: 2, nome: '' },
       { R0: 4, nome: '' },
-      { R0: 6.6, nome: 'geoestacionária' },
-      { R0: 10, nome: 'magnetopausa' },
+      { R0: 6.6, nome: T_`geoestacionária` },
+      { R0: 10, nome: T_`magnetopausa` },
     ];
     const PEDACINHO = 5;                                    // graus de latitude em cada degrau do passo 3
     const COMECO = { R0: 4, graus: 30 };                    // a linha e o ponto ao abrir a animação
@@ -1073,7 +1174,7 @@
         for (const R of [2, 4, 6, 8, 10]) {
           escrever(String(R), telaX(outro * R, 0) - outro * 8, terra.y + 11, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
         }
-        escrever('raios da Terra', telaX(outro * 6, 0), terra.y + 26, { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
+        escrever(T_`raios da Terra`, telaX(outro * 6, 0), terra.y + 26, { tamanho: 10.5, cor: '#747474', alinhar: 'center' });
         for (const linha of TABELA) {
           if (!linha.nome || S < 30) continue;                          // com o desenho pequeno, os nomes se encavalam
           const x = telaX(outro * linha.R0, 0);
@@ -1150,10 +1251,10 @@
         ctx.lineTo(cena.x + 39, y);
         ctx.lineTo(cena.x + 34, y + 3.4);
         ctx.stroke();
-        escrever('linha escolhida (as setinhas mostram o sentido do campo)', cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`linha escolhida (as setinhas mostram o sentido do campo)`, cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
         ctx.fillStyle = `rgba(${COR_CAMPO}, 0.3)`;
         ctx.fillRect(cena.x + 18, y + 13, 38, 10);
-        escrever('linhas que sobem de 6 a 10 raios', cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`linhas que sobem de 6 a 10 raios`, cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
       }
       ctx.globalAlpha = 1;
     }
@@ -1189,11 +1290,11 @@
       tracejado(C.x - fora.x * braco, C.y - fora.y * braco, C.x + fora.x * braco, C.y + fora.y * braco, 'rgba(255, 255, 255, 0.34)');
       tracejado(C.x - norte.x * bracoDeLado, C.y - norte.y * bracoDeLado, C.x + norte.x * bracoDeLado, C.y + norte.y * bracoDeLado, 'rgba(255, 255, 255, 0.34)');
       if (comNomes) {
-        escrever('para fora da Terra', C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
-        escrever(`para o centro da Terra (a ${emRaios(P.R)})`, C.x - fora.x * (braco + 11), C.y - fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(T_`para fora da Terra`, C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(T_`para o centro da Terra (a ${emRaios(P.R)})`, C.x - fora.x * (braco + 11), C.y - fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
       }
-      escrever('norte', C.x + norte.x * (bracoDeLado + 7), C.y + norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara(norte) });
-      escrever('sul', C.x - norte.x * (bracoDeLado + 7), C.y - norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara({ x: -norte.x }) });
+      escrever(T_`norte`, C.x + norte.x * (bracoDeLado + 7), C.y + norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara(norte) });
+      escrever(T_`sul`, C.x - norte.x * (bracoDeLado + 7), C.y - norte.y * (bracoDeLado + 7), { tamanho: 11, cor: '#a9a9a9', alinhar: alinharPara({ x: -norte.x }) });
 
       // O pedacinho do caminho: anda r·dλ na horizontal e muda dr na vertical. A própria linha é a hipotenusa.
       const A = { x: C.x - u.x * meio, y: C.y - u.y * meio };
@@ -1253,7 +1354,7 @@
       const braco = Math.max(passo * 1.2, Math.min(alturaLivre / 2 - 30, passo * 2.6));
       ctx.globalAlpha = alfa;
       tracejado(C.x - fora.x * braco, C.y - fora.y * braco, C.x + fora.x * braco, C.y + fora.y * braco, 'rgba(255, 255, 255, 0.34)');
-      if (comNomes) escrever('para fora da Terra', C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      if (comNomes) escrever(T_`para fora da Terra`, C.x + fora.x * (braco + 11), C.y + fora.y * (braco + 11), { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
 
       const inclinacao = Math.round(emGraus(Math.atan2(Math.abs(senI), cosI)));
       for (const k of [2, 1, -1, -2, 0]) {                      // k > 0: mais longe da Terra; o ponto escolhido (0) vai por último
@@ -1277,8 +1378,8 @@
       // A frase fica embaixo, do lado do sul (as setas apontam para o norte). Em telas estreitas, ela encurta.
       if (comNomes) {
         const noSul = norte.x < 0 ? 1 : -1;                     // de que lado da tela fica o sul
-        const frase = `mesma latitude (${latitudeEmTexto(estado.graus)}): mesma inclinação`;
-        const inteira = `${frase}, a qualquer distância`;
+        const frase = T_`mesma latitude (${latitudeEmTexto(estado.graus)}): mesma inclinação`;
+        const inteira = T_`${frase}, a qualquer distância`;
         escrever(larguraDoTexto(inteira, 12, 600) + 60 < cena.w ? inteira : frase, noSul > 0 ? cena.x + cena.w - 22 : cena.x + 22, cena.y + cena.h - 24,
           { tamanho: 12, peso: 600, alinhar: noSul > 0 ? 'right' : 'left', placa: true });
       }
@@ -1371,7 +1472,7 @@
       desenharPonto(pe.x, pe.y, { raio: 3 });
 
       if (comNomes) {
-        escrever(`cada degrau: ${PEDACINHO}° de latitude`, estado.lado > 0 ? cena.x + cena.w - 18 : cena.x + 18, cena.y + ESPACO_DO_TITULO + (hemisferio > 0 ? 22 : cena.h - ESPACO_DO_TITULO - 22),
+        escrever(T_`cada degrau: ${PEDACINHO}° de latitude`, estado.lado > 0 ? cena.x + cena.w - 18 : cena.x + 18, cena.y + ESPACO_DO_TITULO + (hemisferio > 0 ? 22 : cena.h - ESPACO_DO_TITULO - 22),
           { tamanho: 12, cor: '#d0d0d0', alinhar: estado.lado > 0 ? 'right' : 'left', placa: true });
       }
       ctx.globalAlpha = 1;
@@ -1396,7 +1497,7 @@
         ctx.lineTo(x - fora.x * tamanho, y - fora.y * tamanho);
         ctx.stroke();
         if ((graus % entreNumeros === 0 || graus === 90) && graus !== semNumero) {
-          escrever(graus === 90 ? 'polo' : graus === 0 ? 'equador' : `${graus}°`, x - fora.x * 20, y - fora.y * 20, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
+          escrever(graus === 90 ? T_`polo` : graus === 0 ? T_`equador` : `${graus}°`, x - fora.x * 20, y - fora.y * 20, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
         }
       }
     }
@@ -1535,8 +1636,8 @@
       const mx = telaX(q.X, q.Y), my = telaY(q.X, q.Y);
       const limite = cena.y + cena.h - 10;
       if (chaoGrande && my - fora.y * 42 <= limite) {
-        escrever('oval auroral', mx - fora.x * 42, my - fora.y * 42, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
-        if (my - fora.y * 60 <= limite) escrever('magnetômetros do índice AE', mx - fora.x * 60, my - fora.y * 60, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
+        escrever(T_`oval auroral`, mx - fora.x * 42, my - fora.y * 42, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
+        if (my - fora.y * 60 <= limite) escrever(T_`magnetômetros do índice AE`, mx - fora.x * 60, my - fora.y * 60, { tamanho: 11, cor: '#bdbdbd', alinhar: 'center' });
       }
 
       // Para onde a faixa vai: a frase fica do lado do equador, perto de onde as linhas saem da tela.
@@ -1544,7 +1645,7 @@
       const altoDoCeu = alturaDoCeu();
       if (altoDoCeu > 150) {
         const borda = acimaDoChao(FAIXA.de, altoDoCeu * 0.92);
-        const frase = `sobem até ${FAIXA.de} a ${FAIXA.ate} raios, sobre o equador`;
+        const frase = T_`sobem até ${FAIXA.de} a ${FAIXA.ate} raios, sobre o equador`;
         const { norte } = direcoesEm(anguloDe(LATITUDE_DO_CHAO));
         const sentido = norte.x < 0 ? 1 : -1;                   // na tela, o equador fica do lado oposto ao do norte
         const texto = sentido > 0 ? `← ${frase}` : `${frase} →`;
@@ -1644,7 +1745,7 @@
       ctx.fill();
       ctx.restore();
       ctx.globalAlpha = alfa;
-      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      escrever(T_`você está olhando aqui`, x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
       ctx.globalAlpha = 1;
     }
 
@@ -1696,17 +1797,17 @@
     }
 
     // Textos que não mudam, mas dependem dos valores da seção 2.
-    por('tabela', `<div class="cabecalho"><span><i>R</i><sub>0</sub>: altura no equador</span><span>toca o chão em</span></div>${
+    por('tabela', `<div class="cabecalho"><span>${H_`<i>R</i><sub>0</sub>: altura no equador`}</span><span>${H_`toca o chão em`}</span></div>${
       TABELA.map((linha) => `<button type="button" data-r0="${linha.R0}"><span>${semZeros(linha.R0)} <i>R</i><sub>E</sub>${
         linha.nome ? `<small>${linha.nome}</small>` : ''}</span><b>${grausNoChao(linha.R0)}°</b></button>`).join('')}`);
     por('formula-4', `<i>R</i><sub>0</sub> de ${FAIXA.de} a ${FAIXA.ate} → <i>λ</i><sub>E</sub> de ${grausNoChao(FAIXA.de)}° a ${grausNoChao(FAIXA.ate)}°`);
-    por('nota', `As linhas são as do modelo de dipolo, uma aproximação: além de 3 ou 4 raios, o vento solar deforma o campo.
+    por('nota', H_`As linhas são as do modelo de dipolo, uma aproximação: além de 3 ou 4 raios, o vento solar deforma o campo.
       Distâncias em raios da Terra (<i>R</i> = <i>r</i>/<i>R</i><sub>E</sub>). Setas, degraus, estações e pulsos são um esquema.`);
     const SUBTITULOS = {
-      longe: 'De longe: as linhas do dipolo, de 2 a 10 raios.<span class="longo"> Distâncias em raios da Terra.</span>',
-      ponto: 'De perto: um pedacinho da linha, no ponto escolhido.<span class="longo"> O tamanho das setas é um esquema.</span>',
-      linha: 'De perto: meia linha, do equador até o chão.',
-      chao: 'De perto: o chão do hemisfério norte, onde as linhas chegam.',
+      longe: H_`De longe: as linhas do dipolo, de 2 a 10 raios.<span class="longo"> Distâncias em raios da Terra.</span>`,
+      ponto: H_`De perto: um pedacinho da linha, no ponto escolhido.<span class="longo"> O tamanho das setas é um esquema.</span>`,
+      linha: H_`De perto: meia linha, do equador até o chão.`,
+      chao: H_`De perto: o chão do hemisfério norte, onde as linhas chegam.`,
     };
 
     function atualizarPainel() {
@@ -1721,11 +1822,11 @@
       por('o-lat', latitudeEmTexto(estado.graus));
 
       // Visão de longe.
-      por('l-r0', `${emRaios(R0)} da Terra`);
-      por('l-chao', `${noChao}° norte e sul`);
-      const ondeFicaOPonto = noEquador ? 'no equador' : `<i>λ</i> = ${latitudeEmTexto(estado.graus)}`;
-      por('l-ponto-nome', `<span class="longo">Distância ao centro no ponto (${ondeFicaOPonto})</span><span class="curto">No ponto (${ondeFicaOPonto})</span>`);
-      por('l-ponto', `${emRaios(R)} da Terra`);
+      por('l-r0', H_`${emRaios(R0)} da Terra`);
+      por('l-chao', H_`${noChao}° norte e sul`);
+      const ondeFicaOPonto = noEquador ? H_`no equador` : `<i>λ</i> = ${latitudeEmTexto(estado.graus)}`;
+      por('l-ponto-nome', H_`<span class="longo">Distância ao centro no ponto (${ondeFicaOPonto})</span><span class="curto">No ponto (${ondeFicaOPonto})</span>`);
+      por('l-ponto', H_`${emRaios(R)} da Terra`);
 
       // Passo 1: a inclinação do caminho é a do campo.
       const razao = noEquador ? 0 : inclinacaoDoCampo(lat);
@@ -1733,28 +1834,28 @@
         ? 'no equador, <i>B</i><sub>r</sub> = 0: a seta do campo fica deitada'
         : `= ${comMilhar(c.Bl)} ÷ ${entreParenteses(`${c.Br < 0 ? '−' : ''}${comMilhar(c.Br)}`, c.Br < 0)} <span class="longo">(em nT)</span>`);
       por('valor-0', noEquador
-        ? 'd<i>r</i> = 0: aqui a linha nem sobe nem desce'
-        : `= <b>${comSinal(razao)}</b>: para cada 1 que ${noNorte ? 'desce' : 'sobe'}, a linha anda ${numero(Math.abs(razao), 3)} para o norte`);
+        ? H_`d<i>r</i> = 0: aqui a linha nem sobe nem desce`
+        : H_`= <b>${comSinal(razao)}</b>: para cada 1 que ${noNorte ? 'desce' : 'sobe'}, a linha anda ${numero(Math.abs(razao), 3)} para o norte`);
       // Passo 2: a inclinação só depende da latitude; separando as variáveis.
       por('conta-1', noEquador
         ? 'no equador, tan 0 = 0: a seta fica deitada, sem parte radial'
         : `= −1 ÷ (2 · ${entreParenteses(comSinal(tangente), tangente < 0)}) = <b>${comSinal(razao)}</b>, o mesmo valor do passo 1`);
       const porGrau = Math.abs(mudancaDaDistancia(lat, emRadianos(1))) * 100;
       por('valor-1', noEquador
-        ? 'no equador, d<i>r</i> = 0: é o ponto mais alto da linha'
-        : `aqui, a cada grau para o norte, a linha ${noNorte ? 'desce' : 'sobe'} <b>${numero(porGrau, 1)}%</b> da distância`);
+        ? H_`no equador, d<i>r</i> = 0: é o ponto mais alto da linha`
+        : H_`aqui, a cada grau para o norte, a linha ${noNorte ? 'desce' : 'sobe'} <b>${numero(porGrau, 1)}%</b> da distância`);
       // Passo 3: r = r₀·cos² λ.
       por('conta-2', `= ${numero(R0, 2)} · cos<sup>2</sup> ${Math.abs(estado.graus)}° = ${numero(R0, 2)} · ${numero(cosseno * cosseno, 3)}`);
-      por('valor-2', `= <b>${emRaios(R)} da Terra</b> no ponto marcado`);
-      por('leg-r0', `onde a linha cruza o equador: a altura máxima dela. Aqui, ${emRaios(R0)} da Terra`);
+      por('valor-2', H_`= <b>${emRaios(R)} da Terra</b> no ponto marcado`);
+      por('leg-r0', H_`onde a linha cruza o equador: a altura máxima dela. Aqui, ${emRaios(R0)} da Terra`);
       // Passo 4: onde a linha toca o chão.
       por('conta-3', `= 1 ÷ √${numero(R0, 2)} = ${numero(1 / Math.sqrt(R0), 3)}`);
-      por('valor-3', `<i>λ</i><sub>E</sub> = <b>${noChao}°</b> de latitude magnética, no norte e no sul`);
+      por('valor-3', H_`<i>λ</i><sub>E</sub> = <b>${noChao}°</b> de latitude magnética, no norte e no sul`);
       for (const botao of document.querySelectorAll('#tabela button')) botao.classList.toggle('ativo', Math.abs(Number(botao.dataset.r0) - R0) < 0.005);
       // Passo 5: a linha escolhida está na faixa?
       const naFaixa = R0 >= FAIXA.de - 1e-9 && R0 <= FAIXA.ate + 1e-9;
-      por('valor-4', `A linha escolhida (<i>R</i><sub>0</sub> = ${numero(R0, 2)}) toca o chão em ${noChao}°: <b>${naFaixa ? 'dentro' : 'fora'} dessa faixa</b>.`);
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+      por('valor-4', H_`A linha escolhida (<i>R</i><sub>0</sub> = ${numero(R0, 2)}) toca o chão em ${noChao}°: <b>${naFaixa ? 'dentro' : 'fora'} dessa faixa</b>.`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 5`);
     }
 
     function mostrarPasso(novo) {
@@ -1771,6 +1872,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -1783,6 +1885,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -1912,6 +2015,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

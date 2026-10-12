@@ -454,7 +454,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Além do dipolo<span class="longo">: o campo de verdade e onde cada modelo vale</span></h1>
+    <h1>Além do dipolo<span class="longo" data-texto="titulo-complemento">: o campo de verdade e onde cada modelo vale</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -467,22 +467,22 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>Três territórios</h2>
+        <h2 data-texto="resumo-titulo">Três territórios</h2>
         <p>O dipolo no centro da Terra é uma aproximação. O <span class="campo">campo</span> real é irregular perto da
           superfície <span class="marca">1</span>, parece um dipolo a meia distância <span class="marca">2</span> e,
           mais longe, é deformado pelo <span class="vento">vento solar</span> <span class="marca">3</span>.</p>
         <dl class="leituras">
-          <div><dt>Distância do ponto ao centro</dt><dd id="l-distancia"></dd></div>
-          <div class="so-largo"><dt>Quadrupolo ÷ dipolo, comparado à superfície</dt><dd id="l-quadrupolo"></dd></div>
-          <div class="so-largo"><dt>Octupolo ÷ dipolo, comparado à superfície</dt><dd id="l-octupolo"></dd></div>
-          <div><dt>O que vale ali</dt><dd id="l-modelo"></dd></div>
+          <div><dt data-texto="leitura-l-distancia">Distância do ponto ao centro</dt><dd id="l-distancia"></dd></div>
+          <div class="so-largo"><dt data-texto="leitura-l-quadrupolo">Quadrupolo ÷ dipolo, comparado à superfície</dt><dd id="l-quadrupolo"></dd></div>
+          <div class="so-largo"><dt data-texto="leitura-l-octupolo">Octupolo ÷ dipolo, comparado à superfície</dt><dd id="l-octupolo"></dd></div>
+          <div><dt data-texto="leitura-l-modelo">O que vale ali</dt><dd id="l-modelo"></dd></div>
         </dl>
       </section>
 
       <!-- Visão de perto: cinco passos. Em cada um: a fórmula ou a ideia, os números de agora e a explicação. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>O ímã fora do centro</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">O ímã fora do centro</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo"><i>B</i> = <span class="fr"><span>0,31 G</span><span>(1 ± <i>d</i>/<i>R</i><sub>E</sub>)<sup>3</sup></span></span></div>
             <div class="conta" id="conta-0"></div>
@@ -493,26 +493,26 @@
               <div class="barra"><span>no centro</span><span class="trilho"><span class="nivel campo" id="barra-centro"></span></span><span class="num" id="num-centro"></span></div>
               <div class="barra"><span class="campo">Atlântico Sul</span><span class="trilho"><span class="nivel campo" id="barra-atlantico"></span></span><span class="num" id="num-atlantico"></span></div>
             </div>
-            <p class="explicacao">Mover o ímã imaginário uns 400 km para fora do centro da Terra já melhora o modelo.
+            <p class="explicacao" data-texto="passo-1-explicacao">Mover o ímã imaginário uns 400 km para fora do centro da Terra já melhora o modelo.
               O deslocamento é para o lado do Pacífico, o que deixa o campo mais fraco no lado oposto, sobre o
               Atlântico Sul: é a explicação mais simples para a Anomalia Magnética do Atlântico Sul.</p>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>Uma soma de formas simples</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">Uma soma de formas simples</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra campo">campo = dipolo + quadrupolo + <span class="junto">octupolo + …</span></div>
             <div class="valor">ordem <i>n</i> = 1, 2, 3, …: são os harmônicos esféricos</div>
-            <p class="explicacao">O campo real tem uma forma complicada. Ela é escrita como uma soma de formas
+            <p class="explicacao" data-texto="passo-2-explicacao">O campo real tem uma forma complicada. Ela é escrita como uma soma de formas
               simples: um dipolo (<i>n</i> = 1), mais um quadrupolo (<i>n</i> = 2, como dois ímãs), mais um octupolo
               (<i>n</i> = 3), e assim por diante. É o mesmo princípio de decompor um som em notas, só que sobre a
               superfície de uma esfera.</p>
-            <p class="explicacao">Não há termo <i>n</i> = 0: ele seria um monopolo, um polo magnético isolado, que
+            <p class="explicacao" data-texto="passo-2-explicacao-2">Não há termo <i>n</i> = 0: ele seria um monopolo, um polo magnético isolado, que
               não existe na natureza.</p>
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>Quanto de cada forma</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">Quanto de cada forma</span></button>
           <div class="passo-corpo">
             <div class="formula pequena quebra campo"><span class="junto"><i>g</i><span class="ix"><span>0</span><span>1</span></span>·dipolo</span> +
               <span class="junto"><i>g</i><span class="ix"><span>0</span><span>2</span></span>·quadrupolo</span> +
@@ -523,7 +523,7 @@
               <div class="barra"><span>octupolo</span><span class="trilho"><span class="nivel campo" id="barra-octupolo"></span></span><span class="num" id="num-octupolo"></span></div>
             </div>
             <div class="valor" id="valor-2"></div>
-            <p class="explicacao">Os <i>g</i> e <i>h</i> são os coeficientes de Gauss: quanto de cada forma entra na
+            <p class="explicacao" data-texto="passo-3-explicacao">Os <i>g</i> e <i>h</i> são os coeficientes de Gauss: quanto de cada forma entra na
               soma. Eles são ajustados com medições de magnetômetros no solo e em satélites. O campo da Terra muda
               lentamente com os anos (variação secular), então os coeficientes precisam ser recalculados: na
               prática, esse modelo é o IGRF, atualizado a cada 5 anos.</p>
@@ -531,7 +531,7 @@
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>A queda com a distância</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">A queda com a distância</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo">potencial ∝ <span class="fr"><span>1</span><span><i>R</i><sup><i>n</i>+1</sup></span></span>
               &nbsp; campo ∝ <span class="fr"><span>1</span><span><i>R</i><sup><i>n</i>+2</sup></span></span></div>
@@ -544,24 +544,24 @@
               </tbody>
             </table>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">O campo é a derivada do potencial em relação à distância, e derivar uma potência
+            <p class="explicacao" data-texto="passo-4-explicacao">O campo é a derivada do potencial em relação à distância, e derivar uma potência
               baixa o expoente em mais 1. Como cada ordem cai uma potência mais rápido que a anterior, longe da
               Terra sobra só o dipolo.</p>
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>Onde cada modelo vale</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">Onde cada modelo vale</span></button>
           <div class="passo-corpo">
             <ul class="territorios">
-              <li data-territorio="1"><span class="marca">1</span><span><b>Perto da superfície:</b> o campo é irregular e
+              <li data-territorio="1"><span class="marca">1</span><span data-texto="passo-5-item-1"><b>Perto da superfície:</b> o campo é irregular e
                 precisa do IGRF.</span></li>
-              <li data-territorio="2"><span class="marca">2</span><span><b>Entre uns 2 e 4 raios da Terra:</b> o dipolo
+              <li data-territorio="2"><span class="marca">2</span><span data-texto="passo-5-item-2"><b>Entre uns 2 e 4 raios da Terra:</b> o dipolo
                 funciona bem.</span></li>
-              <li data-territorio="3"><span class="marca">3</span><span><b>Além disso:</b> o
+              <li data-territorio="3"><span class="marca">3</span><span data-texto="passo-5-item-3"><b>Além disso:</b> o
                 <span class="vento">vento solar</span> domina, e é preciso usar um modelo de magnetosfera.</span></li>
             </ul>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">Os termos complicados morrem rápido com a distância e, longe da Terra, sobra só o
+            <p class="explicacao" data-texto="passo-5-explicacao">Os termos complicados morrem rápido com a distância e, longe da Terra, sobra só o
               dipolo. Mas além de 3 ou 4 raios da Terra o vento solar começa a deformar tudo.</p>
           </div>
         </li>
@@ -569,9 +569,9 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste o ponto para mudar a distância. "Menor" quer dizer: menor, em relação ao dipolo, do que
+      <p class="dica" data-texto="dica">Arraste o ponto para mudar a distância. "Menor" quer dizer: menor, em relação ao dipolo, do que
         era na superfície.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: de onde vem cada território</button>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: de onde vem cada território</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -591,13 +591,13 @@
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel).
          Cada um aparece só nas cenas em que faz diferença ("data-cenas"). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle" data-cenas="longe p4 p5"><span class="nome"><i>R</i><small>distância do ponto ao centro</small></span><output id="o-r"></output>
+      <label class="controle" data-cenas="longe p4 p5"><span class="nome" data-texto="controle-c-r"><i>R</i><small>distância do ponto ao centro</small></span><output id="o-r"></output>
         <input id="c-r" type="range" min="1" max="8" step="0.05" value="3"></label>
-      <label class="controle" data-cenas="p1"><span class="nome"><i>d</i><small>deslocamento do ímã</small></span><output id="o-d"></output>
+      <label class="controle" data-cenas="p1"><span class="nome" data-texto="controle-c-d"><i>d</i><small>deslocamento do ímã</small></span><output id="o-d"></output>
         <input id="c-d" type="range" min="0" max="1200" step="10" value="400"></label>
-      <label class="controle" data-cenas="p3"><span class="nome"><i class="com-indices">g</i><span class="ix"><span>0</span><span>2</span></span><small>quadrupolo</small></span><output id="o-q"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-q"><i class="com-indices">g</i><span class="ix"><span>0</span><span>2</span></span><small>quadrupolo</small></span><output id="o-q"></output>
         <input id="c-q" type="range" min="0" max="40" step="1" value="25"></label>
-      <label class="controle" data-cenas="p3"><span class="nome"><i class="com-indices">g</i><span class="ix"><span>0</span><span>3</span></span><small>octupolo</small></span><output id="o-o"></output>
+      <label class="controle" data-cenas="p3"><span class="nome" data-texto="controle-c-o"><i class="com-indices">g</i><span class="ix"><span>0</span><span>3</span></span><small>octupolo</small></span><output id="o-o"></output>
         <input id="c-o" type="range" min="0" max="30" step="1" value="15"></label>
       <div class="botoes">
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
@@ -607,6 +607,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -615,6 +623,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -1452,7 +1553,7 @@
     // -------------------------------------------------------------------------
     const RAIO_DAS_MARCAS = emRadianos(218);     // a direção em que ficam os números: para baixo, do lado do Sol
     const LUGAR_DAS_MARCAS = [1.5, 3, 6.6];      // a distância de cada número ao centro, em raios da Terra
-    const LEGENDA_DAS_MARCAS = ['campo irregular: IGRF', 'o dipolo funciona bem', 'modelo de magnetosfera'];
+    const LEGENDA_DAS_MARCAS = [T_`campo irregular: IGRF`, T_`o dipolo funciona bem`, T_`modelo de magnetosfera`];
 
     function desenharDeLonge(alfa, comLegendas) {
       const S = projecao.S;
@@ -1464,7 +1565,7 @@
       // A régua das distâncias, na linha do equador, do lado da noite.
       if (comNomes && S >= 13) {
         for (const R of [2, 4, 6, 8]) escrever(String(R), telaX(R) + 8, terra.y + 11, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
-        escrever('raios da Terra', telaX(9.4), terra.y + 11, { tamanho: 10.5, cor: '#747474' });
+        escrever(T_`raios da Terra`, telaX(9.4), terra.y + 11, { tamanho: 10.5, cor: '#747474' });
       }
 
       // Os números dos três territórios, ao longo de um raio que sai da Terra.
@@ -1500,9 +1601,9 @@
       }
 
       desenharLegenda([
-        [AMOSTRAS.campo, 'linhas do campo (as setinhas mostram o sentido)'],
-        [AMOSTRAS.vento, 'vento solar (o Sol fica à esquerda)'],
-        [AMOSTRAS.parede, 'magnetopausa'],
+        [AMOSTRAS.campo, T_`linhas do campo (as setinhas mostram o sentido)`],
+        [AMOSTRAS.vento, T_`vento solar (o Sol fica à esquerda)`],
+        [AMOSTRAS.parede, T_`magnetopausa`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1535,7 +1636,7 @@
         return;
       }
       tracejado(terra.x, telaY(-0.5) + 3, terra.x, telaY(-0.62), 'rgba(255, 255, 255, 0.6)', [2, 3]);
-      escrever('centro da Terra', terra.x, telaY(-0.62) + 10, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center' });
+      escrever(T_`centro da Terra`, terra.x, telaY(-0.62) + 10, { tamanho: 11, cor: '#c8c8c8', alinhar: 'center' });
       // A medida do deslocamento, em cima do ímã.
       if (estado.d > 0) {
         const y = telaY(0.5) - 9;
@@ -1557,13 +1658,13 @@
       const espessura = (valor) => (S * ESPESSURA_DA_FAIXA * valor) / (2 * CAMPO_NO_EQUADOR);
       const blocos = [
         { lado: -1, valor: doPacifico, linhas: [
-          { texto: 'lado do Pacífico', tamanho: 13, peso: 600 },
+          { texto: T_`lado do Pacífico`, tamanho: 13, peso: 600 },
           { texto: `${comMilhar(doPacifico)} nT`, tamanho: 14, cor: AZUL, peso: 600 },
-          { texto: estado.d > 0 ? 'mais forte' : 'igual ao outro lado', tamanho: 11, cor: '#a9a9a9' }] },
+          { texto: estado.d > 0 ? T_`mais forte` : T_`igual ao outro lado`, tamanho: 11, cor: '#a9a9a9' }] },
         { lado: 1, valor: doAtlantico, linhas: [
-          { texto: 'lado do Atlântico Sul', tamanho: 13, peso: 600 },
+          { texto: T_`lado do Atlântico Sul`, tamanho: 13, peso: 600 },
           { texto: `${comMilhar(doAtlantico)} nT`, tamanho: 14, cor: AZUL, peso: 600 },
-          { texto: estado.d > 0 ? 'mais fraco' : 'igual ao outro lado', tamanho: 11, cor: '#a9a9a9' }] },
+          { texto: estado.d > 0 ? T_`mais fraco` : T_`igual ao outro lado`, tamanho: 11, cor: '#a9a9a9' }] },
       ];
       for (const bloco of blocos) {
         const naSuperficie = telaX(bloco.lado);
@@ -1576,8 +1677,8 @@
       }
 
       desenharLegenda([
-        [AMOSTRAS.faixa, 'faixa azul: intensidade do campo na superfície'],
-        [AMOSTRAS.dipolo, 'tracejado: como seria com o ímã no centro'],
+        [AMOSTRAS.faixa, T_`faixa azul: intensidade do campo na superfície`],
+        [AMOSTRAS.dipolo, T_`tracejado: como seria com o ímã no centro`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1631,7 +1732,7 @@
           const y = cy + raio * 1.75 + 22;
           escreverFormula(`n = ${n}`, cx, y, { tamanho: 15, alinhar: 'center' });
           escrever(FORMAS[n].nome, cx, y + 19, { tamanho: 13, peso: 600, alinhar: 'center' });
-          if (n === 2) escrever('como dois ímãs', cx, y + 36, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+          if (n === 2) escrever(T_`como dois ímãs`, cx, y + 36, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
         }
       }
       escreverFormula('+ …', cena.x + cena.w - 8, cy, { tamanho: 20, alinhar: 'right' });
@@ -1659,7 +1760,7 @@
         ctx.lineTo(x + r + 9, y - r - 9);
         ctx.stroke();
         const depois = escreverFormula('n = 0', x + r + 22, y, { tamanho: 14 });
-        escrever('seria um monopolo: não existe', x + r + 22 + depois + 8, y, { tamanho: 12, cor: '#c8c8c8' });
+        escrever(T_`seria um monopolo: não existe`, x + r + 22 + depois + 8, y, { tamanho: 12, cor: '#c8c8c8' });
       }
       ctx.globalAlpha = 1;
     }
@@ -1693,10 +1794,10 @@
       }
 
       desenharLegenda([
-        [AMOSTRAS.soma, 'soma das formas'],
-        [AMOSTRAS.dipolo, 'só o dipolo'],
-        [AMOSTRAS.faixa, 'faixa: intensidade do campo na superfície'],
-        [AMOSTRAS.medidores, 'magnetômetros no solo e satélites'],
+        [AMOSTRAS.soma, T_`soma das formas`],
+        [AMOSTRAS.dipolo, T_`só o dipolo`],
+        [AMOSTRAS.faixa, T_`faixa: intensidade do campo na superfície`],
+        [AMOSTRAS.medidores, T_`magnetômetros no solo e satélites`],
       ]);
       ctx.globalAlpha = 1;
     }
@@ -1754,7 +1855,7 @@
       ctx.stroke();
       tracejado(esquerda, alto, direita, alto, 'rgba(255, 255, 255, 0.28)', [2, 4]);
       for (let k = 1; k <= R_MAXIMO; k++) escrever(String(k), telaX(k), base + 13, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'center' });
-      escrever('raios da Terra', direita, base + 27, { tamanho: 10.5, cor: '#747474', alinhar: 'right' });
+      escrever(T_`raios da Terra`, direita, base + 27, { tamanho: 10.5, cor: '#747474', alinhar: 'right' });
       escrever('1', esquerda - 8, alto, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
       escrever('0', esquerda - 8, base, { tamanho: 10.5, cor: '#8f8f8f', alinhar: 'right' });
       // As duas curvas.
@@ -1784,7 +1885,7 @@
       }
       // O que cada curva é, no alto do gráfico, à direita (ali as curvas já estão baixas).
       const linhas = [
-        { texto: `a ${emRaios(R)} do centro, em relação ao dipolo:`, tamanho: 11.5, cor: '#c8c8c8' },
+        { texto: T_`a ${emRaios(R)} do centro, em relação ao dipolo:`, tamanho: 11.5, cor: '#c8c8c8' },
         ...CURVAS.map((curva) => ({ texto: `${curva.nome}: ${vezesMenor(vezesMenorQueODipolo(curva.n, R))}`, tamanho: 12.5, cor: `rgb(${curva.cor})`, peso: 600 })),
       ];
       const cabe = direita - telaX(2.15);
@@ -1815,8 +1916,8 @@
 
       if (alturaLivre > 240) {
         desenharLegenda([
-          [AMOSTRAS.soma, 'soma das formas'],
-          [AMOSTRAS.dipolo, 'só o dipolo: longe da Terra, as duas se confundem'],
+          [AMOSTRAS.soma, T_`soma das formas`],
+          [AMOSTRAS.dipolo, T_`só o dipolo: longe da Terra, as duas se confundem`],
         ]);
       }
       ctx.globalAlpha = 1;
@@ -1874,18 +1975,18 @@
 
     // Textos que não mudam, mas dependem dos valores da seção 2.
     const CAMPO_EM_TEXTO = `${comMilhar(CAMPO_NO_EQUADOR)} nT`;
-    por('nota', `Quadrupolo e octupolo com valores de exemplo, não os da Terra; de cada ordem, só aparece a forma mais
+    por('nota', H_`Quadrupolo e octupolo com valores de exemplo, não os da Terra; de cada ordem, só aparece a forma mais
       simples. A deformação pelo vento solar, a magnetopausa e a direção do deslocamento do ímã são um esquema.
       <i>R</i><sub>E</sub> = ${comMilhar(RAIO_DA_TERRA_KM)} km.`);
     const SUBTITULOS = {
-      longe: 'De longe: três territórios em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>',
-      p1: 'De perto: o ímã um pouco fora do centro da Terra.',
-      p2: 'De perto: as formas simples que, somadas, dão o campo.',
-      p3: 'De perto: a soma das formas, com valores de exemplo.',
-      p4: 'De perto: quanto sobra de cada forma, conforme a distância.',
-      p5: 'De volta à visão de longe: onde cada modelo vale.',
+      longe: H_`De longe: três territórios em volta da Terra.<span class="longo"> Distâncias em raios da Terra.</span>`,
+      p1: H_`De perto: o ímã um pouco fora do centro da Terra.`,
+      p2: H_`De perto: as formas simples que, somadas, dão o campo.`,
+      p3: H_`De perto: a soma das formas, com valores de exemplo.`,
+      p4: H_`De perto: quanto sobra de cada forma, conforme a distância.`,
+      p5: H_`De volta à visão de longe: onde cada modelo vale.`,
     };
-    const NOME_DO_TERRITORIO = ['', 'campo irregular: IGRF', 'o dipolo funciona bem', 'modelo de magnetosfera'];
+    const NOME_DO_TERRITORIO = ['', H_`campo irregular: IGRF`, H_`o dipolo funciona bem`, H_`modelo de magnetosfera`];
 
     function atualizarPainel() {
       const R = estado.R, delta = deslocamento();
@@ -1897,7 +1998,7 @@
       por('o-o', `${emPorCento(estado.octupolo)} do dipolo`);
 
       // Visão de longe.
-      por('l-distancia', `${emRaios(R)} da Terra`);
+      por('l-distancia', H_`${emRaios(R)} da Terra`);
       por('l-quadrupolo', vezesMenor(vezesMenorQueODipolo(2, R)));
       por('l-octupolo', vezesMenor(vezesMenorQueODipolo(3, R)));
       por('l-modelo', `<span class="marca">${aqui}</span> ${NOME_DO_TERRITORIO[aqui]}`);
@@ -1911,8 +2012,8 @@
         ? `Pacífico (−): ${comMilhar(CAMPO_NO_EQUADOR)} ÷ ${numero(1 - delta, 4)}<sup>3</sup> = ${comMilhar(doPacifico)} nT`
         : 'com o ímã no centro, os dois lados são iguais');
       por('valor-0', estado.d > 0
-        ? `Atlântico Sul (+): ${comMilhar(CAMPO_NO_EQUADOR)} ÷ ${numero(1 + delta, 4)}<sup>3</sup> = <b>${comMilhar(doAtlantico)} nT</b>`
-        : `dos dois lados: <b>${CAMPO_EM_TEXTO}</b>`);
+        ? H_`Atlântico Sul (+): ${comMilhar(CAMPO_NO_EQUADOR)} ÷ ${numero(1 + delta, 4)}<sup>3</sup> = <b>${comMilhar(doAtlantico)} nT</b>`
+        : H_`dos dois lados: <b>${CAMPO_EM_TEXTO}</b>`);
       por('num-pacifico', `${comMilhar(doPacifico)} nT`);
       por('num-centro', CAMPO_EM_TEXTO);
       por('num-atlantico', `${comMilhar(doAtlantico)} nT`);
@@ -1928,23 +2029,23 @@
       el('barra-quadrupolo').style.width = `${Math.round(estado.quadrupolo * 100)}%`;
       el('barra-octupolo').style.width = `${Math.round(estado.octupolo * 100)}%`;
       por('valor-2', estado.quadrupolo === 0 && estado.octupolo === 0
-        ? 'só o dipolo: a soma e o tracejado coincidem'
-        : 'valores de exemplo: <b>não são os coeficientes da Terra</b>');
+        ? H_`só o dipolo: a soma e o tracejado coincidem`
+        : H_`valores de exemplo: <b>não são os coeficientes da Terra</b>`);
 
       // Passo 4: a queda com a distância.
-      por('cabecalho-sobra', `sobra a ${numero(R, 2)} <i>R</i><sub>E</sub>`);
+      por('cabecalho-sobra', H_`sobra a ${numero(R, 2)} <i>R</i><sub>E</sub>`);
       for (const n of [1, 2, 3]) {
         const divisor = 1 / quedaDoCampo(n, R);
-        por(`sobra-${n}`, R < 1.004 ? 'tudo' : `<b>1/${divisor < 100 ? divisor.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : comMilhar(divisor)}</b>`);
+        por(`sobra-${n}`, R < 1.004 ? H_`tudo` : `<b>1/${divisor < 100 ? divisor.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : comMilhar(divisor)}</b>`);
       }
       por('valor-3', R < 1.02
-        ? 'na superfície, cada forma vale o que os coeficientes dizem'
-        : `a ${emRaios(R)}, em relação ao dipolo: quadrupolo <b>${vezesMenor(vezesMenorQueODipolo(2, R))}</b> do que na superfície; octupolo, <b>${vezesMenor(vezesMenorQueODipolo(3, R))}</b>`);
+        ? H_`na superfície, cada forma vale o que os coeficientes dizem`
+        : H_`a ${emRaios(R)}, em relação ao dipolo: quadrupolo <b>${vezesMenor(vezesMenorQueODipolo(2, R))}</b> do que na superfície; octupolo, <b>${vezesMenor(vezesMenorQueODipolo(3, R))}</b>`);
 
       // Passo 5: onde cada modelo vale.
       for (const item of document.querySelectorAll('.territorios li')) item.classList.toggle('aqui', Number(item.dataset.territorio) === aqui);
-      por('valor-4', `O ponto está a ${emRaios(R)} do centro: território <b>${aqui}</b>.`);
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+      por('valor-4', H_`O ponto está a ${emRaios(R)} do centro: território <b>${aqui}</b>.`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 5`);
     }
 
     function mostrarPasso(novo) {
@@ -1961,6 +2062,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -1973,6 +2075,7 @@
       atualizarCena();
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -2100,6 +2203,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

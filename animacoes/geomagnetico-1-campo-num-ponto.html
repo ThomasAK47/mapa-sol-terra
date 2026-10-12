@@ -388,7 +388,7 @@
   <canvas id="tela"></canvas>
 
   <div class="topo">
-    <h1>Campo geomagnético<span class="longo">: quanto vale e para onde aponta</span></h1>
+    <h1>Campo geomagnético<span class="longo" data-texto="titulo-complemento">: quanto vale e para onde aponta</span></h1>
     <p id="subtitulo"></p>
   </div>
 
@@ -401,7 +401,7 @@
     <div class="conteudo">
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
-        <h2>A Terra como um ímã</h2>
+        <h2 data-texto="resumo-titulo">A Terra como um ímã</h2>
         <p>Perto da superfície, a Terra se comporta aproximadamente como um <b>ímã em barra</b> no centro do
           planeta, inclinado uns 11° em relação ao eixo de rotação. A intensidade do
           <span class="campo">campo</span> depende da distância ao centro, <i>r</i>, e da latitude
@@ -410,9 +410,9 @@
           <i>B</i> = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(1 + 3 sen<sup>2</sup> <i>λ</i>)
         </div>
         <dl class="leituras">
-          <div><dt>Distância ao centro da Terra</dt><dd id="l-distancia"></dd></div>
-          <div><dt>Latitude magnética</dt><dd id="l-latitude"></dd></div>
-          <div><dt>Intensidade do campo no ponto</dt><dd id="l-campo"></dd></div>
+          <div><dt data-texto="leitura-l-distancia">Distância ao centro da Terra</dt><dd id="l-distancia"></dd></div>
+          <div><dt data-texto="leitura-l-latitude">Latitude magnética</dt><dd id="l-latitude"></dd></div>
+          <div><dt data-texto="leitura-l-campo">Intensidade do campo no ponto</dt><dd id="l-campo"></dd></div>
         </dl>
       </section>
 
@@ -420,7 +420,7 @@
            com os números de agora, o resultado e o que é cada letra. -->
       <ol id="passos" class="so-perto">
         <li class="passo" data-passo="0">
-          <button class="passo-titulo" type="button"><span class="numero">1</span>A queda com a distância</button>
+          <button class="passo-titulo" type="button"><span class="numero">1</span><span data-texto="passo-1-titulo">A queda com a distância</span></button>
           <div class="passo-corpo">
             <div class="formula campo"><span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span> =
               <span class="fr"><span>0,31 G</span><span><i>R</i><sup>3</sup></span></span></div>
@@ -428,14 +428,14 @@
             <div class="valor" id="valor-0"></div>
             <p class="explicacao" id="explicacao-0"></p>
             <dl class="legenda">
-              <dt>M</dt><dd>momento de dipolo: a "força" do ímã</dd>
-              <dt>r</dt><dd>distância ao centro da Terra; <i>R</i> = <i>r</i>/<i>R</i><sub>E</sub> é a mesma distância em raios da Terra</dd>
+              <dt>M</dt><dd data-texto="passo-1-legenda">momento de dipolo: a "força" do ímã</dd>
+              <dt>r</dt><dd data-texto="passo-1-legenda-2">distância ao centro da Terra; <i>R</i> = <i>r</i>/<i>R</i><sub>E</sub> é a mesma distância em raios da Terra</dd>
               <dt class="unidade">0,31 G</dt><dd id="leg-gauss"></dd>
             </dl>
           </div>
         </li>
         <li class="passo" data-passo="1">
-          <button class="passo-titulo" type="button"><span class="numero">2</span>O efeito da latitude</button>
+          <button class="passo-titulo" type="button"><span class="numero">2</span><span data-texto="passo-2-titulo">O efeito da latitude</span></button>
           <div class="passo-corpo">
             <div class="formula campo">√(1 + 3 sen<sup>2</sup> <i>λ</i>)</div>
             <div class="conta" id="conta-1"></div>
@@ -445,7 +445,7 @@
               <div class="barra"><span class="campo">aqui</span><span class="trilho"><span class="nivel campo" id="barra-aqui"></span></span><span class="num" id="num-aqui"></span></div>
               <div class="barra"><span>no polo</span><span class="trilho"><span class="nivel campo" id="barra-polo"></span></span><span class="num" id="num-polo"></span></div>
             </div>
-            <p class="explicacao">No equador (<i>λ</i> = 0) o fator vale 1; no polo (<i>λ</i> = 90°) vale √4 = 2. À mesma
+            <p class="explicacao" data-texto="passo-2-explicacao">No equador (<i>λ</i> = 0) o fator vale 1; no polo (<i>λ</i> = 90°) vale √4 = 2. À mesma
               distância, o campo nos polos é o dobro do campo no equador.</p>
             <dl class="legenda">
               <dt>λ</dt><dd id="leg-latitude"></dd>
@@ -453,7 +453,7 @@
           </div>
         </li>
         <li class="passo" data-passo="2">
-          <button class="passo-titulo" type="button"><span class="numero">3</span>As duas partes da seta</button>
+          <button class="passo-titulo" type="button"><span class="numero">3</span><span data-texto="passo-3-titulo">As duas partes da seta</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo"><i>B</i><sub>r</sub> = −<span class="fr"><span>2·<i>M</i>·sen <i>λ</i></span><span><i>r</i><sup>3</sup></span></span></div>
             <div class="valor" id="valor-2r"></div>
@@ -463,24 +463,24 @@
           </div>
         </li>
         <li class="passo" data-passo="3">
-          <button class="passo-titulo" type="button"><span class="numero">4</span>Pitágoras: de onde vem o 3</button>
+          <button class="passo-titulo" type="button"><span class="numero">4</span><span data-texto="passo-4-titulo">Pitágoras: de onde vem o 3</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo"><i>B</i> = √(<i>B</i><sub>r</sub><sup>2</sup> + <i>B</i><sub>λ</sub><sup>2</sup>)<br>
               = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(4 sen<sup>2</sup> <i>λ</i> + cos<sup>2</sup> <i>λ</i>)<br>
               = <span class="fr"><span><i>M</i></span><span><i>r</i><sup>3</sup></span></span>·√(1 + 3 sen<sup>2</sup> <i>λ</i>)</div>
             <div class="conta" id="conta-3"></div>
             <div class="valor" id="valor-3"></div>
-            <p class="explicacao">As duas partes são os catetos, e a seta do campo é a hipotenusa. O 3 aparece porque
+            <p class="explicacao" data-texto="passo-4-explicacao">As duas partes são os catetos, e a seta do campo é a hipotenusa. O 3 aparece porque
               cos<sup>2</sup> <i>λ</i> = 1 − sen<sup>2</sup> <i>λ</i>. Vale fazer essa conta no papel: é curta.</p>
           </div>
         </li>
         <li class="passo" data-passo="4">
-          <button class="passo-titulo" type="button"><span class="numero">5</span>A agulha da bússola</button>
+          <button class="passo-titulo" type="button"><span class="numero">5</span><span data-texto="passo-5-titulo">A agulha da bússola</span></button>
           <div class="passo-corpo">
             <div class="formula pequena campo">tan (inclinação) = <span class="fr"><span>|<i>B</i><sub>r</sub>|</span><span><i>B</i><sub>λ</sub></span></span></div>
             <div class="conta" id="conta-4"></div>
             <div class="valor" id="valor-4"></div>
-            <p class="explicacao">Uma agulha livre se alinha com a seta do campo. No equador ela fica deitada; em
+            <p class="explicacao" data-texto="passo-5-explicacao">Uma agulha livre se alinha com a seta do campo. No equador ela fica deitada; em
               latitudes altas, mergulha: é a inclinação da agulha de uma bússola. No hemisfério norte o campo
               entra na Terra: o polo norte geográfico é, magneticamente, um polo sul.</p>
           </div>
@@ -489,8 +489,8 @@
     </div>
 
     <div class="rodape so-longe">
-      <p class="dica">Arraste o ponto em volta da Terra, ou use os controles embaixo do desenho.</p>
-      <button id="bt-ver-de-perto" type="button" class="botao principal largo">Ver de perto: como a conta é feita</button>
+      <p class="dica" data-texto="dica">Arraste o ponto em volta da Terra, ou use os controles embaixo do desenho.</p>
+      <button id="bt-ver-de-perto" type="button" class="botao principal largo" data-texto="botao-ver-de-perto">Ver de perto: como a conta é feita</button>
     </div>
     <div class="navegacao so-perto">
       <button id="bt-anterior" type="button" class="botao" title="Passo anterior" aria-label="Passo anterior">
@@ -509,9 +509,9 @@
 
     <!-- Os controles ficam numa barra embaixo do desenho (em telas estreitas, dentro do painel). -->
     <div class="controles" role="group" aria-label="Controles">
-      <label class="controle"><span class="nome"><i>R</i><small>distância ao centro</small></span><output id="o-r"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-r"><i>R</i><small>distância ao centro</small></span><output id="o-r"></output>
         <input id="c-r" type="range" min="1" max="4" step="0.05" value="2"></label>
-      <label class="controle"><span class="nome"><i>λ</i><small>latitude magnética</small></span><output id="o-lat"></output>
+      <label class="controle"><span class="nome" data-texto="controle-c-lat"><i>λ</i><small>latitude magnética</small></span><output id="o-lat"></output>
         <input id="c-lat" type="range" min="-90" max="90" step="1" value="30"></label>
       <div class="botoes">
         <button id="bt-pausar" type="button" class="botao">Pausar</button>
@@ -521,6 +521,14 @@
     <p class="nota" id="nota"></p>
   </aside>
 
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
@@ -529,6 +537,99 @@
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // Textos editáveis (veja animacoes/CONTRATO.md, "Textos editáveis").
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -963,11 +1064,11 @@
       const cima = { x: telaX(0, 1.5), y: telaY(0, 1.5) }, baixo = { x: telaX(0, -1.5), y: telaY(0, -1.5) };
       const rotacao = { x: telaX(eixo.x * 1.5, eixo.y * 1.5), y: telaY(eixo.x * 1.5, eixo.y * 1.5) };
       ctx.globalAlpha = alfa * livre(cima.x - 60, cima.y - 12);
-      escrever(`polo do ímã: ${POLO_NORTE_DO_IMA}`, cima.x - 6, cima.y - 12, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
+      escrever(T_`polo do ímã: ${POLO_NORTE_DO_IMA}`, cima.x - 6, cima.y - 12, { tamanho: 11, cor: '#a9a9a9', alinhar: 'right' });
       ctx.globalAlpha = alfa * livre(rotacao.x + 60, rotacao.y - 10);
-      escrever(`eixo de rotação (${INCLINACAO_DO_IMA}°)`, rotacao.x + 6, rotacao.y - 10, { tamanho: 11, cor: '#747474' });
+      escrever(T_`eixo de rotação (${INCLINACAO_DO_IMA}°)`, rotacao.x + 6, rotacao.y - 10, { tamanho: 11, cor: '#747474' });
       ctx.globalAlpha = alfa * livre(baixo.x, baixo.y + 13);
-      escrever(`polo do ímã: ${POLO_SUL_DO_IMA}`, baixo.x, baixo.y + 13, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+      escrever(T_`polo do ímã: ${POLO_SUL_DO_IMA}`, baixo.x, baixo.y + 13, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
       ctx.globalAlpha = 1;
     }
 
@@ -1080,9 +1181,9 @@
         ctx.beginPath();
         ctx.moveTo(cena.x + 36, y - 3); ctx.lineTo(cena.x + 40.5, y); ctx.lineTo(cena.x + 36, y + 3);
         ctx.stroke();
-        escrever('linhas do campo (as setinhas mostram o sentido)', cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`linhas do campo (as setinhas mostram o sentido)`, cena.x + 64, y, { tamanho: 11.5, cor: '#a9a9a9' });
         tracejado(cena.x + 18, y + 18, cena.x + 56, y + 18, `rgba(${COR_CAMPO}, 0.75)`, [6, 5]);
-        escrever('mesma intensidade que no ponto', cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
+        escrever(T_`mesma intensidade que no ponto`, cena.x + 64, y + 18, { tamanho: 11.5, cor: '#a9a9a9' });
       }
       ctx.globalAlpha = 1;
     }
@@ -1112,11 +1213,11 @@
       tracejado(C.x, C.y - braco, C.x, C.y + braco, 'rgba(255, 255, 255, 0.34)');
       tracejado(C.x - bracoDeLado, C.y, C.x + bracoDeLado, C.y, 'rgba(255, 255, 255, 0.34)');
       if (comNomes) {
-        escrever('para fora da Terra', C.x, C.y - braco - 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
-        escrever(`para o centro da Terra (a ${emRaios(estado.R)})`, C.x, C.y + braco + 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(T_`para fora da Terra`, C.x, C.y - braco - 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
+        escrever(T_`para o centro da Terra (a ${emRaios(estado.R)})`, C.x, C.y + braco + 11, { tamanho: 11, cor: '#a9a9a9', alinhar: 'center' });
       }
-      escrever('norte', C.x + s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'left' : 'right' });
-      escrever('sul', C.x - s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'right' : 'left' });
+      escrever(T_`norte`, C.x + s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'left' : 'right' });
+      escrever(T_`sul`, C.x - s.norte * (bracoDeLado + 7), C.y, { tamanho: 11, cor: '#a9a9a9', alinhar: s.norte > 0 ? 'right' : 'left' });
 
       if (passo === 0 && comNomes) {
         // Passo 1: a régua da distância, na vertical do lugar. R = 1 é o chão.
@@ -1156,7 +1257,7 @@
           ctx.beginPath();
           ctx.moveTo(x - fx * 4, y - fy * 4); ctx.lineTo(x + fx * 4, y + fy * 4);
           ctx.stroke();
-          escrever(graus === 0 ? 'equador' : `${Math.abs(graus)}° ${graus > 0 ? 'N' : 'S'}`, x + fx * 16, y + fy * 16, { tamanho: 11, cor: '#d0d0d0', alinhar: 'center' });
+          escrever(graus === 0 ? T_`equador` : `${Math.abs(graus)}° ${graus > 0 ? 'N' : 'S'}`, x + fx * 16, y + fy * 16, { tamanho: 11, cor: '#d0d0d0', alinhar: 'center' });
         }
       }
 
@@ -1216,7 +1317,7 @@
           ctx.stroke();
           const meio = (doNorte + ate) / 2;
           if (comNomes) {
-            escrever(`inclinação: ${graus}°`, C.x + Math.cos(meio) * (raio + 20), C.y + Math.sin(meio) * (raio + 20),
+            escrever(T_`inclinação: ${graus}°`, C.x + Math.cos(meio) * (raio + 20), C.y + Math.sin(meio) * (raio + 20),
               { tamanho: 12.5, peso: 600, alinhar: s.norte > 0 ? 'left' : 'right', placa: true });
           }
         }
@@ -1347,7 +1448,7 @@
       ctx.fill();
       ctx.restore();
       ctx.globalAlpha = alfa;
-      escrever('você está olhando aqui', x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
+      escrever(T_`você está olhando aqui`, x + 2, y - 10, { tamanho: 11, cor: '#a9a9a9' });
       ctx.globalAlpha = 1;
     }
 
@@ -1391,8 +1492,8 @@
 
     // Textos que não mudam, mas dependem dos valores da seção 2.
     const CAMPO_EM_TEXTO = `${comMilhar(CAMPO_NO_EQUADOR)} nT`;
-    por('leg-gauss', `campo no equador, na superfície: 0,31 gauss = ${CAMPO_EM_TEXTO} (1 G = 10<sup>−4</sup> T)`);
-    por('nota', `O modelo de dipolo erra até 30% a menos de 2 ou 3 raios terrestres da superfície; ainda assim, é útil para
+    por('leg-gauss', H_`campo no equador, na superfície: 0,31 gauss = ${CAMPO_EM_TEXTO} (1 G = 10<sup>−4</sup> T)`);
+    por('nota', H_`O modelo de dipolo erra até 30% a menos de 2 ou 3 raios terrestres da superfície; ainda assim, é útil para
       estimativas. Os polos do ímã ficam em ${POLO_NORTE_DO_IMA} e ${POLO_SUL_DO_IMA}. O comprimento das setas é um esquema.`);
 
     function atualizarPainel() {
@@ -1404,13 +1505,13 @@
       const ondeEsta = latitudeEmTexto(estado.graus);
       const senoEmTexto = seno < 0 ? `(−${numero(-seno, 3)})` : numero(seno, 3);
       por('subtitulo', estado.perto
-        ? 'De perto: a seta do campo no ponto escolhido<span class="longo">. O comprimento das setas é um esquema.</span><span class="curto">, em esquema.</span>'
-        : 'De longe: a Terra como um ímã em barra.<span class="longo"> Distâncias em raios da Terra.</span>');
+        ? H_`De perto: a seta do campo no ponto escolhido<span class="longo">. O comprimento das setas é um esquema.</span><span class="curto">, em esquema.</span>`
+        : H_`De longe: a Terra como um ímã em barra.<span class="longo"> Distâncias em raios da Terra.</span>`);
       por('o-r', `${distancia} <i>R</i><sub>E</sub>`);
       por('o-lat', ondeEsta);
 
       // Visão de longe.
-      por('l-distancia', `${emRaios(estado.R)} da Terra`);
+      por('l-distancia', H_`${emRaios(estado.R)} da Terra`);
       por('l-latitude', ondeEsta);
       por('l-campo', emNT(c.B));
 
@@ -1418,10 +1519,10 @@
       // Passo 1: M/r³.
       const cubo = estado.R ** 3;
       por('conta-0', `= ${CAMPO_EM_TEXTO} ÷ ${distancia}<sup>3</sup>`);
-      por('valor-0', `= <b>${emNT(c.base)}</b> sobre o equador, a esta distância`);
+      por('valor-0', H_`= <b>${emNT(c.base)}</b> sobre o equador, a esta distância`);
       por('explicacao-0', estado.R > 1.001
-        ? `É a queda com o cubo da distância, a mesma da conta da magnetopausa. A ${emRaios(estado.R)} da Terra do centro, o campo é ${numero(cubo, cubo < 10 ? 1 : 0)} vezes menor que na superfície (${distancia}<sup>3</sup> = ${numero(cubo, 2)}).`
-        : `É a queda com o cubo da distância, a mesma da conta da magnetopausa. Aqui o ponto está na superfície (<i>R</i> = 1), e o campo sobre o equador vale ${CAMPO_EM_TEXTO}.`);
+        ? H_`É a queda com o cubo da distância, a mesma da conta da magnetopausa. A ${emRaios(estado.R)} da Terra do centro, o campo é ${numero(cubo, cubo < 10 ? 1 : 0)} vezes menor que na superfície (${distancia}<sup>3</sup> = ${numero(cubo, 2)}).`
+        : H_`É a queda com o cubo da distância, a mesma da conta da magnetopausa. Aqui o ponto está na superfície (<i>R</i> = 1), e o campo sobre o equador vale ${CAMPO_EM_TEXTO}.`);
       // Passo 2: √(1 + 3 sen² λ).
       por('conta-1', `= √(1 + 3 · ${senoEmTexto}<sup>2</sup>) = ${numero(c.fator, 3)}`);
       por('valor-1', `<i>B</i> = ${emNT(c.base)} × ${numero(c.fator, 3)} = <b>${emNT(c.B)}</b>`);
@@ -1431,32 +1532,32 @@
       el('barra-equador').style.width = '50%';
       el('barra-aqui').style.width = `${(50 * c.fator).toFixed(1)}%`;
       el('barra-polo').style.width = '100%';
-      por('leg-latitude', `latitude magnética, medida a partir do equador magnético (não do geográfico). Aqui: ${ondeEsta}`);
+      por('leg-latitude', H_`latitude magnética, medida a partir do equador magnético (não do geográfico). Aqui: ${ondeEsta}`);
       // Passo 3: as duas partes.
       por('valor-2r', `= −2 · ${comMilhar(c.base)} · ${senoEmTexto} = <b>${emNT(c.Br)}</b>`);
       por('valor-2l', `= ${comMilhar(c.base)} · ${numero(cosseno, 3)} = <b>${emNT(c.Bl)}</b>`);
-      const partes = '<i>B</i><sub>r</sub> é a parte radial (vertical): aponta para dentro ou para fora da Terra. <i>B</i><sub>λ</sub> é a parte horizontal: aponta na direção norte–sul.';
+      const partes = H_`<i>B</i><sub>r</sub> é a parte radial (vertical): aponta para dentro ou para fora da Terra. <i>B</i><sub>λ</sub> é a parte horizontal: aponta na direção norte–sul.`;
       por('explicacao-2', noEquador
-        ? `${partes} No equador (sen 0 = 0), <i>B</i><sub>r</sub> = 0: o campo é totalmente horizontal, e a linha de campo passa "deitada".`
+        ? H_`${partes} No equador (sen 0 = 0), <i>B</i><sub>r</sub> = 0: o campo é totalmente horizontal, e a linha de campo passa "deitada".`
         : noPolo
-          ? `${partes} No polo (cos 90° = 0), <i>B</i><sub>λ</sub> = 0: o campo é totalmente vertical, e a linha de campo "mergulha" na Terra.`
+          ? H_`${partes} No polo (cos 90° = 0), <i>B</i><sub>λ</sub> = 0: o campo é totalmente vertical, e a linha de campo "mergulha" na Terra.`
           : noNorte
-            ? `${partes} O sinal negativo de <i>B</i><sub>r</sub> indica que, no hemisfério norte, o campo aponta para dentro da Terra.`
-            : `${partes} No hemisfério sul, <i>B</i><sub>r</sub> é positivo: o campo aponta para fora da Terra.`);
+            ? H_`${partes} O sinal negativo de <i>B</i><sub>r</sub> indica que, no hemisfério norte, o campo aponta para dentro da Terra.`
+            : H_`${partes} No hemisfério sul, <i>B</i><sub>r</sub> é positivo: o campo aponta para fora da Terra.`);
       // Passo 4: Pitágoras.
       por('conta-3', `= √(${comMilhar(c.Br)}<sup>2</sup> + ${comMilhar(c.Bl)}<sup>2</sup>)`);
-      por('valor-3', `= <b>${emNT(c.B)}</b>, o mesmo valor do passo 2`);
+      por('valor-3', H_`= <b>${emNT(c.B)}</b>, o mesmo valor do passo 2`);
       // Passo 5: a inclinação da agulha.
       const inclinacao = Math.round((Math.atan2(Math.abs(c.Br), c.Bl) * 180) / Math.PI);
       por('conta-4', noPolo
         ? '<i>B</i><sub>λ</sub> = 0: a seta fica na vertical'
         : `= ${comMilhar(c.Br)} ÷ ${comMilhar(c.Bl)} = ${numero(Math.abs(c.Br) / c.Bl, 3)}`);
-      por('valor-4', `inclinação = <b>${inclinacao}°</b>: ${noEquador
+      por('valor-4', H_`inclinação = <b>${inclinacao}°</b>: ${noEquador
         ? 'a agulha fica deitada, apontando para o norte'
         : noPolo
           ? `a ponta norte da agulha aponta direto para ${noNorte ? 'baixo (o campo entra na Terra)' : 'cima (o campo sai da Terra)'}`
           : `a ponta norte da agulha aponta para o norte e para ${noNorte ? 'baixo (o campo entra na Terra)' : 'cima (o campo sai da Terra)'}`}`);
-      por('contador-de-passos', `Passo ${estado.passo + 1} de 5`);
+      por('contador-de-passos', H_`Passo ${estado.passo + 1} de 5`);
     }
 
     function mostrarPasso(novo) {
@@ -1474,6 +1575,7 @@
       if (estado.passo === 4 && antes !== 4) estado.giroDaAgulha = 5;      // um toque na agulha: ela balança e para na direção do campo
       atualizarPainel();
       medirCena();                     // em telas estreitas, a altura do painel muda de um passo para outro
+      avisarOndeEsta();
     }
     function mostrarVisao(perto) {
       if (estado.perto === perto) return;
@@ -1485,6 +1587,7 @@
       el('bt-perto').setAttribute('aria-pressed', String(perto));
       atualizarPainel();
       medirCena();
+      avisarOndeEsta();
     }
 
     // -------------------------------------------------------------------------
@@ -1608,6 +1711,7 @@
     mostrarPasso(0);
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();
   </script>
 </body>
 </html>

@@ -11,6 +11,12 @@
     3. Registre o arquivo em animacoes/manifesto.json.
   As regras completas estão em animacoes/CONTRATO.md.
 
+  Textos editáveis (o botão "Editar textos" da janela do mapa): marque os
+  textos fixos com data-texto="nome", escreva os textos do desenho como
+  T_`…` e os do painel montados pelo script como H_`…` (as fórmulas e as
+  contas ficam de fora). As trocas ficam no bloco "textos-editados", logo
+  antes do script. Veja "Textos editáveis" no CONTRATO.md.
+
   Onde a animação roda: numa janela grande do mapa, dentro de um
   <iframe sandbox="allow-scripts">. Por isso:
     • tudo fica neste arquivo (HTML, CSS e JavaScript); bibliotecas, só por CDN;
@@ -88,14 +94,14 @@
   <canvas id="tela"></canvas>
 
   <div class="legenda">
-    <h1>Título da animação</h1>
-    <p>Uma frase sobre o que a animação mostra (e o que está fora de escala).</p>
+    <h1 data-texto="titulo">Título da animação</h1>
+    <p data-texto="legenda">Uma frase sobre o que a animação mostra (e o que está fora de escala).</p>
   </div>
 
   <div class="controles">
     <button id="bt-pausar" type="button">Pausar</button>
     <button id="bt-recomecar" type="button">Recomeçar</button>
-    <label>Velocidade <input id="velocidade" type="range" min="0.25" max="3" step="0.25" value="1"></label>
+    <label><span data-texto="controle-velocidade">Velocidade</span> <input id="velocidade" type="range" min="0.25" max="3" step="0.25" value="1"></label>
   </div>
 
   <div id="aviso" hidden><p></p></div>
@@ -111,17 +117,119 @@
       }
   -->
 
+  <!-- Os textos trocados pelo botão "Editar textos" (o app grava aqui; deixe vazio ao criar). -->
+  <script type="application/json" id="textos-editados">
+{
+  "versao": 1,
+  "painel": {},
+  "gerados": {},
+  "desenho": {}
+}
+</script>
   <script>
     'use strict';
 
     // -------------------------------------------------------------------------
     // 1. Esc fecha a janela do mapa. OBRIGATÓRIO: mantenha este trecho.
     //    Com o foco dentro da animação, o Esc chega aqui, e não ao mapa. Esta
-    //    mensagem pede ao mapa para fechar a janela. É a única comunicação
-    //    permitida com o app.
+    //    mensagem pede ao mapa para fechar a janela. As outras mensagens que o
+    //    app aceita são as do trecho 1b (textos editáveis).
     // -------------------------------------------------------------------------
     window.addEventListener('keydown', (evento) => {
       if (evento.key === 'Escape') window.parent.postMessage({ tipo: 'fechar-animacao' }, '*');
+    });
+
+    // -------------------------------------------------------------------------
+    // 1b. Textos editáveis. OBRIGATÓRIO: mantenha este trecho (veja CONTRATO.md).
+    //   No app, o botão "Editar textos" da janela da animação troca: os textos fixos do painel (marcados com
+    //   data-texto), os textos do painel montados por este script (H_`…`) e os textos do desenho (T_`…`).
+    //   As trocas ficam no bloco JSON "textos-editados", perto do fim do HTML; o texto original continua aqui no
+    //   código. Dentro de T_`…` e H_`…`, cada ${…} vira um marcador {0}, {1}…: é onde entram os números.
+    //   (T_ e H_ têm o traço para não colidir com variáveis da animação, como T de temperatura.)
+    // -------------------------------------------------------------------------
+    const TEXTOS_EDITADOS = (() => {
+      const ler = (json) => {
+        try {
+          const d = JSON.parse(json);
+          return { painel: d.painel || {}, gerados: d.gerados || {}, desenho: d.desenho || {} };
+        } catch {
+          return null;
+        }
+      };
+      // A prévia que o app manda no endereço (depois do #) vale mais que os textos gravados no arquivo.
+      const previa = new URLSearchParams(location.hash.slice(1)).get('textos');
+      const bloco = document.getElementById('textos-editados');
+      return (previa && ler(previa)) || (bloco && ler(bloco.textContent)) || { painel: {}, gerados: {}, desenho: {} };
+    })();
+    const ENFEITES_PERMITIDOS = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', SUP: 'sup', SUB: 'sub', SMALL: 'small', BR: 'br', SPAN: 'span' };
+    /** Deixa só os enfeites permitidos: negrito, itálico, sobrescrito, subscrito, letra menor, quebra de linha e
+     *  trechos (span), com a classe e nenhum outro atributo. */
+    function textoSeguro(html) {
+      const modelo = document.createElement('template');
+      modelo.innerHTML = String(html);
+      const copiar = (origem, destino) => {
+        for (const no of origem.childNodes) {
+          if (no.nodeType === Node.TEXT_NODE) destino.append(no.nodeValue);
+          else if (no.nodeType === Node.ELEMENT_NODE && no.tagName !== 'SCRIPT' && no.tagName !== 'STYLE') {
+            const nome = ENFEITES_PERMITIDOS[no.tagName];
+            if (!nome) {
+              copiar(no, destino);
+              continue;
+            }
+            const novo = document.createElement(nome);
+            const classe = no.getAttribute('class');
+            if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(classe || '')) novo.className = classe;     // longo, curto, cores…
+            copiar(no, novo);
+            destino.append(novo);
+          }
+        }
+      };
+      const saida = document.createElement('div');
+      copiar(modelo.content, saida);
+      return saida.innerHTML;
+    }
+    /** A chave de um texto do código: o próprio texto, com {0}, {1}… no lugar de cada ${…}. */
+    const chaveDoTexto = (partes) => partes.reduce((chave, parte, i) => chave + (i ? `{${i - 1}}` : '') + parte, '');
+    const encaixarValores = (modelo, valores) => modelo.replace(/\{(\d+)\}/g, (marca, n) => (Number(n) < valores.length ? String(valores[n]) : marca));
+    const textosVistos = new Map();       // texto do desenho → quando apareceu (o app pergunta o que está na tela)
+    /** Um texto do desenho (simples, sem enfeites). */
+    function T_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      textosVistos.set(chave, performance.now());
+      const trocado = TEXTOS_EDITADOS.desenho[chave];
+      return encaixarValores(typeof trocado === 'string' ? trocado : chave, valores);
+    }
+    /** Um texto do painel montado por este script (pode ter negrito, itálico, sobrescrito…). */
+    function H_(partes, ...valores) {
+      const chave = chaveDoTexto(partes);
+      const trocado = TEXTOS_EDITADOS.gerados[chave];
+      return encaixarValores(typeof trocado === 'string' ? textoSeguro(trocado) : chave, valores);
+    }
+    // Os textos fixos do painel (marcados com data-texto) recebem as trocas assim que a página abre.
+    for (const elemento of document.querySelectorAll('[data-texto]')) {
+      const trocado = TEXTOS_EDITADOS.painel[elemento.dataset.texto];
+      if (typeof trocado === 'string') elemento.innerHTML = textoSeguro(trocado);
+    }
+    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
+    function avisarOndeEsta() {
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+    }
+    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    function voltarAoLugarDaPrevia() {
+      const dados = new URLSearchParams(location.hash.slice(1));
+      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
+        mostrarVisao(true);
+        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+      }
+      avisarOndeEsta();
+    }
+    // O app pode perguntar quais textos do desenho estão na tela agora (os usados no último segundo).
+    window.addEventListener('message', (evento) => {
+      if (evento.source !== window.parent || evento.data?.tipo !== 'quais-textos-na-tela') return;
+      const agora = performance.now();
+      const chaves = [...textosVistos].filter(([, quando]) => agora - quando < 1000).map(([chave]) => chave);
+      window.parent.postMessage({ tipo: 'textos-na-tela', chaves }, '*');
     });
 
     // -------------------------------------------------------------------------
@@ -196,7 +304,7 @@
       ctx.fillStyle = '#6e6e6e';
       ctx.font = '13px system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Substitua este desenho pela animação', largura / 2, y + 40);
+      ctx.fillText(T_`Substitua este desenho pela animação`, largura / 2, y + 40);   // T_`…`: texto editável
     }
 
     // -------------------------------------------------------------------------
@@ -227,6 +335,7 @@
     // Início.
     ajustarTamanho();
     requestAnimationFrame(quadro);
+    voltarAoLugarDaPrevia();      // numa prévia dos textos, volta ao passo em que a animação estava
   </script>
 </body>
 </html>

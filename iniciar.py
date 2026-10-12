@@ -17,12 +17,17 @@ O que este programa faz
 * Serve os arquivos desta pasta em http://127.0.0.1:8000. Ele escuta APENAS no
   endereço 127.0.0.1, então só este computador consegue acessar o mapa.
 * Abre o navegador automaticamente.
-* Recebe as gravações da página em POST /api/salvar e grava SOMENTE em
+* Recebe as gravações da página em POST /api/salvar e grava em
   data/estudos.json, de forma atômica: escreve primeiro num arquivo
   temporário e só depois o renomeia por cima do original. Se algo falhar no
   meio, o arquivo antigo continua inteiro.
 * Antes da primeira gravação de cada dia, guarda uma cópia do arquivo em
   data/backups/ (mantém as 30 mais recentes).
+* Recebe os textos editados de uma animação (botão "Editar textos" da janela
+  da animação) em POST /api/textos-da-animacao. Grava só o bloco de textos
+  editados de um arquivo que já existe em animacoes/; o resto do arquivo não
+  muda. Antes, guarda uma cópia do arquivo em data/backups/animacoes/
+  (mantém as 20 mais recentes de cada animação).
 * Envia os arquivos da pasta animacoes/ com um cabeçalho de isolamento: mesmo
   abertos direto numa aba, eles não acessam os dados do mapa.
 
@@ -68,12 +73,23 @@ HOST = "127.0.0.1"  # só este computador; ninguém na rede alcança o servidor
 PORTA_PADRAO = 8000
 
 PASTA_PROJETO = Path(__file__).resolve().parent
-ARQUIVO_DADOS = PASTA_PROJETO / "data" / "estudos.json"  # o ÚNICO arquivo gravado
+ARQUIVO_DADOS = PASTA_PROJETO / "data" / "estudos.json"  # os dados do mapa
 PASTA_BACKUPS = PASTA_PROJETO / "data" / "backups"
+PASTA_ANIMACOES = PASTA_PROJETO / "animacoes"
+PASTA_BACKUPS_ANIMACOES = PASTA_BACKUPS / "animacoes"
 
 MAX_BACKUPS_DIARIOS = 30
 MAX_BACKUPS_SEGURANCA = 30
+MAX_BACKUPS_POR_ANIMACAO = 20
 TAMANHO_MAXIMO = 20 * 1024 * 1024  # 20 MB, muito acima do necessário
+TAMANHO_MAXIMO_TEXTOS = 2 * 1024 * 1024  # textos editados de uma animação
+
+# Nome de arquivo de animação: minúsculas, números, - e _ (a mesma regra do app).
+PADRAO_ARQUIVO_ANIMACAO = re.compile(r"^[a-z0-9][a-z0-9_-]*\.html$")
+# O bloco com os textos editados, dentro do arquivo da animação. Só ele é trocado.
+BLOCO_DOS_TEXTOS = re.compile(
+    rb'(<script type="application/json" id="textos-editados">)(.*?)(</script>)', re.S)
+PARTES_DOS_TEXTOS = ("painel", "gerados", "desenho")
 
 # Resposta de /api/status. A página usa isto para saber que está falando com
 # este servidor (e não com o GitHub Pages ou outro servidor qualquer).
@@ -288,6 +304,126 @@ def salvar(corpo, versao_base, motivo_backup):
 
 
 # ---------------------------------------------------------------------------
+# Textos editados das animações
+# ---------------------------------------------------------------------------
+
+def validar_textos(textos):
+    """Confere o formato { versao: 1, painel: {…}, gerados: {…}, desenho: {…} }.
+
+    Devolve (textos limpos, problema). Cada parte liga o texto original (a
+    chave) ao texto novo; os dois precisam ser textos.
+    """
+    if not isinstance(textos, dict):
+        return None, "os textos precisam ser um objeto { ... }"
+    limpo = {"versao": 1}
+    for parte in PARTES_DOS_TEXTOS:
+        trocas = textos.get(parte, {})
+        if not isinstance(trocas, dict):
+            return None, f"'{parte}' precisa ser um objeto"
+        for chave, valor in trocas.items():
+            if not isinstance(valor, str):
+                return None, f"um texto de '{parte}' não é texto"
+            if len(chave) > 20000 or len(valor) > 20000:
+                return None, f"um texto de '{parte}' é grande demais"
+        limpo[parte] = trocas
+    return limpo, None
+
+
+def ler_textos_do_arquivo(conteudo):
+    """Lê o bloco de textos editados de uma animação. Devolve (textos, problema)."""
+    blocos = BLOCO_DOS_TEXTOS.findall(conteudo)
+    if len(blocos) != 1:
+        return None, "esta animação não tem o bloco de textos editáveis"
+    try:
+        textos = json.loads(blocos[0][1].decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        textos = {}  # bloco estragado (editado à mão): será regravado inteiro
+    limpo, _ = validar_textos(textos if isinstance(textos, dict) else {})
+    return limpo or {"versao": 1, "painel": {}, "gerados": {}, "desenho": {}}, None
+
+
+def fazer_backup_da_animacao(caminho):
+    """Cópia do arquivo da animação, antes de trocar os textos."""
+    PASTA_BACKUPS_ANIMACOES.mkdir(parents=True, exist_ok=True)
+    carimbo = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    base = caminho.stem
+    destino = PASTA_BACKUPS_ANIMACOES / f"{base}-{carimbo}.html"
+    numero = 2
+    while destino.exists():
+        destino = PASTA_BACKUPS_ANIMACOES / f"{base}-{carimbo}-{numero}.html"
+        numero += 1
+    shutil.copy2(caminho, destino)
+    # Mantém só as cópias mais recentes desta animação. O carimbo vem logo
+    # depois do nome, então a ordem alfabética é a ordem do tempo.
+    padrao = re.compile(re.escape(base) + r"-\d{4}-\d{2}-\d{2}_\d{6}(-\d+)?\.html$")
+    copias = sorted(arquivo for arquivo in PASTA_BACKUPS_ANIMACOES.iterdir() if padrao.match(arquivo.name))
+    for antiga in copias[:-MAX_BACKUPS_POR_ANIMACAO]:
+        try:
+            antiga.unlink()
+        except OSError:
+            pass
+    return destino
+
+
+def salvar_textos_da_animacao(corpo):
+    """Grava os textos editados de uma animação (só o bloco deles).
+
+    O corpo é { arquivo, antes, textos, forcar }. "antes" são os textos que a
+    página leu ao abrir o editor: se o bloco do arquivo mudou desde então (outra
+    janela, edição à mão), a gravação é recusada, a menos que venha "forcar".
+    Devolve (código HTTP, resposta para a página, mensagem para a janela).
+    """
+    try:
+        pedido = json.loads(corpo.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as erro:
+        return 400, {"ok": False, "erro": "json-invalido",
+                     "mensagem": f"O conteúdo recebido não é um JSON válido ({erro})."}, None
+    if not isinstance(pedido, dict):
+        return 422, {"ok": False, "erro": "estrutura-invalida", "mensagem": "Pedido sem o formato esperado."}, None
+
+    arquivo = pedido.get("arquivo")
+    if not isinstance(arquivo, str) or not PADRAO_ARQUIVO_ANIMACAO.match(arquivo):
+        return 422, {"ok": False, "erro": "arquivo-invalido",
+                     "mensagem": "Nome de animação inválido (use letras minúsculas, números, - e _)."}, None
+    caminho = PASTA_ANIMACOES / arquivo
+    textos, problema = validar_textos(pedido.get("textos"))
+    if problema:
+        return 422, {"ok": False, "erro": "textos-invalidos", "mensagem": f"Textos inválidos: {problema}."}, None
+
+    # Dentro do bloco, "<" vira <: assim nenhum texto fecha o <script> antes da hora.
+    json_novo = json.dumps(textos, ensure_ascii=False, indent=2).replace("<", "\\u003c")
+
+    with trava_gravacao:
+        if not caminho.is_file():
+            return 404, {"ok": False, "erro": "animacao-inexistente",
+                         "mensagem": f"O arquivo animacoes/{arquivo} não existe."}, None
+        conteudo = caminho.read_bytes()
+        atuais, problema = ler_textos_do_arquivo(conteudo)
+        if problema:
+            return 422, {"ok": False, "erro": "sem-textos-editaveis",
+                         "mensagem": f"O arquivo animacoes/{arquivo}: {problema}."}, None
+        antes, _ = validar_textos(pedido.get("antes"))
+        if not pedido.get("forcar") and antes != atuais:
+            return 409, {"ok": False, "erro": "conflito", "textos": atuais,
+                         "mensagem": "Os textos desta animação foram mudados fora desta janela."}, None
+        if atuais == textos:
+            return 200, {"ok": True, "textos": textos, "semMudancas": True}, None
+
+        # Mantém o fim de linha do arquivo (\n ou \r\n).
+        quebra = "\r\n" if b"\r\n" in conteudo else "\n"
+        bloco = ("\n" + json_novo + "\n").replace("\n", quebra).encode("utf-8")
+        novo = BLOCO_DOS_TEXTOS.sub(lambda m: m.group(1) + bloco + m.group(3), conteudo, count=1)
+
+        copia = fazer_backup_da_animacao(caminho)
+        gravar_atomico(caminho, novo)
+
+    trocas = sum(len(textos[parte]) for parte in PARTES_DOS_TEXTOS)
+    resumo = (f"textos de animacoes/{arquivo} salvos ({trocas} trocados); "
+              f"cópia anterior em data/backups/animacoes/{copia.name}")
+    return 200, {"ok": True, "textos": textos}, resumo
+
+
+# ---------------------------------------------------------------------------
 # Servidor HTTP
 # ---------------------------------------------------------------------------
 
@@ -392,11 +528,11 @@ class Manipulador(http.server.SimpleHTTPRequestHandler):
             return super().do_HEAD()
         return super().do_GET()
 
-    # ---- gravação (POST /api/salvar) -----------------------------------
+    # ---- gravação (POST /api/salvar e /api/textos-da-animacao) ----------
 
     def do_POST(self):
         caminho = urllib.parse.urlsplit(self.path).path
-        if caminho != "/api/salvar":
+        if caminho not in ("/api/salvar", "/api/textos-da-animacao"):
             return self._responder_json(404, {"ok": False, "erro": "rota-inexistente"})
         if not self._host_permitido() or not self._origem_permitida():
             registrar("aviso: gravação recusada (o pedido não veio da página do mapa)")
@@ -411,10 +547,14 @@ class Manipulador(http.server.SimpleHTTPRequestHandler):
         except ValueError:
             return self._responder_json(411, {"ok": False, "erro": "sem-tamanho",
                                                "mensagem": "Pedido sem tamanho informado."})
-        if tamanho <= 0 or tamanho > TAMANHO_MAXIMO:
+        limite = TAMANHO_MAXIMO_TEXTOS if caminho == "/api/textos-da-animacao" else TAMANHO_MAXIMO
+        if tamanho <= 0 or tamanho > limite:
             return self._responder_json(413, {"ok": False, "erro": "tamanho-invalido",
                                                "mensagem": "Conteúdo vazio ou grande demais."})
         corpo = self.rfile.read(tamanho)
+
+        if caminho == "/api/textos-da-animacao":
+            return self._gravar_textos_da_animacao(corpo)
 
         versao_base = (self.headers.get("X-Versao-Base") or "").strip()
         motivo = (self.headers.get("X-Backup-Antes") or "").strip().lower()
@@ -435,6 +575,20 @@ class Manipulador(http.server.SimpleHTTPRequestHandler):
             registrar(resumo)
         elif codigo == 409:
             registrar("aviso: gravação recusada por conflito (o arquivo mudou fora da página)")
+
+    def _gravar_textos_da_animacao(self, corpo):
+        try:
+            codigo, resposta, resumo = salvar_textos_da_animacao(corpo)
+        except OSError as erro:
+            codigo = 500
+            resposta = {"ok": False, "erro": "falha-ao-gravar",
+                        "mensagem": f"Não consegui gravar o arquivo da animação: {erro}"}
+            resumo = f"ERRO ao gravar os textos da animação: {erro}"
+        self._responder_json(codigo, resposta)
+        if resumo:
+            registrar(resumo)
+        elif codigo == 409:
+            registrar("aviso: textos da animação não gravados (o bloco mudou fora da janela)")
 
     # ---- registro na janela ---------------------------------------------
 

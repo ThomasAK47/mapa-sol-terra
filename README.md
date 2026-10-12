@@ -213,6 +213,40 @@ de cima (com o número delas, quando são várias), em qualquer zoom.
    seção "Registrar no manifesto" do contrato.
 4. Volte ao mapa: a lista do campo **Animações** se atualiza sozinha.
 
+### Editar os textos de uma animação
+
+Os textos das animações (títulos, explicações dos passos, legendas, os nomes
+escritos no desenho) podem ser trocados sem pedir uma animação nova. **As
+fórmulas e as contas não aparecem no editor:** elas só mudam por um pedido numa
+conversa.
+
+1. Abra a animação e clique em **Editar textos**, no alto da janela (o botão
+   do lápis). Os textos aparecem à direita, agrupados: o cabeçalho e a visão de
+   longe, cada passo, os controles, os textos que mudam com os números e os
+   textos do desenho.
+2. Clique num grupo para abri-lo e escreva por cima do texto. Para achar um
+   texto, use **Procurar um texto…** (não precisa de acento), ou marque **Só o
+   que está na tela**.
+3. Depois de um segundo sem digitar, a animação ao lado recarrega com o texto
+   novo, no mesmo passo em que estava. É só uma prévia: nada foi gravado ainda.
+4. Clique em **Salvar** (ou aperte Ctrl+S). Os textos ficam gravados no próprio
+   arquivo da animação, e uma cópia do arquivo de antes vai para
+   `data/backups/animacoes/` (as 20 mais recentes de cada animação).
+
+| No editor | O que faz |
+|---|---|
+| **B**, ***I***, **x²**, **x₂** | Negrito, itálico, sobrescrito (expoente) e subscrito, no trecho selecionado (aparecem ao clicar num texto do painel) |
+| **Original** | Volta aquele texto ao que era antes de qualquer troca |
+| **Descartar** | Volta todos os textos ao que está gravado no arquivo |
+| `{0}`, `{1}`… | O lugar de um número que a animação calcula. Mantenha-os ao reescrever (pode mudar de posição); se faltar um, aparece um aviso e o texto não é usado |
+
+- Um texto apagado por inteiro some da animação.
+- Os textos do desenho têm uma linha só e não têm negrito nem itálico.
+- Ao fechar a janela com textos não salvos, o mapa pergunta antes de descartar.
+- Na vitrine (GitHub Pages) o botão não aparece: lá os textos só são lidos.
+- Depois de salvar, envie as mudanças ao GitHub como de costume (os arquivos
+  das animações entram junto).
+
 ## GitHub: guardar e publicar
 
 O repositório é <https://github.com/ThomasAK47/mapa-sol-terra>. Ele serve para
@@ -256,6 +290,11 @@ Depois que o projeto já estiver no GitHub, dá para atualizar o mapa pelo site:
 4. Clique em **Commit changes**.
 
 O primeiro envio precisa ser pelo git, porque ele leva o app inteiro.
+
+Os textos editados das animações ficam nos arquivos da pasta `animacoes/`, e
+não no `estudos.json`. Para enviá-los assim, repita os passos na pasta
+`animacoes` do repositório, arrastando os arquivos das animações que você
+editou.
 
 ### Publicar a vitrine (GitHub Pages)
 
@@ -321,7 +360,7 @@ endereço.
 |---|---|
 | `iniciar.bat`, `iniciar.command`, `iniciar.py` | Abrem o mapa e gravam as alterações |
 | `data/estudos.json` | O seu mapa |
-| `data/backups/` | Cópias de segurança (só no seu computador) |
+| `data/backups/` | Cópias de segurança (só no seu computador), inclusive as das animações antes de cada "Editar textos" |
 | `animacoes/` | As animações, o manifesto, o modelo e o contrato |
 | `index.html`, `css/`, `js/` | O app |
 | `docs/` | O pedido original e o plano aprovado |

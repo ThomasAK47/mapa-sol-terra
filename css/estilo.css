@@ -1228,7 +1228,9 @@ select.entrada { cursor: pointer; }
 .janela-animacao-parte:hover { border-color: #6d6d6d; color: #fff; }
 .janela-animacao-parte[aria-current="true"] { background: #fff; border-color: #fff; color: #000; cursor: default; }
 
-.janela-animacao-area { position: relative; flex: 1; min-height: 0; background: #000; }
+/* Embaixo do cabeçalho: a animação e, ao lado, o editor de textos (quando aberto). */
+.janela-animacao-corpo { flex: 1; min-height: 0; display: flex; }
+.janela-animacao-area { position: relative; flex: 1; min-width: 0; min-height: 0; background: #000; }
 .janela-animacao-iframe {
   position: absolute;
   inset: 0;
@@ -1253,6 +1255,153 @@ select.entrada { cursor: pointer; }
 /* "Carregando…" só aparece se demorar (evita um piscar a cada abertura). */
 .janela-animacao-mensagem.carregando p { color: var(--texto-3); opacity: 0; animation: surgir 0.2s ease 0.4s forwards; }
 @keyframes surgir { to { opacity: 1; } }
+
+/* ---------------------------------------------------------------------------
+   Editor de textos das animações (js/editor-textos.js)
+   ------------------------------------------------------------------------ */
+
+.janela-animacao-editar[aria-pressed="true"] { background: #ededed; border-color: #ededed; color: #000; }
+.janela-animacao-editar[aria-pressed="true"]:hover { background: #fff; color: #000; }
+
+.editor-textos {
+  flex: none;
+  width: 400px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--borda);
+  background: var(--superficie);
+}
+.editor-textos-topo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 4px 14px;
+  font-size: 13.5px;
+}
+.editor-textos-ferramentas {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 6px;
+}
+.editor-textos-busca { flex: 1; min-width: 0; height: 30px; padding: 4px 10px; font-size: 13px; }
+.editor-textos-na-tela {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+  cursor: pointer;
+  user-select: none;
+}
+.editor-textos-ajuda { flex: none; margin: 2px 14px 8px; font-size: 12px; line-height: 1.5; color: var(--texto-3); }
+.editor-textos-ajuda code,
+.texto-editavel-aviso code { font: inherit; color: var(--texto-2); }
+.editor-textos-lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 8px 12px 10px;
+  border-top: 1px solid var(--borda);
+}
+.editor-textos-vazio { margin: 18px 6px; font-size: 13px; line-height: 1.6; color: var(--texto-2); }
+.editor-textos-rodape {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 14px;
+  border-top: 1px solid var(--borda);
+}
+.editor-textos-estado { flex: 1; min-width: 0; font-size: 12.5px; color: var(--texto-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-textos-estado[data-estado="mudou"] { color: var(--texto); }
+.editor-textos-estado[data-estado="aviso"] { color: #fff; font-weight: 600; }
+
+/* Cada grupo (passo do painel, seção do desenho) abre e fecha. */
+.grupo-textos { border-bottom: 1px solid var(--borda); }
+.grupo-textos > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+  cursor: pointer;
+  list-style: none;
+}
+.grupo-textos > summary::-webkit-details-marker { display: none; }
+.grupo-textos > summary::before { content: '▸'; flex: none; width: 10px; color: var(--texto-3); }
+.grupo-textos[open] > summary::before { content: '▾'; }
+.grupo-textos > summary:hover { color: var(--texto); }
+.grupo-textos-titulo { flex: 1; min-width: 0; }
+.grupo-textos-contagem { flex: none; font-weight: 500; font-size: 11.5px; color: var(--texto-3); font-variant-numeric: tabular-nums; }
+.grupo-textos.tem-trocas .grupo-textos-contagem { color: var(--texto); }
+
+.texto-editavel { margin: 0 0 12px 14px; padding-left: 10px; border-left: 2px solid var(--borda); }
+.texto-editavel.trocado { border-left-color: #8a8a8a; }
+.texto-editavel.nao-salvo { border-left-color: #fff; }
+.texto-editavel-cabeca { display: flex; align-items: center; gap: 4px; min-height: 24px; margin-bottom: 3px; }
+.texto-editavel-nome { flex: 1; min-width: 0; font-size: 11.5px; color: var(--texto-3); }
+.texto-ferramentas { display: none; gap: 2px; }
+.texto-editavel:focus-within .texto-ferramentas { display: inline-flex; }
+.botao-mini {
+  flex: none;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-2);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.botao-mini:hover { border-color: #6d6d6d; color: #fff; }
+.botao-mini.enfeite { padding: 0 5px; font-family: Cambria, Georgia, 'Times New Roman', serif; font-size: 13px; }
+.enfeite-bold { font-weight: 700; }
+.enfeite-italic { font-style: italic; }
+.texto-campo {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 7px;
+  background: var(--superficie-2);
+  color: var(--texto);
+  font: 13px/1.5 var(--fonte);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  resize: none;
+  overflow: hidden;
+}
+.texto-campo:focus { outline: none; border-color: #8a8a8a; }
+.texto-campo sup, .texto-campo sub { font-size: 0.72em; line-height: 0; }
+.texto-editavel-original {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--texto-3);
+}
+.texto-editavel-original sup, .texto-editavel-original sub { font-size: 0.72em; line-height: 0; }
+.texto-editavel-aviso { margin: 4px 0 0; font-size: 12px; line-height: 1.45; color: #fff; }
+.texto-editavel.com-aviso .texto-campo { border-color: #fff; }
+.texto-editavel.orfao p { margin: 2px 0; font-size: 12px; line-height: 1.45; color: var(--texto-2); overflow-wrap: anywhere; }
+
+/* Em telas estreitas os botões da barra viram só ícone (veja "Telas estreitas"); os do editor têm só texto. */
+@media (max-width: 960px) {
+  .editor-textos-rodape .botao:not(.icone) { width: auto; padding: 0 9px; }
+}
+@media (max-width: 900px) {
+  .janela-animacao-corpo { flex-direction: column; }
+  .editor-textos { width: auto; height: 55%; border-left: 0; border-top: 1px solid var(--borda-forte); }
+}
 
 /* ---------------------------------------------------------------------------
    Tela de carregamento e medidor do modo de teste
