@@ -41,7 +41,7 @@ let iframe = null;
 let botaoEditar = null;     // "Editar textos" (só no modo de edição)
 let aberta = null;          // { lista, indice, cardId, focoAnterior } enquanto a janela está aberta
 let geracao = 0;            // muda a cada abertura/fechamento (descarta respostas atrasadas)
-let ondeEsta = null;        // { perto, passo }: o que a animação contou por último (a prévia volta para lá)
+let ondeEsta = null;        // { perto, passo, parte }: o que a animação contou por último (a prévia volta para lá)
 
 export function iniciarJanelaAnimacao(elemento) {
   janela = elemento;
@@ -244,6 +244,7 @@ async function carregar({ manterLugar = false } = {}) {
   if (lugar?.perto) {
     extras.set('perto', '1');
     extras.set('passo', String(lugar.passo));
+    if (lugar.parte > 0) extras.set('parte', String(lugar.parte));
   }
   const fragmento = extras.toString();
 
@@ -315,7 +316,8 @@ function aoReceberMensagem(evento) {
     fecharAnimacao();
   } else if (dados?.tipo === 'animacao-esta-em') {
     const passo = Number.isInteger(dados.passo) && dados.passo >= 0 && dados.passo < 100 ? dados.passo : 0;
-    ondeEsta = { perto: dados.perto === true, passo };
+    const parte = Number.isInteger(dados.parte) && dados.parte >= 0 && dados.parte < 100 ? dados.parte : 0;
+    ondeEsta = { perto: dados.perto === true, passo, parte };
     aoMudarLugar();
   } else if (dados?.tipo === 'textos-na-tela' && Array.isArray(dados.chaves)) {
     aoReceberTextosNaTela(dados.chaves.filter((chave) => typeof chave === 'string').slice(0, 2000));

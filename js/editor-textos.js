@@ -238,7 +238,9 @@ export function lerTextosDaAnimacao(fonte) {
       const numero = Number(passo.dataset.passo) + 1;
       const tituloDoPasso = passo.querySelector('.passo-titulo [data-texto]') ?? passo.querySelector('.passo-titulo');
       const nome = (tituloDoPasso?.textContent ?? '').replace(/^\s*\d+\s*/, '').replace(/\s+/g, ' ').trim();
-      grupo = { id: `passo-${numero}`, titulo: `Passo ${numero}${nome ? ` · ${nome}` : ''}`, ordem: 10 + numero, passo: numero - 1 };
+      // A animação pode dar outro nome aos passos (a da estrutura do Sol chama de "Camada").
+      const palavra = passo.closest('[data-palavra-do-grupo]')?.dataset.palavraDoGrupo || 'Passo';
+      grupo = { id: `passo-${numero}`, titulo: `${palavra} ${numero}${nome ? ` · ${nome}` : ''}`, ordem: 10 + numero, passo: numero - 1 };
     } else if (chave.startsWith('controle-')) {
       grupo = { id: 'controles', titulo: 'Controles embaixo do desenho', ordem: 80 };
     } else {
@@ -317,7 +319,12 @@ function rotuloDoPainel(chave) {
     [/^resumo-titulo/, () => 'Título do resumo'],
     [/^resumo-texto/, () => 'Texto do resumo'],
     [/^leitura-/, () => 'Nome de uma leitura'],
-    [/^passo-\d+-titulo/, () => 'Título do passo'],
+    [/^passo-\d+-parte-(\d+)-titulo/, (m) => `Parte ${m[1]}: título`],
+    [/^passo-\d+-parte-(\d+)-explicacao/, (m) => `Parte ${m[1]}: explicação`],
+    [/^passo-\d+-parte-(\d+)-item-(\d+)/, (m) => `Parte ${m[1]}: item ${m[2]} da lista`],
+    [/^passo-\d+-parte-(\d+)-legenda/, (m) => `Parte ${m[1]}: legenda da fórmula`],
+    [/^passo-\d+-parte-(\d+)/, (m) => `Parte ${m[1]}`],
+    [/^passo-\d+-titulo/, () => 'Título'],
     [/^passo-\d+-explicacao/, () => 'Explicação'],
     [/^passo-\d+-item-(\d+)/, (m) => `Item ${m[1]} da lista`],
     [/^passo-\d+-legenda/, () => 'Legenda da fórmula'],

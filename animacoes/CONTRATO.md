@@ -249,15 +249,17 @@ botão funcionar, a animação precisa de cinco coisas:
    }
    /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
    function avisarOndeEsta() {
-     const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
-     window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+     const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto, .passo e .parte, se houver
+     window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0,
+       parte: Number(lugar.parte) || 0 }, '*');
    }
-   /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+   /** Numa prévia, volta à vista, ao passo e à parte de antes (vêm no endereço, depois do #). Fica no fim do script. */
    function voltarAoLugarDaPrevia() {
      const dados = new URLSearchParams(location.hash.slice(1));
      if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
        mostrarVisao(true);
        if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+       if (typeof mostrarParte === 'function') mostrarParte(Number(dados.get('parte')) || 0);
      }
      avisarOndeEsta();
    }
@@ -273,8 +275,10 @@ botão funcionar, a animação precisa de cinco coisas:
    A prévia da edição recarrega a animação. Para ela voltar à mesma visão e ao
    mesmo passo, uma animação com passos (`estado.perto`, `estado.passo`,
    `mostrarVisao(perto)` e `mostrarPasso(n)`) chama `avisarOndeEsta()` no fim
-   de `mostrarVisao` e de `mostrarPasso`. Toda animação chama
-   `voltarAoLugarDaPrevia()` na última linha do script.
+   de `mostrarVisao` e de `mostrarPasso`. Se cada passo tiver partes
+   (`estado.parte` e `mostrarParte(n)`), chama também no fim de
+   `mostrarParte`. Toda animação chama `voltarAoLugarDaPrevia()` na última
+   linha do script.
 
 ## 5. Esqueleto mínimo
 

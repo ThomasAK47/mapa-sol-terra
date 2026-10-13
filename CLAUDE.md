@@ -49,8 +49,8 @@ pedidas pela pessoa usuária, um commit para cada:
 - vento solar radial, contornando o primeiro anel do campo da Terra;
 - animações de verdade: `animacoes/magnetopausa.html`, a série do campo
   geomagnético, em três partes, `animacoes/vento-solar-bz.html`,
-  `animacoes/corrente-de-anel.html` e `animacoes/flare-solar.html` (veja
-  "Contrato das animações");
+  `animacoes/corrente-de-anel.html`, `animacoes/flare-solar.html` e
+  `animacoes/estrutura-do-sol.html` (veja "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados";
 - textos editáveis das animações (botão "Editar textos" da janela da
@@ -461,12 +461,23 @@ fórmulas e as contas ficam de fora:** essas ela pede numa conversa.
     `script`/`style` é descartado;
   - o trecho comum (o "1b" do `_modelo.html`, igual ao do CONTRATO.md), logo
     depois do trecho do Esc. `avisarOndeEsta()` fica no fim de `mostrarVisao` e
-    de `mostrarPasso`; `voltarAoLugarDaPrevia()` na última linha do script.
+    de `mostrarPasso` (e de `mostrarParte`, se houver partes);
+    `voltarAoLugarDaPrevia()` na última linha do script;
+  - **partes dentro dos passos** (desde a estrutura do Sol): o trecho comum
+    manda também `parte` (`estado.parte`) e, na prévia, chama
+    `mostrarParte(n)` se ela existir. O app guarda `ondeEsta.parte` e põe
+    `&parte=N` no endereço (só se N > 0). Nas animações sem partes, nada muda;
+  - o editor chama os grupos de "Passo"; um elemento com
+    `data-palavra-do-grupo="Camada"` em volta dos `[data-passo]` troca a
+    palavra. Rótulos de `passo-N-parte-K-titulo/explicacao/item/legenda`:
+    "Parte K: …".
 - **Por que `T_` e `H_`, com traço:** `T` e `H` colidiam com variáveis das
   animações (um `const T` local na geo-2 escondia a função, e o passo 1 parava
   com erro a cada quadro; o flare usa `T` para temperatura e `H` para altura).
 - **Nomes de `data-texto`** (o editor agrupa e rotula por eles):
-  `titulo-complemento`, `resumo-titulo`, `resumo-texto`, `leitura-<id do dd>`,
+  `titulo-complemento`, `resumo-titulo`, `resumo-texto` (o parágrafo do
+  resumo; a primeira conversão o deixou de fora e ele foi marcado depois, em
+  2026-10-13), `leitura-<id do dd>`,
   `dica`, `botao-ver-de-perto`, `controle-<id do input>` e, dentro de
   `[data-passo]`, `passo-N-titulo` (o texto do botão, num `<span>`),
   `passo-N-explicacao` (`-2` se houver outra), `passo-N-item-K` (ou
@@ -725,6 +736,57 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - Para testar: `definir({ area, espessura, B, liberacao, lon, lat })`,
     `destacar(produto)` e `soltarFlare()` também são do escopo global;
     `estado.tempo` escolhe o momento dos ciclos.
+- **`estrutura-do-sol.html`** (feita; a física é a seção 2.5, "Solar
+  structure", do livro da pessoa usuária, colada de um PDF): o Sol cortado,
+  com as sete camadas. **Formato diferente, a pedido dela:** não há o seletor
+  "De longe"/"De perto"; clicar numa camada (no desenho, nos nomes à direita
+  ou na lista do painel) leva a câmera até ela.
+  - Navegação: `estado.camada` (−1 = o Sol inteiro, 0 a 6) e `estado.parte`;
+    `mostrarCamada(camada, parte)` faz tudo. Para o editor e os testes,
+    `mostrarVisao(perto)`, `mostrarPasso(camada)` e `mostrarParte(parte)`
+    também existem (perto = uma camada aberta; passo = a camada). "Próximo"
+    passa de parte em parte e, no fim de uma camada, vira "Próxima camada".
+    No painel, os números 1 a 7 pulam de camada; no canto do desenho, um Sol
+    pequeno (`desenharLocalizador`) mostra onde se está e volta ao Sol inteiro.
+  - A câmera (`cameraDoSol`, `FOCOS`, `estado.zoom` e `estado.foco`) se
+    aproxima do ponto da camada no corte; para trocar de camada, afasta-se um
+    pouco antes. Com a câmera na camada, o "mundo" da cena aparece por
+    transparência (`MUNDO_DA_CENA`, `misturas`, `DESENHOS`). Uma prévia do
+    editor (`#…perto=1`) abre direto na camada (`pularTransicao`).
+  - O corte (`desenharCorte`): núcleo pulsando, fótons em zigue-zague
+    (`FOTONS_DO_CORTE`, cor pela energia, `corDaEnergia`), células da convecção,
+    a fotosfera; em volta, cromosfera, transição, coroa e vento solar
+    (`desenharAneis`, `desenharCoroa`). As camadas de dentro estão na escala do
+    texto; a atmosfera, muito mais grossa (`R_CROMOSFERA` etc.).
+    `camadaNoPonto(u, v)` diz a camada sob o ponteiro.
+  - As 21 partes (cada uma com o seu mundo): núcleo (fusão com prótons,
+    elétrons, hélio, raio gama preso e neutrino que escapa; a balança de
+    E = Δm·c²; o painel acima da atmosfera e a casa de 1 600 W; a esfera de
+    raio r, com S = 1 400/r²; 600 milhões de t/s; os neutrinos e o detector),
+    zona radiativa (o fóton que passeia; a heliossismologia com o Doppler),
+    zona convectiva (rolos com traçadores; o limite do fluxo), fotosfera (a
+    borda com a lupa; a mancha com a Terra na mesma escala e o ciclo; a
+    rotação diferencial; os grânulos, com Doppler e supergranulação),
+    cromosfera (a atmosfera de lado com as curvas; o eclipse; as espículas; o
+    disco em Hα), região de transição (as mesmas curvas, até a coroa) e coroa
+    (o coronógrafo; o vento solar).
+  - A granulação é um padrão de células (`fazerGranulacoes`: cada pixel olha o
+    centro mais próximo e o segundo mais próximo), em três versões que se
+    revezam devagar; a versão Doppler pinta as células de azul e as divisas de
+    vermelho.
+  - **Leituras:** "200 000 km across" do núcleo lido como diâmetro (raio de
+    100 000 km); a zona convectiva começa a 496 000 km do centro.
+    **Incoerência apontada na tela:** "1 kg de H = 1 600 anos da energia da
+    Terra" não bate com "1 s do Sol = 900 000 anos da Terra" (por esta, são
+    ~47 s). **Acréscimos, avisados:** massa do próton, 1 megaton =
+    4,18 × 10¹⁵ J, raio da Terra, a temperatura da coroa (~1 milhão de K); as
+    curvas da atmosfera, a rotação entre o equador e os polos (25 + 11·sen²),
+    as manchas do ciclo, o limite do fluxo e as alturas das espículas são
+    esquemas.
+  - Para testar: `definir({ massa, area, raio, fluxo, ano, dias, altura, lua,
+    velocidade })`, `alternar(nome)` (doppler, super, halfa, tapar),
+    `fundirAgora()` e `novoFoton()` são do escopo global. O teste confere
+    também que todos os textos que o desenho usa estão na lista do editor.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de

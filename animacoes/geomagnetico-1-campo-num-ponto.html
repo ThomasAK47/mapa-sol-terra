@@ -402,7 +402,7 @@
       <!-- Visão de longe -->
       <section id="resumo" class="so-longe">
         <h2 data-texto="resumo-titulo">A Terra como um ímã</h2>
-        <p>Perto da superfície, a Terra se comporta aproximadamente como um <b>ímã em barra</b> no centro do
+        <p data-texto="resumo-texto">Perto da superfície, a Terra se comporta aproximadamente como um <b>ímã em barra</b> no centro do
           planeta, inclinado uns 11° em relação ao eixo de rotação. A intensidade do
           <span class="campo">campo</span> depende da distância ao centro, <i>r</i>, e da latitude
           magnética, <i>λ</i>:</p>
@@ -612,15 +612,17 @@
     }
     /** Conta ao app onde a animação está (para a prévia dos textos voltar ao mesmo lugar). */
     function avisarOndeEsta() {
-      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto e estado.passo, se houver
-      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0 }, '*');
+      const lugar = typeof estado === 'object' && estado ? estado : {};     // estado.perto, .passo e .parte, se houver
+      window.parent.postMessage({ tipo: 'animacao-esta-em', perto: Boolean(lugar.perto), passo: Number(lugar.passo) || 0,
+        parte: Number(lugar.parte) || 0 }, '*');
     }
-    /** Numa prévia, volta à vista e ao passo de antes (eles vêm no endereço, depois do #). Fica no fim do script. */
+    /** Numa prévia, volta à vista, ao passo e à parte de antes (vêm no endereço, depois do #). Fica no fim do script. */
     function voltarAoLugarDaPrevia() {
       const dados = new URLSearchParams(location.hash.slice(1));
       if (dados.get('perto') === '1' && typeof mostrarVisao === 'function') {
         mostrarVisao(true);
         if (typeof mostrarPasso === 'function') mostrarPasso(Number(dados.get('passo')) || 0);
+        if (typeof mostrarParte === 'function') mostrarParte(Number(dados.get('parte')) || 0);
       }
       avisarOndeEsta();
     }

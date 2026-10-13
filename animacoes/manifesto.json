@@ -40,6 +40,11 @@
       "arquivo": "flare-solar.html",
       "titulo": "Flare solar",
       "descricao": "O brilho súbito de uma área pequena do Sol, perto das manchas: como se classifica em Hα, o plasma comprimido, a energia guardada no campo (B²/2μ₀), um dia para juntar e minutos para soltar, o modelo do ponto neutro e o que chega à Terra."
+    },
+    {
+      "arquivo": "estrutura-do-sol.html",
+      "titulo": "Estrutura do Sol",
+      "descricao": "O Sol cortado, com as camadas: clique numa delas para vê-la de perto. A fusão no núcleo (E = mc², a luminosidade, os neutrinos), a luz na zona radiativa, a convecção, a fotosfera (manchas, rotação, grânulos), a cromosfera, a região de transição e a coroa."
     }
   ]
 }
