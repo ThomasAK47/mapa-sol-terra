@@ -49,8 +49,9 @@ pedidas pela pessoa usuária, um commit para cada:
 - vento solar radial, contornando o primeiro anel do campo da Terra;
 - animações de verdade: `animacoes/magnetopausa.html`, a série do campo
   geomagnético, em três partes, `animacoes/vento-solar-bz.html`,
-  `animacoes/corrente-de-anel.html`, `animacoes/flare-solar.html` e
-  `animacoes/estrutura-do-sol.html` (veja "Contrato das animações");
+  `animacoes/corrente-de-anel.html`, `animacoes/flare-solar.html`,
+  `animacoes/estrutura-do-sol.html` e `animacoes/ciclo-solar.html` (veja
+  "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados";
 - textos editáveis das animações (botão "Editar textos" da janela da
@@ -468,9 +469,10 @@ fórmulas e as contas ficam de fora:** essas ela pede numa conversa.
     `mostrarParte(n)` se ela existir. O app guarda `ondeEsta.parte` e põe
     `&parte=N` no endereço (só se N > 0). Nas animações sem partes, nada muda;
   - o editor chama os grupos de "Passo"; um elemento com
-    `data-palavra-do-grupo="Camada"` em volta dos `[data-passo]` troca a
-    palavra. Rótulos de `passo-N-parte-K-titulo/explicacao/item/legenda`:
-    "Parte K: …".
+    `data-palavra-do-grupo` em volta dos `[data-passo]` troca a palavra
+    ("Camada" na estrutura do Sol, "Tema" no ciclo solar). Rótulos de
+    `passo-N-parte-K-titulo/explicacao/item/legenda`: "Parte K: …" (um sufixo
+    como `-explicacao-2` também vale; os avisos das partes usam esse).
 - **Por que `T_` e `H_`, com traço:** `T` e `H` colidiam com variáveis das
   animações (um `const T` local na geo-2 escondia a função, e o passo 1 parava
   com erro a cada quadro; o flare usa `T` para temperatura e `H` para altura).
@@ -787,6 +789,56 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     velocidade })`, `alternar(nome)` (doppler, super, halfa, tapar),
     `fundirAgora()` e `novoFoton()` são do escopo global. O teste confere
     também que todos os textos que o desenho usa estão na lista do editor.
+- **`ciclo-solar.html`** (feita; a física é a seção 2.6.3, "Solar cycle", do
+  livro da pessoa usuária, colada de um PDF): o ciclo de 11 anos das manchas,
+  a polaridade dos pares em cada hemisfério e o ciclo magnético de 22 anos.
+  Mesmo formato da estrutura do Sol, a pedido dela: sem "De longe"/"De perto";
+  a visão geral tem partes clicáveis e cada tema tem partes.
+  - **Acréscimos aprovados por ela** (perguntados antes, todos avisados na
+    tela): os dados reais, a lei de Spörer e a borboleta, Babcock, Babcock–
+    Leighton e a lei de Joy.
+  - **Dados reais:** o número de manchas mensal do WDC-SILSO (Observatório
+    Real da Bélgica), versão 2.0, de janeiro de 1749 a setembro de 2026 (os 3
+    últimos meses provisórios), embutido no script (`SILSO_TEXTO`, um ano por
+    linha). A tabela foi baixada com a permissão dela; o arquivo baixado não
+    está no repositório. Para atualizar: baixar `SN_m_tot_V2.0.txt` de novo e
+    refazer o trecho (o gerador ficou no scratchpad da sessão, fora do repo).
+    A média de 13 meses (`MEDIA_13`, pesos do SILSO) dá os mínimos, os
+    máximos e os ciclos (`CICLOS`; `MINIMOS_APROXIMADOS` só dá o número). Os
+    valores conferem com os do SILSO (máximo do 24: abril de 2014, 116,4; do
+    25: outubro de 2024, 160,9). O ciclo 25 não acabou: onde é preciso um fim,
+    o modelo supõe 11 anos (`fimDoCiclo`).
+  - **Polaridade:** `liderNoNorte(n)`: ciclo ímpar, a mancha da frente é +
+    no norte (observado: + no 25, − no 24). Medida desde 1908.
+  - **Modelo de Babcock–Leighton** (`MODELO`, calculado ao abrir, ~50 ms):
+    o campo na superfície em 90 faixas de latitude, com fontes de pares
+    (quantos o número de manchas do mês diz, onde a lei de Spörer diz,
+    inclinados por Joy, com a polaridade de Hale), fluxo para os polos de
+    11 m/s, espalhamento de 500 km²/s e decaimento de 5 anos. Com isso, o
+    polo norte inverte perto do máximo de cada ciclo (2000, 2013 e 2023 nos
+    três últimos), como se observa. O dipolo (`dipoloNoAno`) vem dos dois
+    polos; a parte "de lado" cresce com o número de manchas (esquema).
+  - Esquemas: a latitude média (curva de Hathaway, 2011: 28°·e^(−t/90 meses)),
+    a largura da faixa, os pesos dos ciclos que dividem as manchas perto dos
+    mínimos (`pesosDosCiclos`), a inclinação de Joy (metade da latitude), os
+    retratos em raios X, os laços, o dínamo, as nuvens de plasma e a aurora.
+    Os números da versão 2.0 são ~1,3 a 1,7 vez os da versão antiga (a da
+    Figura 2.5): isso está avisado na tela.
+  - O Sol em 3D (`naEsfera`, `noEspaco`, vista com o polo norte inclinado 7°
+    para nós); a longitude cresce para a direita, o sentido da rotação, então
+    a mancha da frente é a da direita. Os pares (`novoPar`, `pesDoPar`,
+    `cuidarDosPares`) têm vida em segundos do desenho. O magnetograma
+    (`fundoMagnetico`) pinta o campo do modelo em faixas, mais fraco nas
+    latitudes das manchas. As linhas do dipolo só aparecem fora do disco.
+  - Navegação: `estado.tema` (−1 = visão geral) e `estado.parte`;
+    `mostrarTema(tema, parte)`; `arranjo` (o arranjo da visão geral: largo,
+    alto ou só o Sol), `cameraDoQuadro`, `temaNoPonto`. Nos temas, as cenas
+    guardam `zonasDeArrasto` (arrastar nos gráficos muda a data) e
+    `zonasDeClique` a cada quadro. `rotulos(cena)` some com os textos do
+    desenho quando sobram menos de 170 px.
+  - Para testar: `definir({ data, ano, ciclo, retrato, quando, latitude,
+    minimo, voltas, hale })`, `alternar(nome)` (polaridade, raiosx) e
+    `soltarTubo()` são do escopo global.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de

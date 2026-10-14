@@ -45,6 +45,11 @@
       "arquivo": "estrutura-do-sol.html",
       "titulo": "Estrutura do Sol",
       "descricao": "O Sol cortado, com as camadas: clique numa delas para vê-la de perto. A fusão no núcleo (E = mc², a luminosidade, os neutrinos), a luz na zona radiativa, a convecção, a fotosfera (manchas, rotação, grânulos), a cromosfera, a região de transição e a coroa."
+    },
+    {
+      "arquivo": "ciclo-solar.html",
+      "titulo": "Ciclo solar",
+      "descricao": "O ciclo de 11 anos das manchas (com os dados reais desde 1749), o Sol em raios X, onde as manchas nascem, a polaridade dos pares no norte e no sul, o dínamo, a inversão dos polos no ciclo de 22 anos e as estações do clima espacial. Clique numa parte do desenho para ver a explicação."
     }
   ]
 }
