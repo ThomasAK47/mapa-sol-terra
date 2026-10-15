@@ -50,6 +50,11 @@
       "arquivo": "ciclo-solar.html",
       "titulo": "Ciclo solar",
       "descricao": "O ciclo de 11 anos das manchas (com os dados reais desde 1749), o Sol em raios X, onde as manchas nascem, a polaridade dos pares no norte e no sul, o dínamo, a inversão dos polos no ciclo de 22 anos e as estações do clima espacial. Clique numa parte do desenho para ver a explicação."
+    },
+    {
+      "arquivo": "cme-no-sol.html",
+      "titulo": "CMEs: o que acontece no Sol",
+      "descricao": "As ejeções de massa coronal, do nascimento à saída do Sol: a coroa que muda, a corda de fluxo que perde o equilíbrio, o coronógrafo (as três partes e a CME halo), a massa em elefantes, a velocidade, a onda de choque, as partículas aceleradas e a corda de fluxo no espaço. Os efeitos na Terra ficam para outra animação."
     }
   ]
 }

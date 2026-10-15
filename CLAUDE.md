@@ -50,8 +50,8 @@ pedidas pela pessoa usuária, um commit para cada:
 - animações de verdade: `animacoes/magnetopausa.html`, a série do campo
   geomagnético, em três partes, `animacoes/vento-solar-bz.html`,
   `animacoes/corrente-de-anel.html`, `animacoes/flare-solar.html`,
-  `animacoes/estrutura-do-sol.html` e `animacoes/ciclo-solar.html` (veja
-  "Contrato das animações");
+  `animacoes/estrutura-do-sol.html`, `animacoes/ciclo-solar.html` e
+  `animacoes/cme-no-sol.html` (veja "Contrato das animações");
 - cards legíveis com o zoom afastado e várias animações por card (formato 2
   dos dados): veja "Legibilidade dos cards" e "Modelo de dados";
 - textos editáveis das animações (botão "Editar textos" da janela da
@@ -470,7 +470,7 @@ fórmulas e as contas ficam de fora:** essas ela pede numa conversa.
     `&parte=N` no endereço (só se N > 0). Nas animações sem partes, nada muda;
   - o editor chama os grupos de "Passo"; um elemento com
     `data-palavra-do-grupo` em volta dos `[data-passo]` troca a palavra
-    ("Camada" na estrutura do Sol, "Tema" no ciclo solar). Rótulos de
+    ("Camada" na estrutura do Sol, "Tema" no ciclo solar e nas CMEs). Rótulos de
     `passo-N-parte-K-titulo/explicacao/item/legenda`: "Parte K: …" (um sufixo
     como `-explicacao-2` também vale; os avisos das partes usam esse).
 - **Por que `T_` e `H_`, com traço:** `T` e `H` colidiam com variáveis das
@@ -839,6 +839,57 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - Para testar: `definir({ data, ano, ciclo, retrato, quando, latitude,
     minimo, voltas, hale })`, `alternar(nome)` (polaridade, raiosx) e
     `soltarTubo()` são do escopo global.
+- **`cme-no-sol.html`** (feita; a física é a seção 3.5 do livro da pessoa
+  usuária, sobre as CMEs, colada de um PDF): as ejeções de massa coronal, com o
+  foco no que acontece no Sol e perto dele. **Os efeitos na Terra ficam para
+  outra animação**, que ela vai pedir. Mesmo formato do ciclo solar (visão
+  geral clicável, temas em partes; o código parte do dele).
+  - **Decisões dela** (perguntadas antes; ela permite pesquisa na internet,
+    "porém me avise": sempre dizer o que foi pesquisado e as fontes):
+    - acréscimos aprovados, avisados na tela: o modelo padrão das erupções (a
+      corda de fluxo presa pelos arcos, a perda do equilíbrio, a reconexão
+      embaixo, que é o flare), as três partes no coronógrafo e as CMEs halo, a
+      velocidade magnetossônica perto do Sol e os números do catálogo do SOHO;
+    - a frase dos 40 km/s foi lida como "40 km/s acima do vento"
+      (`temChoqueNoVento`);
+    - a massa é comparada com elefantes (6 000 kg; Wikipedia). O livro diz
+      "250 000 porta-aviões", que não bate com 10¹² kg (dariam uns 10 000);
+      ela pediu para trocar por elefantes;
+    - a descoberta fica como no livro ("anos 1980"), **sem correção na tela**,
+      a pedido dela (a pesquisa deu 1971, com o OSO-7; "qualquer coisa
+      alteramos futuramente").
+  - **Fontes dos acréscimos** (no painel da visão geral): o catálogo CDAW do
+    SOHO/LASCO (~0,5 CME por dia no mínimo e ~6 no máximo; velocidade média
+    de ~250 a ~550 km/s; `CATALOGO`); a velocidade magnetossônica (Mann et al.,
+    1999; Gopalswamy et al., 2001): mínimo perto de 1,5 raio do Sol, pico
+    perto de 3 a 4 raios, ~60 km/s perto da Terra (`PERFIL_MAGNETOSSONICO`,
+    valores aproximados, interpolados em escala logarítmica).
+  - O choque perto do Sol (`temChoque(r, final)`): a CME (`velocidadeDaCME`,
+    que acelera nos primeiros raios) menos o vento (`ventoNaDistancia`, que
+    acelera até 400 km/s) precisa passar a magnetossônica.
+    `trechosComChoque(final)` diz onde: 1 000 km/s tem choque a partir de
+    ~1,4 raio; 800 km/s o perde perto do pico; 600 km/s só o forma longe; esses
+    casos estão no teste. Tudo isso é esquema, avisado na tela.
+  - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`, num ciclo de 19 s;
+    a distância anda mais devagar no começo para dar para ver a saída; a
+    velocidade e o choque vêm do modelo, na distância de agora), com o
+    coronógrafo pequeno mostrando a mesma CME. A CME de lado
+    (`desenharCMEDeLado`: frente brilhante, cavidade, núcleo da proeminência;
+    `formaDaCME(d)`), o choque (`desenharChoque`) e as partículas são
+    compartilhados com os temas. O ponteiro usa a geometria do último quadro
+    (`zonasDaVisao`, `temaNaTela`).
+  - Os 17 mundos: a coroa que se torce (vista oblíqua), a corda presa (corte,
+    com o controle da energia), a erupção (as partes 2 e 3 do tema 2 usam o
+    mesmo mundo), o coronógrafo (`desenharCoronografo`), as três partes, a CME
+    halo (pontos de uma casca em 3D projetados), os elefantes, a corrida com
+    o vento, o catálogo, a bala (frentes do som e o cone), a CME no vento (no
+    referencial dela), o perfil das velocidades, o acelerador de partículas, a
+    corda de fluxo em 3D, o tamanho (L = v·t) e a estrutura choque–tampão–
+    nuvem com o gráfico da sonda.
+  - Para testar: `definir({ energia, direcao, massa, velocidade, fase, bala,
+    cme, passagem, duracao })`, `alternar('corda')`, `soltarCME()` e
+    `recomecarErupcao()` são do escopo global; `estado.relogio` escolhe o
+    momento da CME da visão geral.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
