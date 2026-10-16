@@ -3232,7 +3232,9 @@
       }
       const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
       sombra.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
-      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), 'rgba(0, 0, 0, 0.6)');
+      // Limitado a 0…1: se o título for medido antes de a página ter tamanho (acontecia com o editor de textos
+      // aberto), a conta dava negativa, o navegador recusava e o script parava antes de voltar ao lugar da prévia.
+      sombra.addColorStop(limitar((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), 0, 1), 'rgba(0, 0, 0, 0.6)');
       sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = sombra;
       ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);

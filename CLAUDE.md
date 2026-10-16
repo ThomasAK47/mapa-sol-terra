@@ -812,9 +812,15 @@ janela mudar, atualize o contrato junto. Resumo técnico:
       e a posição do degradê da sombra do título dava negativa. O navegador
       recusa (`IndexSizeError`), o script parava antes do laço da animação e
       de `voltarAoLugarDaPrevia()`: a animação abria parada e a prévia voltava
-      ao Sol inteiro. A posição agora é limitada a 0…1. **As outras nove
-      animações com física têm a mesma linha** (`sombra.addColorStop((ESPACO_DO_TITULO - 6) / …)`),
-      ainda sem a correção.
+      ao Sol inteiro. A posição agora é limitada a 0…1
+      (`limitar(…, 0, 1)`). **As outras nove animações com física tinham a
+      mesma linha e também foram corrigidas**, do mesmo jeito, em 2026-10-15.
+      Para provocar o erro nos testes, a medida do `.topo` devolve altura zero
+      até a página terminar de carregar e a animação abre com
+      `#perto=1&passo=1`: as versões antigas davam `IndexSizeError` e voltavam
+      à visão inicial; as corrigidas ficam no passo. (Um iframe com
+      `display: none` não serve: no Edge, ele ainda mede o título.) Uma
+      animação nova não deve repetir a conta sem o limite.
   - Para testar: `definir({ massa, area, raio, fluxo, ano, dias, altura, lua,
     velocidade })`, `alternar(nome)` (doppler, super, halfa, tapar),
     `fundirAgora()` e `novoFoton()` são do escopo global. O teste confere
