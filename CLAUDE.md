@@ -884,56 +884,63 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     minimo, voltas, hale })`, `alternar(nome)` (polaridade, raiosx) e
     `soltarTubo()` são do escopo global.
 - **`cme-no-sol.html`** (feita; a física é a seção 3.5 do livro da pessoa
-  usuária, sobre as CMEs, colada de um PDF): as ejeções de massa coronal, com o
-  foco no que acontece no Sol e perto dele. **Os efeitos na Terra ficam para
-  outra animação**, que ela vai pedir. Mesmo formato do ciclo solar (visão
-  geral clicável, temas em partes; o código parte do dele).
-  - **Decisões dela** (perguntadas antes; ela permite pesquisa na internet,
-    "porém me avise": sempre dizer o que foi pesquisado e as fontes):
-    - acréscimos aprovados, avisados na tela: o modelo padrão das erupções (a
-      corda de fluxo presa pelos arcos, a perda do equilíbrio, a reconexão
-      embaixo, que é o flare), as três partes no coronógrafo e as CMEs halo, a
-      velocidade magnetossônica perto do Sol e os números do catálogo do SOHO;
-    - a frase dos 40 km/s foi lida como "40 km/s acima do vento"
-      (`temChoqueNoVento`);
-    - a massa é comparada com elefantes (6 000 kg; Wikipedia). O livro diz
-      "250 000 porta-aviões", que não bate com 10¹² kg (dariam uns 10 000);
-      ela pediu para trocar por elefantes;
-    - a descoberta fica como no livro ("anos 1980"), **sem correção na tela**,
-      a pedido dela (a pesquisa deu 1971, com o OSO-7; "qualquer coisa
-      alteramos futuramente").
-  - **Fontes dos acréscimos** (no painel da visão geral): o catálogo CDAW do
-    SOHO/LASCO (~0,5 CME por dia no mínimo e ~6 no máximo; velocidade média
-    de ~250 a ~550 km/s; `CATALOGO`); a velocidade magnetossônica (Mann et al.,
-    1999; Gopalswamy et al., 2001): mínimo perto de 1,5 raio do Sol, pico
-    perto de 3 a 4 raios, ~60 km/s perto da Terra (`PERFIL_MAGNETOSSONICO`,
-    valores aproximados, interpolados em escala logarítmica).
-  - O choque perto do Sol (`temChoque(r, final)`): a CME (`velocidadeDaCME`,
-    que acelera nos primeiros raios) menos o vento (`ventoNaDistancia`, que
-    acelera até 400 km/s) precisa passar a magnetossônica.
-    `trechosComChoque(final)` diz onde: 1 000 km/s tem choque a partir de
-    ~1,4 raio; 800 km/s o perde perto do pico; 600 km/s só o forma longe; esses
-    casos estão no teste. Tudo isso é esquema, avisado na tela.
-  - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`, num ciclo de 19 s;
-    a distância anda mais devagar no começo para dar para ver a saída; a
-    velocidade e o choque vêm do modelo, na distância de agora), com o
-    coronógrafo pequeno mostrando a mesma CME. A CME de lado
-    (`desenharCMEDeLado`: frente brilhante, cavidade, núcleo da proeminência;
-    `formaDaCME(d)`), o choque (`desenharChoque`) e as partículas são
-    compartilhados com os temas. O ponteiro usa a geometria do último quadro
-    (`zonasDaVisao`, `temaNaTela`).
-  - Os 17 mundos: a coroa que se torce (vista oblíqua), a corda presa (corte,
-    com o controle da energia), a erupção (as partes 2 e 3 do tema 2 usam o
-    mesmo mundo), o coronógrafo (`desenharCoronografo`), as três partes, a CME
-    halo (pontos de uma casca em 3D projetados), os elefantes, a corrida com
-    o vento, o catálogo, a bala (frentes do som e o cone), a CME no vento (no
-    referencial dela), o perfil das velocidades, o acelerador de partículas, a
-    corda de fluxo em 3D, o tamanho (L = v·t) e a estrutura choque–tampão–
-    nuvem com o gráfico da sonda.
-  - Para testar: `definir({ energia, direcao, massa, velocidade, fase, bala,
-    cme, passagem, duracao })`, `alternar('corda')`, `soltarCME()` e
-    `recomecarErupcao()` são do escopo global; `estado.relogio` escolhe o
-    momento da CME da visão geral.
+  usuária, sobre as CMEs, colada de um PDF): **a vida de uma CME**, do Sol até
+  perto da Terra. **Os efeitos na Terra ficam para outra animação**, que ela vai
+  pedir. Mesmo formato do ciclo solar (visão geral clicável, temas em partes).
+  - **Versão 2 (2026-10-16):** a primeira (c4df403) seguia a ordem do livro e
+    ficou "um pouco confusa". Escolhas dela: a ordem da vida de uma CME (6
+    temas, 19 partes: antes da erupção; a erupção; na coroa; a onda de choque;
+    a caminho da Terra; CMEs de verdade), uma **régua** fixa, uma frase-resumo
+    em destaque em cada parte (`.frase`, com `data-texto` `…-explicacao`; o
+    texto longo é `…-explicacao-2` e o aviso, `…-explicacao-3`) e três
+    acréscimos pesquisados: CME × flare, eventos reais e os números de uma CME.
+    Os elefantes e a bala viraram quadros pequenos.
+  - **Decisões dela** (perguntadas antes; pesquisa permitida, "porém me
+    avise", e toda fonte vai para o documento de fontes): o modelo padrão das
+    erupções, as três partes e as CMEs halo; a frase dos 40 km/s lida como
+    "40 km/s acima do vento" (`temChoqueNoVento`); a massa em elefantes
+    (6 000 kg, Wikipedia; o livro diz "250 000 porta-aviões", que não bate com
+    10¹² kg); a descoberta como no livro ("anos 1980"), **sem correção na
+    tela**; na versão 2, **só duas imagens reais aprovadas** (Halloween 2003,
+    SOHO; maio de 2024, NASA/SDO), embutidas como `data:` (`IMAGENS`, `FOTOS`,
+    feitas por `gerar_imagens.py`, fora do repositório).
+  - **Dados pesquisados** (constantes na seção 2; fontes no painel e no
+    documento): `NUMEROS_DA_CME` (velocidade média ~450 km/s, de ~100 a
+    3 387 km/s; largura média ~40°, ~4% halo; massa típica 1,55 × 10¹² kg, de
+    10⁸ a 10¹⁴; energia típica 1,96 × 10²³ J, recorde 1,2 × 10²⁶ J; Vourlidas
+    et al. 2010; Gopalswamy 2016 e 2018), `FLARES_COM_CME` (C ~20%, M ~50%,
+    X ~90%; Yashiro et al. 2005, citado em Nitta et al. 2013), `EVENTOS`
+    (Carrington 17,6 h; Halloween "menos de 19 h"; julho de 2012 não veio;
+    maio de 2024 "cerca de 2 dias"), `CATALOGO` (0,5 a 6 CMEs por dia; média
+    de 250 a 550 km/s) e `PERFIL_MAGNETOSSONICO` (Mann et al., 1999;
+    Gopalswamy et al., 2001: mínimo perto de 1,5 raio, pico perto de 3 a 4).
+  - **A régua** (`desenharRegua`, `reguaDaCena`): uma faixa de 46 px embaixo
+    do desenho (`regua`, reservada em `medirCena` só se sobrar altura; o
+    `compor_a.py` faz essa troca na parte que vem do ciclo solar), com a
+    distância ao centro do Sol de 1 a 215,5 raios numa escala que estica perto
+    do Sol (`escalaDaRegua`), as etapas coloridas (clicáveis; na visão geral,
+    nomes em `zonasDosNomes`), o trecho da cena e uma frase (o tempo vem de
+    contas com velocidade constante). Nos eventos, a viagem anda na régua
+    (`estado.viagem`, `SEGUNDOS_DA_VIAGEM`).
+  - O choque perto do Sol (`temChoque(r, final)`, `trechosComChoque(final)`):
+    1 000 km/s tem choque a partir de ~1,4 raio; 800 km/s o perde perto do
+    pico; 600 km/s só o forma longe (no teste). Esquema, avisado na tela.
+  - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`), com o coronógrafo
+    pequeno; as partes do desenho (`TEMA_DA_ZONA`, `zonaSobOPonteiro`) levam
+    aos temas 1 a 5, e o tema 6 tem um nome no canto.
+  - Mundos (`MUNDO_DA_CENA`): `mexe`, `presa`, `erupcao` (duas partes),
+    `flare` (CME × flare: flares de uma classe acendem um depois do outro e
+    vêm ou não com uma CME, sorteados na proporção da pesquisa; clicar numa
+    barra escolhe a classe, `escolherClasse`), `instrumento`, `tres`, `halo`,
+    `numeros` (uma linha por grandeza, `linhaDeNumeros`, e o coronógrafo do
+    catálogo; com pouca altura, só o coronógrafo), `vento` (com o quadrinho da
+    bala, `desenharQuadrinhoDaBala`), `perfil`, `acelerador`, `tubo`,
+    `tamanho`, `estrutura` e `evento` (as quatro partes do tema 6: foto ou
+    desenho à esquerda, ficha à direita, `FICHAS`).
+  - Para testar: `definir({ energia, direcao, fase, cme, passagem, duracao,
+    classe })`, `escolherClasse(k)`, `alternar('corda')`, `soltarCME()`,
+    `recomecarErupcao()` e `verAViagem()` são do escopo global;
+    `estado.relogio` escolhe o momento da CME da visão geral.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
