@@ -20,6 +20,14 @@ Guia para sessões futuras do Claude Code neste repositório. Leia também:
   com "[exemplo]" e descrição vazia.
 - **Dados reais:** nunca teste no `data/estudos.json` do projeto (veja
   "Como testar").
+- **Fontes externas** (pedido dela, 2026-10-16): pesquisar na internet é
+  permitido, mas avise no relatório. Além disso, **toda** busca, página
+  aberta ou arquivo baixado entra no documento
+  [Fontes externas das animações](https://claude.ai/code/artifact/c87fb0ec-acf9-4fbf-b6db-66caf005d5fc)
+  (Claude Docs), no mesmo pedido: dado, valor usado, link, data e a situação
+  ("Pesquisa, página aberta", "Pesquisa, resumo da busca", "Dado baixado",
+  "Sem fonte consultada", "Escolha minha (esquema)"). Valores acrescentados
+  de memória também entram.
 
 ## Estado das fases
 
