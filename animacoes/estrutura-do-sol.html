@@ -596,6 +596,11 @@
                   nada. Eles atravessam você e a Terra o tempo todo (passariam por anos-luz de chumbo). Instrumentos
                   muito sensíveis detectam uma fração pequena deles, e essas medidas ajudaram a confirmar o que acontece
                   no núcleo.</p>
+                <p class="aviso" data-texto="passo-1-parte-6-explicacao-2">No desenho, o detector pega um neutrino a cada
+                  poucos segundos, para dar para ver. Acréscimo, pesquisado: chegam à Terra uns 65 bilhões de neutrinos
+                  do Sol por cm<sup>2</sup>, a cada segundo (CEA, França). O Super-Kamiokande, no Japão (um tanque com
+                  50 000 toneladas de água), pega uns 15 por dia, e só os de mais energia; o de Homestake, nos EUA
+                  (615 toneladas de um líquido com cloro), pegava 1 a cada 2 dias (artigos dos dois experimentos).</p>
               </div>
             </li>
           </ol>
@@ -614,6 +619,14 @@
                   principalmente por fótons, a luz. Os raios gama que saem do núcleo colidem com a matéria do Sol, são
                   absorvidos e reemitidos muitas e muitas vezes, e vão perdendo energia. Quando enfim saem pela
                   fotosfera, são sobretudo luz visível.</p>
+                <p class="aviso" data-texto="passo-2-parte-1-explicacao-2">Acréscimo, pesquisado: a luz leva cerca de
+                  170 000 anos para atravessar a zona radiativa (ESA), andando menos de 1 mm entre uma absorção e outra
+                  (0,09 cm, em média, na conta de Mitalas e Sills, 1992). Somando o zigue-zague, são 170 000 anos-luz de
+                  caminho: da ordem de 10<sup>24</sup> passos. No desenho, são poucas centenas. A energia cai devagar: o
+                  raio gama da fusão é absorvido logo, e na zona radiativa, com o gás a milhões de graus (uns 2 milhões
+                  de K na base da zona convectiva, ESA), a luz é <b>raio X</b>. Ela só vira ultravioleta e luz visível
+                  perto da superfície, a uns 6 000 K (lei de Wien). A cada absorção sai um fóton novo, e a energia se
+                  divide: um raio gama de 1 MeV acaba virando uns 400 000 fótons de luz visível.</p>
               </div>
             </li>
             <li class="parte" data-parte="1">
@@ -1645,7 +1658,14 @@
     }
     /** Um tempo em segundos escrito do jeito mais simples: "47 s", "3,5 min", "2,1 horas", "12 dias", "3 anos"… */
     function duracao(segundos) {
-      if (segundos < 0.01) return `${cientifico(segundos)} s`;
+      if (segundos < 0.001) return `${cientifico(segundos)} s`;
+      if (segundos < 1) {
+        // Menos de 1 s: dois algarismos e os milésimos de segundo ("0,017 s (17 milésimos de segundo)"). Com uma casa
+        // só, 0,017 s aparecia como "0,0 s".
+        const redondo = Number(segundos.toPrecision(2)), ms = Number((segundos * 1000).toPrecision(2));
+        const casas = Math.max(1, 1 - Math.floor(Math.log10(redondo)));
+        return `${numero(redondo, casas)} s (${numero(ms, ms < 10 ? 1 : 0)} ${ms < 2 ? 'milésimo' : 'milésimos'} de segundo)`;
+      }
       if (segundos < 60) return `${numero(segundos, segundos < 10 ? 1 : 0)} s`;
       if (segundos < 3600) return `${numero(segundos / 60, 1)} min`;
       if (segundos < 86400) return `${numero(segundos / 3600, 1)} horas`;
@@ -1698,7 +1718,11 @@
         }
       }
     }
-    /** A cor da luz conforme a energia: violeta (raio gama) perto do núcleo, amarela (luz visível) perto da superfície. */
+    // Na zona radiativa o gás está a milhões de graus, e a luz é raio X: mais "duro" perto do núcleo, mais "mole" perto
+    // da zona convectiva (lei de Wien). O raio gama da fusão é absorvido logo depois de nascer; ultravioleta e luz
+    // visível só aparecem perto da superfície. Este é o pedaço da escala de `corDaEnergia` que vale na zona radiativa.
+    const ENERGIA_DO_RAIO_X = [0.33, 0.45];
+    /** A cor da luz conforme a energia: de 0 (raio gama, violeta) a 1 (luz visível, amarela); o raio X fica em 1/3. */
     function corDaEnergia(fracao) {
       const paradas = [[196, 150, 255], [150, 190, 255], [235, 245, 255], [255, 226, 130]];
       const t = limitar(fracao, 0, 1) * (paradas.length - 1), i = Math.min(paradas.length - 2, Math.floor(t)), f = t - i;
@@ -1877,7 +1901,7 @@
       // A zona radiativa: fótons pulando de um lado para o outro (o rastro mostra o caminho em zigue-zague).
       aditivo(() => {
         for (const f of FOTONS_DO_CORTE) {
-          const cor = corDaEnergia((Math.hypot(f.x, f.y) - R_NUCLEO) / (R_BASE - R_NUCLEO));
+          const cor = corDaEnergia(entre(ENERGIA_DO_RAIO_X[0], ENERGIA_DO_RAIO_X[1], (Math.hypot(f.x, f.y) - R_NUCLEO) / (R_BASE - R_NUCLEO)));
           if (f.rastro.length) {
             ctx.strokeStyle = `rgba(${cor}, 0.45)`;
             ctx.lineWidth = Math.max(1, R * 0.003);
@@ -2600,7 +2624,8 @@
         if (n.c > 1) { n.c -= 1; n.a = (neutrinos.s() - 0.5) * 0.9; }
       }
       neutrinos.flash = Math.max(0, neutrinos.flash - dt);
-      // De vez em quando, só de vez em quando, um deles é pego pelo detector.
+      // De vez em quando, só de vez em quando, um deles é pego pelo detector. (No desenho, um a cada 3 s, mais ou menos,
+      // para dar para ver; de verdade, o Super-Kamiokande pega uns 15 por dia: está no aviso do painel.)
       if (neutrinos.s() < dt * 0.35) { neutrinos.detectados += 1; neutrinos.flash = 0.6; neutrinos.onde = neutrinos.s(); }
     }
     function desenharNeutrinos(alfa) {
@@ -2678,6 +2703,7 @@
       if (comNomes()) {
         escrever(T_`os neutrinos atravessam a Terra (e você)`, terra.x, terra.y + rT + 12, { tamanho: 11.5, alinhar: 'center', cor: `rgb(${COR_NEUTRINO})` });
         escrever(T_`detector: pega bem poucos (${neutrinos.detectados} até agora)`, det.x + det.w / 2, det.y + det.h + 14, { tamanho: 11.5, alinhar: 'center', cor: '#cfcfcf' });
+        escrever(T_`de verdade, uns 15 por dia (tempo acelerado)`, det.x + det.w / 2, det.y + det.h + 30, { tamanho: 11, alinhar: 'center', cor: '#9a9a9a' });
         escrever(T_`núcleo`, sol.x, sol.y + Rs * R_NUCLEO + 12, { tamanho: 11.5, alinhar: 'center', peso: 600 });
       }
       ctx.restore();
@@ -2725,15 +2751,21 @@
     // --- Zona radiativa, parte 1: um fóton saindo do núcleo, de perto. ---
     // A faixa vai de 60 000 km a 560 000 km do centro (horizontal); a altura é um pedaço qualquer (esquema).
     const FAIXA_KM = [60000, 560000];
+    // A escala das cores (`corDaEnergia`) vai de 0 (raio gama) a 1 (luz visível); na zona radiativa, a luz é raio X
+    // (`ENERGIA_DO_RAIO_X`).
     const NOMES_DA_ENERGIA = [T_`raio gama`, T_`raio X`, T_`ultravioleta`, T_`luz visível`];
-    const nomeDaEnergia = (fracao) => NOMES_DA_ENERGIA[Math.min(3, Math.floor(limitar(fracao, 0, 0.999) * 4))];
+    const fracaoDaEnergia = (x) => limitar((x * (FAIXA_KM[1] - FAIXA_KM[0]) + FAIXA_KM[0] - RAIO_DO_NUCLEO_KM) / (BASE_DA_CONVECCAO_KM - RAIO_DO_NUCLEO_KM), 0, 1);
+    const energiaNaFaixa = (x) => entre(ENERGIA_DO_RAIO_X[0], ENERGIA_DO_RAIO_X[1], fracaoDaEnergia(x));
+    const nomeDoFoton = (f) => (f.energia < 0.2 ? NOMES_DA_ENERGIA[0] : NOMES_DA_ENERGIA[1]);
     const fotons = (() => {
       const s = sorteador(303);
       const gas = Array.from({ length: 420 }, () => ({ x: s(), y: s(), fase: s() * 6.28 }));
-      const novo = (seguido) => ({ x: (RAIO_DO_NUCLEO_KM - FAIXA_KM[0]) / (FAIXA_KM[1] - FAIXA_KM[0]), y: 0.25 + 0.5 * s(), rastro: [], espera: 0, saiu: 0, seguido, absorcoes: 0 });
-      return { s, gas, novo, seguido: novo(true), outros: Array.from({ length: 6 }, () => ({ ...novo(false), x: 0.08 + 0.75 * s() })) };
+      // Um fóton novo nasce na borda do núcleo como raio gama (energia 0).
+      const novo = (seguido) => ({ x: (RAIO_DO_NUCLEO_KM - FAIXA_KM[0]) / (FAIXA_KM[1] - FAIXA_KM[0]), y: 0.25 + 0.5 * s(), rastro: [], espera: 0, saiu: 0, seguido, absorcoes: 0, energia: 0 });
+      const outros = Array.from({ length: 6 }, () => ({ ...novo(false), x: 0.08 + 0.75 * s() }));
+      for (const f of outros) f.energia = energiaNaFaixa(f.x);
+      return { s, gas, novo, seguido: novo(true), outros };
     })();
-    const fracaoDaEnergia = (x) => limitar((x * (FAIXA_KM[1] - FAIXA_KM[0]) + FAIXA_KM[0] - RAIO_DO_NUCLEO_KM) / (BASE_DA_CONVECCAO_KM - RAIO_DO_NUCLEO_KM), 0, 1);
     const xDaBase = () => (BASE_DA_CONVECCAO_KM - FAIXA_KM[0]) / (FAIXA_KM[1] - FAIXA_KM[0]);
     const xDoNucleo = () => (RAIO_DO_NUCLEO_KM - FAIXA_KM[0]) / (FAIXA_KM[1] - FAIXA_KM[0]);
     function novoFoton() {
@@ -2749,7 +2781,7 @@
       f.espera -= dt;
       if (f.espera > 0) return;
       f.espera = f.seguido ? 0.07 : 0.1;
-      f.rastro.push({ x: f.x, y: f.y });
+      f.rastro.push({ x: f.x, y: f.y, energia: f.energia });
       if (f.rastro.length > (f.seguido ? 70 : 14)) f.rastro.shift();
       const a = fotons.s() * Math.PI * 2, passo = 0.03;
       f.x += passo * Math.cos(a) / aspecto + 0.0045;     // um empurrão pequeno para fora (esquema: de verdade, são passos sem conta)
@@ -2757,6 +2789,8 @@
       f.y = limitar(f.y, 0.04, 0.96);
       f.x = Math.max(xDoNucleo(), f.x);
       f.absorcoes += 1;
+      // A cada absorção, a luz reemitida fica com a energia do gás dali: o raio gama vira raio X em poucos passos.
+      f.energia += (energiaNaFaixa(f.x) - f.energia) * 0.45;
       if (f.x >= xDaBase()) f.saiu = 1.1;
     }
     function andarFotons(dt) {
@@ -2812,7 +2846,7 @@
           }
           for (let i = 1; i < f.rastro.length; i++) {
             const p = f.rastro[i - 1], q = f.rastro[i];
-            ctx.strokeStyle = `rgba(${corDaEnergia(fracaoDaEnergia(q.x))}, ${(forte ? 0.9 : 0.45) * (0.25 + 0.75 * (i / f.rastro.length))})`;
+            ctx.strokeStyle = `rgba(${corDaEnergia(q.energia)}, ${(forte ? 0.9 : 0.45) * (0.25 + 0.75 * (i / f.rastro.length))})`;
             ctx.lineWidth = forte ? 2 : 1.2;
             ctx.beginPath();
             ctx.moveTo(X(p.x), Y(p.y));
@@ -2821,7 +2855,7 @@
           }
         }
         if (f.saiu > 0) return;
-        const cor = corDaEnergia(fracaoDaEnergia(f.x));
+        const cor = corDaEnergia(f.energia);
         aditivo(() => {
           brilho(X(f.x), Y(f.y), forte ? 18 : 8, cor, forte ? 0.95 : 0.6);
           if (forte) brilho(X(f.x), Y(f.y), 30 * (1 - Math.min(1, (f.espera / 0.07))), '255, 255, 255', 0.25);
@@ -2857,12 +2891,18 @@
         for (let i = 0; i <= 6; i++) gb.addColorStop(i / 6, `rgb(${corDaEnergia(i / 6)})`);
         ctx.fillStyle = gb;
         ctx.fillRect(xb, yb, wb, 6);
-        escrever(NOMES_DA_ENERGIA[0], xb, yb + 16, { tamanho: 11, cor: `rgb(${corDaEnergia(0)})` });
-        escrever(NOMES_DA_ENERGIA[3], xb + wb, yb + 16, { tamanho: 11, cor: `rgb(${corDaEnergia(1)})`, alinhar: 'right' });
-        escrever(T_`a energia do fóton cai a cada absorção (esquema)`, xb, yb + 32, { tamanho: 11, cor: '#9a9a9a' });
+        // O pedaço da escala que vale nesta faixa (o raio X), com uma moldura.
+        const xa = xb + wb * ENERGIA_DO_RAIO_X[0], xz = xb + wb * ENERGIA_DO_RAIO_X[1];
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(xa - 2, yb - 3, xz - xa + 4, 12);
+        escrever(NOMES_DA_ENERGIA[0], xb, yb + 18, { tamanho: 11, cor: `rgb(${corDaEnergia(0)})` });
+        escrever(NOMES_DA_ENERGIA[1], (xa + xz) / 2, yb + 18, { tamanho: 11, peso: 600, alinhar: 'center', cor: `rgb(${corDaEnergia(ENERGIA_DO_RAIO_X[0])})` });
+        escrever(NOMES_DA_ENERGIA[3], xb + wb, yb + 18, { tamanho: 11, cor: `rgb(${corDaEnergia(1)})`, alinhar: 'right' });
+        escrever(T_`aqui, a luz é raio X; vira luz visível só perto da superfície (esquema)`, xb + wb, yb + 34, { tamanho: 11, cor: '#9a9a9a', alinhar: 'right' });
         const f = fotons.seguido;
         if (f.saiu <= 0) escrever(T_`absorvido e reemitido`, X(f.x), Y(f.y) - 22, { tamanho: 11.5, alinhar: 'center', placa: true, cor: '#ffffff' });
-        else escrever(T_`chegou à zona convectiva`, X(xDaBase()), y0 + h * 0.5, { tamanho: 12, alinhar: 'center', placa: true, peso: 600 });
+        else escrever(T_`chegou à zona convectiva, ainda como raio X`, X(xDaBase()), y0 + h * 0.5, { tamanho: 12, alinhar: 'center', placa: true, peso: 600 });
       }
       ctx.restore();
     }
@@ -2870,8 +2910,8 @@
       if (estado.cena !== 'radiativa-1') return;
       const f = fotons.seguido;
       por('valor-2-1', f.saiu > 0
-        ? H_`o fóton acompanhado chegou à zona convectiva depois de <b>${f.absorcoes}</b> absorções (no desenho; de verdade, são muitíssimas)`
-        : H_`o fóton acompanhado: <b>${f.absorcoes}</b> absorções até agora · agora é <b>${nomeDaEnergia(fracaoDaEnergia(f.x))}</b> (esquema)`);
+        ? H_`o fóton acompanhado chegou à zona convectiva depois de <b>${f.absorcoes}</b> absorções no desenho, ainda como <b>raio X</b> (de verdade, são da ordem de 10<sup>24</sup>)`
+        : H_`o fóton acompanhado: <b>${f.absorcoes}</b> absorções até agora · agora é <b>${nomeDoFoton(f)}</b> (esquema)`);
     });
 
     // --- Zona radiativa, parte 2: ondas sonoras dentro do Sol, e o Doppler na superfície. ---
@@ -3007,6 +3047,218 @@
         p.y = limitar(p.y, -0.985, -0.015);
         if (conveccao.s() < dt * 0.05) { p.x = -1.6 + 3.2 * conveccao.s(); p.y = -0.97 + 0.94 * conveccao.s(); p.antes = []; }
       }
+      andarPanela(dt);
+    }
+
+    // --- A panela (telas largas): um grânulo de cozinha. A água quente sobe no meio, sobre o fogo, espalha-se na
+    //     superfície e desce, mais fria, pelas paredes, como o gás em volta de cada coluna que sobe no corte (e como os
+    //     grânulos vistos de cima, na fotosfera). As bolhas de vapor nascem no fundo quente, sobem com a corrente,
+    //     crescem e estouram na superfície. Esquema. ---
+    // Unidades: x de −1 (parede esquerda) a 1 (parede direita); y de −1 (o fundo) a 0 (a superfície).
+    /** A velocidade da água (função de corrente ψ = −sen(πx)·sen(π(y+1))·0,3/π): sobe em x = 0, desce nas paredes. */
+    function correnteDaPanela(x, y) {
+      const u = -Math.sin(Math.PI * x) * Math.cos(Math.PI * (y + 1)) * 0.3;
+      const v = Math.cos(Math.PI * x) * Math.sin(Math.PI * (y + 1)) * 0.3;
+      return { u, v };
+    }
+    const panela = (() => {
+      const s = sorteador(2718);
+      return { s, agua: Array.from({ length: 90 }, () => ({ x: -0.95 + 1.9 * s(), y: -0.95 + 0.9 * s(), antes: [] })), bolhas: [], estouros: [], vapor: [], espera: 0 };
+    })();
+    function andarPanela(dt) {
+      // Os pedacinhos de água seguem os dois rolos.
+      for (const p of panela.agua) {
+        const { u, v } = correnteDaPanela(p.x, p.y);
+        p.antes.push({ x: p.x, y: p.y });
+        if (p.antes.length > 8) p.antes.shift();
+        p.x = limitar(p.x + u * dt, -0.97, 0.97);
+        p.y = limitar(p.y + v * dt, -0.97, -0.03);
+        if (panela.s() < dt * 0.04) { p.x = -0.95 + 1.9 * panela.s(); p.y = -0.95 + 0.9 * panela.s(); p.antes = []; }
+      }
+      // Bolhas novas no fundo, mais perto do meio, onde o fogo esquenta mais.
+      panela.espera -= dt;
+      while (panela.espera <= 0) {
+        panela.espera += 0.1 + 0.1 * panela.s();
+        panela.bolhas.push({ x: (panela.s() + panela.s() + panela.s() - 1.5) * 0.42, y: -0.97, fase: panela.s() * 6.28 });
+      }
+      // Sobem pelo empuxo e com a corrente; perto da superfície, a corrente as leva um pouco para os lados.
+      for (const b of panela.bolhas) {
+        const { u, v } = correnteDaPanela(b.x, b.y);
+        b.y += (0.28 + Math.max(0, v)) * dt;
+        b.x = limitar(b.x + (u + 0.06 * Math.sin(b.fase + estado.tempo * 8)) * dt, -0.9, 0.9);
+      }
+      // Na superfície, estouram (e, às vezes, sai um fio de vapor).
+      for (const b of panela.bolhas) {
+        if (b.y < -0.03) continue;
+        panela.estouros.push({ x: b.x, idade: 0, r: tamanhoDaBolha(b) });
+        if (panela.s() < 0.45) panela.vapor.push({ x: b.x, idade: 0, lado: panela.s() - 0.5 });
+      }
+      panela.bolhas = panela.bolhas.filter((b) => b.y < -0.03);
+      for (const e of panela.estouros) e.idade += dt;
+      panela.estouros = panela.estouros.filter((e) => e.idade < 0.45);
+      for (const w of panela.vapor) w.idade += dt;
+      panela.vapor = panela.vapor.filter((w) => w.idade < 1.6);
+    }
+    /** O raio da bolha (em unidades da largura): cresce enquanto sobe. */
+    const tamanhoDaBolha = (b) => 0.02 + 0.045 * limitar(b.y + 1, 0, 1);
+    function desenharPanela(forca) {
+      const t = estado.tempo;
+      // Onde cabe: entre o corte e a borda da cena, abaixo do Sol pequeno do canto.
+      const esq = tx(1.6) + 34, dir = cena.x + cena.w - 18;
+      const l = Math.min(170, P.S * 0.62, (dir - esq) / 2 - 14);
+      const topo = Math.max(ty(0), cena.y + ESPACO_DO_TITULO + 118), sup = topo + 30;
+      const hA = Math.min(l * 1.25, ty(-1.25) - 34 - sup);
+      if (l < 34 || hA < 40) return;
+      const cx = (esq + dir) / 2, fundoY = sup + hA;
+      const PX = (x) => cx + x * l, PY = (y) => sup - y * hA;
+      // A superfície da água: um pouco mais alta sobre a coluna que sobe, com as ondinhas dos estouros.
+      const alturaDaSuperficie = (x) => {
+        let a = hA * 0.035 * Math.cos((Math.PI * x) / 2) ** 2 * (1 + 0.25 * Math.sin(t * 3));
+        for (const e of panela.estouros) a += 3 * (1 - e.idade / 0.45) * Math.exp(-(((x - e.x) / 0.1) ** 2)) * Math.cos(e.idade * 30);
+        return a;
+      };
+      const caminhoDaAgua = () => {
+        ctx.beginPath();
+        ctx.moveTo(PX(-1), fundoY);
+        for (let i = 0; i <= 40; i++) {
+          const x = -1 + i / 20;
+          ctx.lineTo(PX(x), sup - alturaDaSuperficie(x));
+        }
+        ctx.lineTo(PX(1), fundoY);
+        ctx.closePath();
+      };
+      // O fogo, embaixo: chamas azuis de gás (gotas de ponta para cima), mais altas no meio.
+      aditivo(() => {
+        for (let i = 0; i < 9; i++) {
+          const x = -0.64 + i * 0.16, forte = 1 - Math.abs(x) * 0.6, base = fundoY + 22, xf = PX(x);
+          const alto = (10 + 6 * forte) * (1 + 0.18 * Math.sin(t * 13 + i * 1.9)), largo = 3.2 + 1.6 * forte;
+          const gf = ctx.createLinearGradient(0, base, 0, base - alto);
+          gf.addColorStop(0, 'rgba(60, 120, 255, 0.95)');
+          gf.addColorStop(0.6, 'rgba(110, 170, 255, 0.6)');
+          gf.addColorStop(1, 'rgba(255, 190, 120, 0)');
+          ctx.fillStyle = gf;
+          ctx.beginPath();
+          ctx.moveTo(xf, base - alto);
+          ctx.quadraticCurveTo(xf + largo * 1.4, base - alto * 0.35, xf, base);
+          ctx.quadraticCurveTo(xf - largo * 1.4, base - alto * 0.35, xf, base - alto);
+          ctx.fill();
+        }
+        brilho(cx, fundoY + 14, l * 0.6, '70, 130, 255', 0.25);
+      });
+      ctx.strokeStyle = 'rgba(90, 90, 96, 0.95)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(PX(-0.8), fundoY + 24);
+      ctx.lineTo(PX(0.8), fundoY + 24);
+      ctx.stroke();
+      // A água: mais fria (azul-escura) junto às paredes, mais quente (clara) no meio e no fundo, sobre o fogo.
+      ctx.save();
+      caminhoDaAgua();
+      const ga = ctx.createLinearGradient(0, sup, 0, fundoY);
+      ga.addColorStop(0, 'rgba(70, 140, 225, 0.6)');
+      ga.addColorStop(1, 'rgba(40, 95, 195, 0.72)');
+      ctx.fillStyle = ga;
+      ctx.fill();
+      ctx.clip();
+      const gc = ctx.createLinearGradient(PX(-1), 0, PX(1), 0);
+      gc.addColorStop(0, 'rgba(8, 24, 80, 0.4)');
+      gc.addColorStop(0.25, 'rgba(8, 24, 80, 0)');
+      gc.addColorStop(0.5, 'rgba(255, 214, 160, 0.26)');
+      gc.addColorStop(0.75, 'rgba(8, 24, 80, 0)');
+      gc.addColorStop(1, 'rgba(8, 24, 80, 0.4)');
+      ctx.fillStyle = gc;
+      ctx.fillRect(PX(-1), sup - 12, 2 * l, hA + 12);
+      const gq = ctx.createRadialGradient(cx, fundoY, 0, cx, fundoY, l * 0.75);
+      gq.addColorStop(0, 'rgba(255, 170, 90, 0.35)');
+      gq.addColorStop(1, 'rgba(255, 170, 90, 0)');
+      ctx.fillStyle = gq;
+      ctx.fillRect(PX(-1), sup - 12, 2 * l, hA + 12);
+      // Os dois rolos, com setas no sentido da água (tirado da própria corrente).
+      for (const xc of [-0.5, 0.5]) {
+        // Se em cima do rolo a água vai para a direita, as setas andam no sentido horário.
+        const rx = 0.3, ry = 0.3, sentido = Math.sign(correnteDaPanela(xc, -0.5 + ry).u) || 1;
+        ctx.strokeStyle = 'rgba(220, 235, 255, 0.25)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(PX(xc), PY(-0.5), rx * l, ry * hA, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        for (const a of [0.4, Math.PI + 0.4]) {
+          const fase = a + sentido * t * 0.7;
+          const x = PX(xc) + rx * l * Math.cos(fase), y = PY(-0.5) + ry * hA * Math.sin(fase);
+          // A direção da seta é a da água naquele ponto.
+          const ux = (x - cx) / l, uy = (sup - y) / hA, { u, v } = correnteDaPanela(ux, uy);
+          const d = Math.hypot(u * l, v * hA) || 1, dx = (u * l) / d, dy = (-v * hA) / d;
+          seta(x - dx * 6, y - dy * 6, x + dx * 6, y + dy * 6, { cor: 'rgba(235, 245, 255, 0.8)', espessura: 1.4, ponta: 7 });
+        }
+      }
+      // Os pedacinhos de água: claros subindo, escuros descendo (como os traçadores do corte).
+      ctx.lineCap = 'round';
+      for (const p of panela.agua) {
+        const q = p.antes[0];
+        if (!q) continue;
+        const { v } = correnteDaPanela(p.x, p.y);
+        ctx.strokeStyle = v > 0 ? `rgba(255, 240, 200, ${0.55 + Math.min(0.4, v * 1.5)})` : `rgba(10, 28, 80, ${0.55 + Math.min(0.4, -v * 1.5)})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(PX(q.x), PY(q.y));
+        ctx.lineTo(PX(p.x), PY(p.y));
+        ctx.stroke();
+      }
+      // As bolhas de vapor.
+      for (const b of panela.bolhas) {
+        const r = tamanhoDaBolha(b) * l * 0.5 + 1;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(PX(b.x), PY(b.y), r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ponto(PX(b.x) - r * 0.35, PY(b.y) - r * 0.35, Math.max(0.8, r * 0.22), 'rgba(255, 255, 255, 0.9)');
+      }
+      ctx.restore();
+      // Os estouros (um anel e duas gotinhas) e o vapor que sobe.
+      for (const e of panela.estouros) {
+        const k = e.idade / 0.45, x = PX(e.x), y = sup - alturaDaSuperficie(e.x);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.85 * (1 - k)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(x, y, (e.r * l * 0.5 + 1) * (1 + 2.5 * k), (e.r * l * 0.5 + 1) * (0.5 + 0.8 * k), 0, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        for (const lado of [-1, 1]) ponto(x + lado * 6 * k, y - 10 * k + 12 * k * k, 1.1, `rgba(255, 255, 255, ${0.8 * (1 - k)})`);
+      }
+      ctx.lineWidth = 1.5;
+      for (const w of panela.vapor) {
+        const k = w.idade / 1.6, x = PX(w.x) + w.lado * 20 * k, y = sup - 6 - 34 * k;
+        ctx.strokeStyle = `rgba(235, 235, 240, ${0.35 * Math.sin(Math.PI * k)})`;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 8);
+        ctx.quadraticCurveTo(x + 5 * Math.sin(t * 4 + w.lado * 9), y + 4, x, y);
+        ctx.stroke();
+      }
+      // A panela: paredes, fundo, borda e alças.
+      ctx.strokeStyle = 'rgb(190, 194, 204)';
+      ctx.lineWidth = 3.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(PX(-1) - 2, sup - 16);
+      ctx.lineTo(PX(-1) - 2, fundoY + 2);
+      ctx.lineTo(PX(1) + 2, fundoY + 2);
+      ctx.lineTo(PX(1) + 2, sup - 16);
+      ctx.stroke();
+      ctx.lineWidth = 3;
+      for (const lado of [-1, 1]) {
+        const x0 = PX(lado) + lado * 2;
+        ctx.beginPath();
+        ctx.moveTo(x0, sup - 16);
+        ctx.lineTo(x0 + lado * 4, sup - 18);
+        ctx.moveTo(x0, sup - 4);
+        ctx.lineTo(x0 + lado * 12, sup - 4);
+        ctx.lineTo(x0 + lado * 12, sup + 4);
+        ctx.lineTo(x0, sup + 4);
+        ctx.stroke();
+      }
+      if (forca > 0.02) escrever(T_`como água fervendo`, cx, topo + 2, { tamanho: 11.5, alinhar: 'center', cor: '#cfcfcf' });
     }
     function desenharConveccao(alfa) {
       const t = estado.tempo, forca = forcaDaCena['conveccao-1'], largo = telaLarga();
@@ -3020,30 +3272,35 @@
       fundo.addColorStop(1, 'rgb(150, 44, 14)');
       ctx.fillStyle = fundo;
       ctx.fillRect(tx(-1.6), ty(0.02), P.S * 3.2, P.S * 1.27);
-      // As colunas que sobem ficam mais claras; as que descem, mais escuras.
-      for (let c = 0; c < CELULAS * 2; c++) {
-        const x1 = -1.6 + (c * 3.2) / (CELULAS * 2), sobe = c % 2 === 1;
-        const g = ctx.createLinearGradient(tx(x1), 0, tx(x1 + 3.2 / (CELULAS * 2)), 0);
+      // As colunas ficam nas divisas dos rolos (a cada L): o gás desce em x = −1,6, 0 e 1,6 (escuras) e sobe em
+      // x = −0,8 e 0,8 (claras). Cada coluna que sobe, com os dois rolos em volta, é uma célula, como um grânulo.
+      const L = 3.2 / CELULAS;
+      for (let j = 0; j <= CELULAS; j++) {
+        const xc = -1.6 + j * L, sobe = j % 2 === 1;
+        const x1 = Math.max(-1.6, xc - L / 2), x2 = Math.min(1.6, xc + L / 2);
+        const g = ctx.createLinearGradient(tx(xc - L / 2), 0, tx(xc + L / 2), 0);
         const cor = sobe ? '255, 236, 160' : '70, 10, 0';
         g.addColorStop(0, `rgba(${cor}, 0)`);
-        g.addColorStop(0.5, `rgba(${cor}, ${sobe ? 0.22 : 0.25})`);
+        g.addColorStop(0.5, `rgba(${cor}, ${sobe ? 0.24 : 0.28})`);
         g.addColorStop(1, `rgba(${cor}, 0)`);
         ctx.fillStyle = g;
-        ctx.fillRect(tx(x1), ty(0), P.S * 3.2 / (CELULAS * 2), P.S);
+        ctx.fillRect(tx(x1), ty(0), tx(x2) - tx(x1), P.S);
       }
-      // As linhas de corrente de cada rolo, com setas no sentido em que o gás gira.
+      // As linhas de corrente de cada rolo, com setas no sentido em que o gás gira (tirado da própria corrente: se
+      // em cima do rolo o gás vai para a direita, o rolo gira no sentido horário).
       for (let c = 0; c < CELULAS; c++) {
-        const cxc = -1.6 + ((c + 0.5) * 3.2) / CELULAS, gira = c % 2 ? 1 : -1;
+        const cxc = -1.6 + (c + 0.5) * L;
         for (const [rx, ry] of [[0.34, 0.36], [0.2, 0.22]]) {
+          const sentido = Math.sign(correnteDaConveccao(cxc, -0.5 + ry).u) || 1;
           ctx.strokeStyle = 'rgba(255, 230, 190, 0.22)';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.ellipse(tx(cxc), ty(-0.5), P.S * rx, P.S * ry, 0, 0, Math.PI * 2);
           ctx.stroke();
           for (const a of [0.2, Math.PI + 0.2]) {
-            const fase = a + gira * t * 0.6;
+            const fase = a + sentido * t * 0.6;
             const x = tx(cxc) + P.S * rx * Math.cos(fase), y = ty(-0.5) + P.S * ry * Math.sin(fase);
-            const dx = -P.S * rx * Math.sin(fase) * -gira, dy = P.S * ry * Math.cos(fase) * -gira;
+            const dx = -P.S * rx * Math.sin(fase) * sentido, dy = P.S * ry * Math.cos(fase) * sentido;
             const d = Math.hypot(dx, dy) || 1;
             seta(x - (dx / d) * 6, y - (dy / d) * 6, x + (dx / d) * 6, y + (dy / d) * 6, { cor: 'rgba(255, 236, 200, 0.75)', espessura: 1.4, ponta: 7 });
           }
@@ -3062,12 +3319,16 @@
         ctx.lineTo(tx(p.x), ty(p.y));
         ctx.stroke();
       }
-      // A superfície: a fotosfera, com grânulos em cima das colunas que sobem.
+      // A superfície: a fotosfera, com grânulos (claros) em cima das colunas que sobem e divisas escuras onde o gás desce.
       ctx.fillStyle = 'rgb(255, 214, 130)';
       ctx.fillRect(tx(-1.6), ty(0.03), P.S * 3.2, P.S * 0.03);
-      for (let c = 0; c < CELULAS; c++) {
-        const x = -1.6 + ((c + 0.5) * 3.2) / CELULAS;
-        aditivo(() => brilho(tx(x), ty(0), P.S * 0.25, '255, 236, 170', 0.5 + 0.15 * Math.sin(t * 2 + c)));
+      for (let j = 0; j <= CELULAS; j += 2) {
+        const x1 = Math.max(-1.6, -1.6 + j * L - 0.06), x2 = Math.min(1.6, -1.6 + j * L + 0.06);
+        ctx.fillStyle = 'rgba(130, 44, 10, 0.9)';
+        ctx.fillRect(tx(x1), ty(0.03), tx(x2) - tx(x1), P.S * 0.03);
+      }
+      for (let j = 1; j < CELULAS; j += 2) {
+        aditivo(() => brilho(tx(-1.6 + j * L), ty(0), P.S * 0.34, '255, 236, 170', 0.6 + 0.15 * Math.sin(t * 2 + j)));
       }
       // Fótons na zona radiativa, embaixo.
       aditivo(() => {
@@ -3076,30 +3337,8 @@
           brilho(tx(x), ty(y), 5, '255, 240, 200', 0.8);
         }
       });
-      // A panela, num canto: o mesmo movimento, com água.
-      if (comNomes() && largo) {
-        const l = Math.min(46, P.S * 0.42), px = tx(2.15), py = ty(-0.62);
-        ctx.fillStyle = 'rgba(90, 160, 230, 0.55)';
-        ctx.fillRect(px - l, py - l * 0.55, 2 * l, l * 0.85);
-        ctx.strokeStyle = 'rgba(220, 220, 230, 0.9)';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(px - l - 4, py - l * 0.8);
-        ctx.lineTo(px - l, py + l * 0.32);
-        ctx.lineTo(px + l, py + l * 0.32);
-        ctx.lineTo(px + l + 4, py - l * 0.8);
-        ctx.stroke();
-        aditivo(() => { for (let i = 0; i < 5; i++) brilho(px - l * 0.8 + i * l * 0.4, py + l * 0.5, 9, '255, 140, 60', 0.7 + 0.2 * Math.sin(t * 9 + i)); });
-        for (let i = 0; i < 9; i++) {
-          const c = (t * 0.6 + i * 0.29) % 1;
-          ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * Math.sin(Math.PI * c)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(px - l * 0.7 + ((i * 0.37) % 1) * l * 1.4, py + l * 0.25 - c * l * 0.75, 2 + 2 * c, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        if (forca > 0.02) escrever(T_`como água fervendo`, px, py - l - 2, { tamanho: 11.5, alinhar: 'center', cor: '#cfcfcf' });
-      }
+      // A panela, à direita do corte: o mesmo movimento, com água.
+      if (comNomes() && largo) desenharPanela(forca);
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
@@ -4156,7 +4395,9 @@
       }
       const sombra = ctx.createLinearGradient(0, cena.y, 0, cena.y + ESPACO_DO_TITULO + 20);
       sombra.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
-      sombra.addColorStop((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), 'rgba(0, 0, 0, 0.6)');
+      // Limitado a 0…1: se o título for medido antes de a página ter tamanho (acontecia com o editor de textos
+      // aberto), a conta dava negativa, o navegador recusava e o script parava antes de voltar ao lugar da prévia.
+      sombra.addColorStop(limitar((ESPACO_DO_TITULO - 6) / (ESPACO_DO_TITULO + 20), 0, 1), 'rgba(0, 0, 0, 0.6)');
       sombra.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = sombra;
       ctx.fillRect(cena.x, cena.y, cena.w, ESPACO_DO_TITULO + 20);
@@ -4206,8 +4447,9 @@
     const NOTAS = [
       H_`Acréscimos: a massa do próton (1,67 × 10<sup>−27</sup> kg) e 1 megaton = 4,18 × 10<sup>15</sup> J, para as contas. As
         etapas do meio da cadeia próton–próton não aparecem (o texto não as descreve). Partículas fora de escala.`,
-      H_`O caminho do fóton é um esquema: de verdade, ele é absorvido e reemitido um número enorme de vezes. As cores mostram
-        a energia caindo, do raio gama à luz visível. As ondas e as cores do Doppler também são um esquema.`,
+      H_`O caminho do fóton é um esquema: de verdade, ele é absorvido e reemitido da ordem de 10<sup>24</sup> vezes. As cores
+        mostram a energia: o raio gama da fusão vira raio X logo no começo, e a luz continua raio X até a zona convectiva.
+        As ondas e as cores do Doppler também são um esquema.`,
       H_`As células e a regra do fluxo são um esquema: o texto diz só que a convecção começa onde a radiação não dá conta.`,
       H_`Acréscimo: o raio da Terra (6 371 km). A curva da rotação entre o equador e os polos, o número de manchas ao longo do
         ciclo e os grânulos são esquemas; o tempo é acelerado.`,

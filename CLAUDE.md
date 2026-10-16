@@ -785,6 +785,36 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     curvas da atmosfera, a rotação entre o equador e os polos (25 + 11·sen²),
     as manchas do ciclo, o limite do fluxo e as alturas das espículas são
     esquemas.
+  - **Dúvidas dela, de 2026-10-15** (respondidas e ajustadas; a pesquisa foi
+    avisada, com as fontes nos avisos das partes):
+    - `duracao()`: abaixo de 1 s, dois algarismos e os milésimos de segundo
+      ("0,017 s (17 milésimos de segundo)"). Antes, 10¹⁰ kg dava "0,0 s";
+    - neutrinos (núcleo, parte 6): o aviso traz os números reais (~65 bilhões
+      por cm² por segundo, CEA; Super-Kamiokande ~15 por dia; Homestake ~1 a
+      cada 2 dias). O desenho continua acelerado (um clarão a cada ~3 s);
+    - o fóton (zona radiativa, parte 1): ~170 000 anos (ESA), passos de
+      ~0,09 cm (Mitalas e Sills, 1992), da ordem de 10²⁴ absorções. **As cores
+      foram corrigidas:** na zona radiativa a luz é raio X (gás a milhões de K,
+      lei de Wien); o raio gama da fusão vira raio X em poucos passos
+      (`f.energia`, `nomeDoFoton`), e ultravioleta e luz visível só aparecem
+      perto da superfície. `ENERGIA_DO_RAIO_X` (em `corDaEnergia`) vale também
+      para os fótons do corte do Sol inteiro;
+    - zona convectiva, parte 1: as colunas que sobem ficam nas divisas dos
+      rolos (x = ±0,8), com os grânulos em cima; as que descem, em −1,6, 0 e
+      1,6, com divisas escuras na superfície. As setas dos rolos tiram o
+      sentido da própria corrente (antes apontavam ao contrário). A panela
+      (`desenharPanela`, `correnteDaPanela`, `andarPanela`) é um grânulo de
+      cozinha: a água sobe no meio, sobre o fogo, e desce pelas paredes; as
+      bolhas nascem no fundo perto do meio, sobem, crescem
+      (`tamanhoDaBolha`) e estouram na superfície;
+    - **erro achado nos testes:** às vezes o título (`.topo`) era medido com
+      altura zero logo ao abrir no app (mais com o editor de textos aberto),
+      e a posição do degradê da sombra do título dava negativa. O navegador
+      recusa (`IndexSizeError`), o script parava antes do laço da animação e
+      de `voltarAoLugarDaPrevia()`: a animação abria parada e a prévia voltava
+      ao Sol inteiro. A posição agora é limitada a 0…1. **As outras nove
+      animações com física têm a mesma linha** (`sombra.addColorStop((ESPACO_DO_TITULO - 6) / …)`),
+      ainda sem a correção.
   - Para testar: `definir({ massa, area, raio, fluxo, ano, dias, altura, lua,
     velocidade })`, `alternar(nome)` (doppler, super, halfa, tapar),
     `fundirAgora()` e `novoFoton()` são do escopo global. O teste confere
