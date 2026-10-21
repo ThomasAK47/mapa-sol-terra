@@ -632,7 +632,8 @@
                   vento, forma-se um choque. Na frente da CME junta-se também um "tampão" denso: o vento mais lento é varrido e
                   acumulado, como a neve na frente de um limpa-neve.</p>
                 <p class="aviso" data-texto="passo-4-parte-1-explicacao-3">O texto diz "se a CME sair com mais de ~40 km/s (mais rápida que o vento)":
-                  li como 40 km/s acima do vento, que é o que conta para o choque.</p>
+                  li como 40 km/s acima do vento, que é o que conta para o choque. No desenho, o vento contorna a CME como um
+                  fluido em volta de um cilindro, e a distância do choque à CME é esquema; o tempo é acelerado.</p>
               </div>
             </li>
             <li class="parte" data-parte="1">
@@ -658,8 +659,10 @@
                 <p class="explicacao" data-texto="passo-4-parte-3-explicacao-2">Uma onda de choque no espaço entre os planetas acelera partículas muito
                   bem. Por isso, as CMEs rápidas, ao empurrar um choque pelo vento solar mais lento, podem gerar grandes
                   quantidades de partículas energéticas, que podem danificar satélites.</p>
-                <p class="aviso" data-texto="passo-4-parte-3-explicacao-3">O jeito como o choque acelera é esquema: as partículas cruzam o choque várias
-                  vezes e ganham um pouco de energia a cada travessia.</p>
+                <p class="aviso" data-texto="passo-4-parte-3-explicacao-3">Acréscimo, pesquisado (Solar Orbiter, ESA, 2025): as partículas batem em
+                  irregularidades do campo dos dois lados do choque, cruzam o choque várias vezes e ganham energia a cada
+                  travessia; as de mais energia escapam, e muitas chegam à Terra antes do choque e da CME. O ganho de energia, as
+                  ondulações e as partículas do desenho são esquema.</p>
               </div>
             </li>
           </ol>
@@ -1562,7 +1565,7 @@
      * A CME de lado, com as três partes: a frente brilhante, a cavidade escura (a corda de fluxo) e o núcleo brilhante (a
      * proeminência). "luzBranca": só branco e cinza, como num coronógrafo; "corda": as linhas torcidas dentro da cavidade.
      */
-    function desenharCMEDeLado(sol, f, { alfa = 1, luzBranca = false, corda = false, t = estado.tempo } = {}) {
+    function desenharCMEDeLado(sol, f, { alfa = 1, luzBranca = false, corda = false, t = estado.tempo, pernasFracas = false } = {}) {
       if (alfa < 0.01) return;
       const centro = pontoNaDirecao(sol, f.c, f.direcao), W = f.w * sol.R, a = -f.direcao;
       ctx.save();
@@ -1577,6 +1580,17 @@
         ctx.save();
         contornoDaCME(sol, f);
         ctx.clip();
+        if (pernasFracas) {
+          // Longe do Sol (tema 4): as pernas compridas são só um véu, mais forte perto da bolha, com as bordas marcadas.
+          const pe = pontoNaDirecao(sol, 1, f.direcao), gl = ctx.createLinearGradient(pe.x, pe.y, centro.x, centro.y);
+          gl.addColorStop(0, `rgba(${COR_DA_CME}, 0.02)`);
+          gl.addColorStop(1, `rgba(${COR_DA_CME}, 0.13)`);
+          ctx.fillStyle = gl;
+          ctx.fillRect(Math.min(pe.x, centro.x) - W * 3, Math.min(pe.y, centro.y) - W * 3, Math.abs(centro.x - pe.x) + W * 6, Math.abs(centro.y - pe.y) + W * 6);
+          ctx.beginPath();
+          ctx.arc(centro.x, centro.y, W * 1.05, 0, Math.PI * 2);
+          ctx.clip();
+        }
         const g = ctx.createRadialGradient(centro.x, centro.y, W * 0.2, centro.x, centro.y, W * 1.05);
         g.addColorStop(0, `rgba(${COR_DA_CME}, 0.07)`);
         g.addColorStop(0.75, `rgba(${COR_DA_CME}, 0.17)`);
@@ -1584,6 +1598,17 @@
         ctx.fillStyle = g;
         ctx.fillRect(centro.x - W * 3, centro.y - W * 3, W * 6, W * 6);
         ctx.restore();
+        if (pernasFracas) {
+          const pe1 = pontoNaDirecao(sol, 1, f.direcao + f.abertura), pe2 = pontoNaDirecao(sol, 1, f.direcao - f.abertura);
+          ctx.strokeStyle = `rgba(${COR_DA_CME}, 0.28)`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(pe1.x, pe1.y);
+          ctx.lineTo(centro.x + W * Math.cos(a - 2.1), centro.y + W * Math.sin(a - 2.1));
+          ctx.moveTo(pe2.x, pe2.y);
+          ctx.lineTo(centro.x + W * Math.cos(a + 2.1), centro.y + W * Math.sin(a + 2.1));
+          ctx.stroke();
+        }
         // A frente brilhante: um arco grosso e esfumado, mais forte no meio.
         for (let k = 0; k < 3; k++) {
           ctx.strokeStyle = `rgba(${COR_DA_CME}, ${[0.3, 0.5, 0.95][k]})`;
@@ -1668,20 +1693,27 @@
       ctx.restore();
       return { cs, Rs, a };
     }
-    /** Partículas aceleradas que saem à frente do choque (decoração). */
-    function desenharParticulasDoChoque(choque, forca, t, alfa = 1, quantas = 46) {
+    /** Partículas aceleradas pelo choque: saem dele e correm à frente, para longe do Sol, ao longo do campo (decoração). */
+    function desenharParticulasDoChoque(choque, forca, t, alfa = 1, quantas = 46, sol = null) {
       if (!choque || forca < 0.05) return;
       const { cs, Rs, a } = choque;
       aditivo(() => {
+        ctx.lineWidth = 1.2;
         for (let i = 0; i < quantas; i++) {
-          const ciclo = (t * (0.35 + 0.25 * ((i * 7) % 5) / 5) + i * 0.173) % 1;
-          const b = a + ((i * 0.618) % 1 - 0.5) * 2.2, r = Rs * (1.02 + 1.4 * ciclo);
-          const x = cs.x + r * Math.cos(b), y = cs.y + r * Math.sin(b);
+          const ciclo = (t * (0.45 + (0.3 * ((i * 7) % 5)) / 5) + i * 0.173) % 1;
+          const b = a + (((i * 0.618) % 1) - 0.5) * 1.7, x0 = cs.x + Rs * Math.cos(b), y0 = cs.y + Rs * Math.sin(b);
+          // Perto do Sol, o campo é quase radial: as partículas correm para longe do Sol.
+          let ux = Math.cos(b), uy = Math.sin(b);
+          if (sol) {
+            const n = Math.hypot(x0 - sol.cx, y0 - sol.cy) || 1;
+            ux = (x0 - sol.cx) / n;
+            uy = (y0 - sol.cy) / n;
+          }
+          const L = Rs * (0.04 + 1.5 * ciclo), x = x0 + ux * L, y = y0 + uy * L;
           const brilhoDaParticula = Math.sin(Math.PI * ciclo) * forca * alfa;
           ctx.strokeStyle = `rgba(${COR_DAS_PARTICULAS}, ${0.5 * brilhoDaParticula})`;
-          ctx.lineWidth = 1.2;
           ctx.beginPath();
-          ctx.moveTo(x - Math.cos(b) * Rs * 0.06, y - Math.sin(b) * Rs * 0.06);
+          ctx.moveTo(x - ux * Rs * 0.1, y - uy * Rs * 0.1);
           ctx.lineTo(x, y);
           ctx.stroke();
           ponto(x, y, 1.5, `rgba(${COR_DAS_PARTICULAS}, ${brilhoDaParticula})`);
@@ -1946,7 +1978,7 @@
       if (c) {
         desenharCMEDeLado(sol, c.forma, { alfa: c.alfa });
         const choque = c.choque > 0 ? desenharChoque(sol, c.forma, c.choque, { alfa: c.alfa }) : null;
-        desenharParticulasDoChoque(choque, c.choque, t, c.alfa);
+        desenharParticulasDoChoque(choque, c.choque, t, c.alfa, 40, sol);
         zonasDaVisao.cme = { centro: pontoNaDirecao(sol, c.forma.c, DIRECAO_DA_VISAO), W: c.forma.w * S, choque };
       }
       // O coronógrafo pequeno: a mesma CME, vista como num coronógrafo no espaço.
@@ -1981,7 +2013,7 @@
         nomeClicavel(4, fundo.x - 30, Math.max(fundo.y + cm.W * 1.0, sol.cy + S * 1.2), 'right', { ponta: fundo });
         if (cm.choque) {
           const ch = cm.choque, frente = { x: ch.cs.x + ch.Rs * Math.cos(ch.a - 0.6), y: ch.cs.y + ch.Rs * Math.sin(ch.a - 0.6) };
-          nomeClicavel(3, frente.x + 18, frente.y - S * 0.45, 'left', { ponta: frente });
+          nomeClicavel(3, frente.x + 18, Math.max(frente.y - S * 0.45, cena.y + ESPACO_DO_TITULO + 84), 'left', { ponta: frente });
         }
       }
       // As CMEs de verdade não são um pedaço do desenho: o nome fica num canto, embaixo à direita.
@@ -2229,7 +2261,7 @@
     });
 
     // --- Tema 2, partes 1 e 2: a erupção. A corda dispara; embaixo dela, a camada fina e a reconexão (o flare). ---
-    const DURACAO_DA_ERUPCAO = 12;                // segundos do desenho (o ciclo recomeça sozinho)
+    const DURACAO_DA_ERUPCAO = 9.5;               // segundos do desenho (o ciclo recomeça sozinho)
     const MINUTOS_POR_SEGUNDO = 5;                // esquema: 1 s do desenho = 5 min do Sol
     function recomecarErupcao() { estado.erupcao = estado.cena === 'erupcao-2' ? 2.4 : 0; }
     AO_ENTRAR['erupcao-1'] = recomecarErupcao;
@@ -2241,14 +2273,19 @@
     const linhasReconectadas = (s) => limitar(Math.floor((s - 2.4) * 1.6), 0, 7);
     function desenharErupcao(alfa) {
       const parte3 = estado.cena === 'erupcao-2';
-      const forca = parte3 ? rotulos('erupcao-2') : rotulos('erupcao-1'), t = estado.tempo, s = estado.erupcao;
+      const forca = parte3 ? rotulos('erupcao-2') : rotulos('erupcao-1'), t = estado.tempo, s = estado.erupcao, h = alturaNaErupcao(s);
       caber(8, 6.2, { desvioY: -0.2 });
-      const base = ty(-2.6), h = alturaNaErupcao(s), cx = tx(0), cy = ty(-2.6 + h), r = P.S * (0.42 + 0.06 * Math.max(0, h - 2));
-      const g = ctx.createLinearGradient(0, base, 0, base + P.S * 0.6);
+      // Na parte 1, a câmera se afasta para acompanhar a corda (a superfície fica no mesmo lugar da tela). Na parte 2, ela
+      // fica perto da reconexão, e a corda sai por cima.
+      const chao = ty(-2.6), topoDaVista = cena.y + ESPACO_DO_TITULO + 14;
+      const afastar = parte3 ? 1 : limitar((h + 0.9) / ((chao - topoDaVista) / P.S), 1, 3.2);
+      if (afastar > 1) P = { ...P, S: P.S / afastar, cy: chao - (2.6 * P.S) / afastar };
+      const base = ty(-2.6), cx = tx(0), cy = ty(-2.6 + h), r = P.S * (0.42 + 0.06 * Math.max(0, h - 2));
+      const g = ctx.createLinearGradient(0, base, 0, base + Math.max(30, P.S * 0.6));
       g.addColorStop(0, 'rgb(255, 214, 140)');
       g.addColorStop(1, 'rgb(200, 90, 30)');
       ctx.fillStyle = g;
-      ctx.fillRect(cena.x, base, cena.w, P.S * 0.8);
+      ctx.fillRect(cena.x, base, cena.w, Math.max(P.S * 0.8, cena.y + cena.h - base));
       const nRec = linhasReconectadas(s);
       const topoDaCamada = cy + r;                                  // a camada fina vai da corda até os laços novos
       const alturaDosLacos = (k) => base - P.S * (0.25 + 0.2 * k);
@@ -2301,11 +2338,11 @@
           ctx.moveTo(cx, fundoDaCamada);
           ctx.lineTo(cx, topoDaCamada);
           ctx.stroke();
-          const xr = cy + r + (fundoDaCamada - cy - r) * 0.55;
+          const xr = fundoDaCamada - Math.min((fundoDaCamada - topoDaCamada) * 0.45, P.S * 1.3);
           brilho(cx, xr, P.S * 0.25, '255, 255, 230', 0.6 + 0.3 * Math.sin(t * 9));
         });
         if (parte3 && nRec > 0) {
-          const xr = cy + r + (fundoDaCamada - cy - r) * 0.55;
+          const xr = fundoDaCamada - Math.min((fundoDaCamada - topoDaCamada) * 0.45, P.S * 1.3);
           for (const lado of [1, -1]) seta(cx + lado * P.S * 0.9, xr, cx + lado * P.S * 0.25, xr, { cor: 'rgba(255, 255, 255, 0.75)', espessura: 1.6, ponta: 8 });
           seta(cx, xr - P.S * 0.15, cx, xr - P.S * 0.6, { cor: 'rgba(255, 220, 160, 0.85)', espessura: 2, ponta: 9 });
           seta(cx, xr + P.S * 0.15, cx, xr + P.S * 0.55, { cor: 'rgba(255, 220, 160, 0.85)', espessura: 2, ponta: 9 });
@@ -2345,13 +2382,20 @@
       ctx.globalAlpha *= forca;
       if (cy + r > cena.y + ESPACO_DO_TITULO + 20) escrever(T_`corda de fluxo`, cx + r + 10, cy, { tamanho: 12, peso: 600, placa: true });
       if (h > 2.05 && topoDaCamada < fundoDaCamada) {
-        const meio = (topoDaCamada + fundoDaCamada) / 2;
+        const meio = (Math.max(topoDaCamada, cena.y + ESPACO_DO_TITULO + 60) + fundoDaCamada) / 2;
         escrever(parte3 ? T_`reconexão: as linhas opostas se juntam e se cortam` : T_`camada fina: linhas opostas encostadas`, cx + P.S * 0.35, meio, { tamanho: 11.5, placa: true });
       }
       if (parte3 && nRec > 0) {
         escrever(T_`laços novos e quentes: o flare`, cx - P.S * 1.5, alturaDosLacos(Math.min(nRec, 3)) - 12, { tamanho: 11.5, placa: true, cor: '#ffe6b0', alinhar: 'right' });
         escrever(T_`as fitas`, cx + P.S * (0.45 + 0.36 * nRec) * 0.55 + 12, base - 12, { tamanho: 11, placa: true, cor: '#fff3d0' });
       }
+      if (cy + r < cena.y + ESPACO_DO_TITULO + 4) {
+        // A corda já saiu por cima: daqui em diante, ela é a CME.
+        const yTopo = cena.y + ESPACO_DO_TITULO + 16;
+        seta(cx, yTopo + 34, cx, yTopo + 2, { cor: 'rgba(255, 255, 255, 0.85)', espessura: 2, ponta: 9 });
+        escrever(T_`a corda saiu por cima: agora ela é a CME (veja o tema 3)`, cx + 14, yTopo + 14, { tamanho: 11.5, peso: 600, placa: true });
+      }
+      if (afastar > 1.15) escrever(T_`a câmera se afasta para acompanhar a corda`, cena.x + 14, cena.y + cena.h - 16, { tamanho: 11, placa: true, cor: '#cfcfcf' });
       escrever(T_`t = ${comMilhar(s * MINUTOS_POR_SEGUNDO)} min (esquema)`, cena.x + cena.w - 110, cena.y + cena.h - 16, { tamanho: 11.5, alinhar: 'right', placa: true });
       ctx.restore();
     }
@@ -2632,79 +2676,226 @@
       ctx.restore();
     }
 
-    // --- Tema 4, parte 1: a CME no vento solar, vista de quem anda junto com ela. O vento chega pela frente com a
-    //     diferença das velocidades; se ela passa de ~40 km/s, forma-se um choque e o tampão. ---
-    const PARTICULAS_DO_VENTO = Array.from({ length: 220 }, (_, i) => ({ x: (i * 0.618) % 1, y: ((i * 0.381) % 1) * 2 - 1, fase: (i * 0.73) % 1 }));
-    function desenharVento(alfa) {
-      const forca = rotulos('choque-1'), livre = alturaLivre(), t = estado.tempo;
-      const u = estado.cme - VENTO_SOLAR, mach = u / SOM_NO_VENTO, choque = mach > 1;
-      const cy = cena.y + ESPACO_DO_TITULO + livre * 0.46, Ro = Math.min(livre * 0.24, cena.w * 0.14), cx = cena.x + cena.w * 0.32;
-      const afastamento = choque ? Ro * (0.18 + 0.9 / mach) : 0;
-      const xChoque = cx + Ro + afastamento;
-      // O vento: partículas que vêm da direita (ou vão para a direita, se o vento for mais rápido que a CME).
-      const k = 0.13;                              // pixels por (km/s × segundo do desenho)
+    // --- Tema 4: a CME atravessa a cena, do Sol (à esquerda) para a direita, como na régua: tudo anda para longe do Sol.
+    //     O vento anda devagar; a CME, mais depressa. As partes 1 e 3 usam a mesma travessia (e a CME do tema 3). ---
+    /** O palco da travessia: o Sol à esquerda, o tamanho da CME e o caminho (em pixels) da saída até sumir à direita. */
+    function palcoDaTravessia() {
+      const livre = alturaLivre(), cy = cena.y + ESPACO_DO_TITULO + livre * 0.44;
+      const Rs = Math.max(14, Math.min(livre * 0.14, 56)), sol = { cx: cena.x + Rs * 0.45, cy, R: Rs };
+      const Ro = Math.max(16, Math.min(livre * 0.15, cena.w * 0.08)), inicio = sol.cx + Rs * 1.02;
+      return { sol, cy, Ro, inicio, caminho: cena.x + cena.w + Ro * 3.6 - inicio };
+    }
+    /**
+     * A CME da travessia quando a frente andou "fracao" do caminho: o centro e o raio da bolha (px), o quanto ela aparece
+     * e a forma para desenharCMEDeLado (a bolha cresce ao sair do Sol e fica presa a ele pelas pernas).
+     */
+    function cmeNaTravessia(p, fracao) {
+      const xFrente = p.inicio + p.caminho * fracao;
+      const W = p.Ro * (0.35 + 0.65 * suave((xFrente - p.inicio) / (p.Ro * 4)));
+      const d = (xFrente - p.sol.cx) / p.sol.R, w = W / p.sol.R;
+      const alfa = suave(fracao / 0.04) * (1 - suave((xFrente - W - cena.x - cena.w) / (p.Ro * 1.6)));
+      return { x: xFrente - W, y: p.cy, W, alfa, forma: { d, w, c: d - w, direcao: 0, abertura: limitar((0.5 * w) / Math.max(1.2, d - w), 0.14, 0.45) } };
+    }
+    /** Um ponto está dentro da CME (da bolha ou do cone das pernas, que vai até o Sol)? */
+    function dentroDaCME(x, y, sol, cme) {
+      if (Math.hypot(x - cme.x, y - cme.y) < cme.W) return true;
+      const ab = cme.forma.abertura, xPe = sol.cx + sol.R * Math.cos(ab), xLado = cme.x - 0.5 * cme.W;
+      if (x < xPe || x > xLado) return false;
+      return Math.abs(y - cme.y) < entre(sol.R * Math.sin(ab), 0.86 * cme.W, (x - xPe) / (xLado - xPe));
+    }
+    /**
+     * O choque à frente da bolha (raio W) para um número de Mach: a distância do centro da bolha até o nariz do choque e
+     * a curva (dx em função de dy, a partir do centro da bolha). Mais forte, mais perto e mais fechado (esquema).
+     */
+    function choqueDaBolha(W, mach) {
+      const nariz = W * (1.2 + 0.9 / mach), Rc = nariz * (1.1 + 1.2 / mach);
+      return { nariz, Rc, alcance: Math.sqrt(2 * Rc * (nariz + W * 1.3)), dx: (dy) => nariz - (dy * dy) / (2 * Rc) };
+    }
+    /** Desenha o choque à frente da bolha e o brilho do tampão (entre o choque e a bolha). */
+    function desenharChoqueDaBolha(cme, ch, t, limiteY) {
+      const alcance = Math.min(ch.alcance, limiteY), meio = Math.min(alcance, cme.W * 1.5);
+      ctx.save();
+      ctx.globalAlpha *= cme.alfa;
       aditivo(() => {
-        for (const p of PARTICULAS_DO_VENTO) {
-          const largura = cena.w + 40;
-          let x = cena.x + cena.w + 20 - (((p.x * largura - u * k * t) % largura) + largura) % largura, y = cy + p.y * livre * 0.46;
-          const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy);
-          let brilhoDaParticula = 0.55;
-          if (u > 0 && dx > 0) {
-            // Perto da frente, o vento desvia em volta da CME; atrás do choque, ele fica lento e se acumula (o tampão).
-            const desvio = Math.max(0, 1 - (r - Ro) / (Ro * 1.6));
-            y += Math.sign(dy || 1) * desvio * Ro * 0.5;
-            if (choque && x < xChoque + Math.abs(dy) * 0.35) brilhoDaParticula = 0.95;
+        ctx.fillStyle = `rgba(${COR_DO_CHOQUE}, 0.1)`;
+        ctx.beginPath();
+        for (let i = 0; i <= 40; i++) {
+          const dy = -meio + (2 * meio * i) / 40;
+          if (i) ctx.lineTo(cme.x + ch.dx(dy), cme.y + dy); else ctx.moveTo(cme.x + ch.dx(dy), cme.y + dy);
+        }
+        ctx.arc(cme.x, cme.y, cme.W, 2.07, -2.07, true);
+        ctx.closePath();
+        ctx.fill();
+        for (const [largura, a] of [[7, 0.22], [2.4, 0.95]]) {
+          ctx.strokeStyle = `rgba(${COR_DO_CHOQUE}, ${a})`;
+          ctx.lineWidth = largura;
+          ctx.beginPath();
+          for (let i = 0; i <= 40; i++) {
+            const dy = -alcance + (2 * alcance * i) / 40, x = cme.x + ch.dx(dy) + 1.2 * Math.sin(i * 1.3 + t * 4);
+            if (i) ctx.lineTo(x, cme.y + dy); else ctx.moveTo(x, cme.y + dy);
           }
-          if (Math.hypot(x - cx, y - cy) < Ro * 0.98) continue;
-          ponto(x, y, brilhoDaParticula > 0.6 ? 1.9 : 1.3, `rgba(230, 236, 255, ${brilhoDaParticula})`);
+          ctx.stroke();
         }
       });
-      // A CME (a frente dela) e o choque à frente.
-      desenharCMEDeLado({ cx: cx - Ro * 2.4, cy, R: Ro }, { d: 3.4, w: 1.0, c: 2.4, direcao: 0, abertura: 0.35 }, { alfa: 1 });
+      ctx.restore();
+    }
+    /** O Sol da travessia (por cima das pernas da CME). */
+    function desenharSolDaTravessia(sol, t) {
+      desenharCoroaDoSol(sol, t, 0.7, { fios: false });
+      desenharDisco(TEXTURA_DO_DISCO, sol.cx, sol.cy, sol.R);
+      aditivo(() => brilho(sol.cx, sol.cy, sol.R * 1.15, '255, 220, 150', 0.2));
+    }
+    /** Um rótulo preso a um ponto que anda: à direita do ponto ou, perto da borda, à esquerda. */
+    function rotuloAoLado(texto, x, y, opcoes) {
+      const largo = larguraDoTexto(texto, opcoes.tamanho ?? 12, opcoes.peso ?? 500) + 12;
+      if (x + 10 + largo < cena.x + cena.w - 6) escrever(texto, x + 10, y, { ...opcoes, alinhar: 'left' });
+      else if (x - 10 - largo > cena.x + 6) escrever(texto, x - 10, y, { ...opcoes, alinhar: 'right' });
+      else escrever(texto, Math.max(cena.x + 6, cena.x + cena.w - 6 - largo), y, { ...opcoes, alinhar: 'left' });
+    }
+    const misturarCor = (a, b, f) => a.split(',').map((v, i) => Math.round(entre(Number(v), Number(b.split(',')[i]), f))).join(', ');
+
+    // --- Tema 4, parte 1: a CME no vento solar. Os pontos são o vento, que anda para a direita a 400 km/s; a CME sai do
+    //     Sol e anda mais depressa. Se ela passa o vento por mais de ~40 km/s (o som do vento), forma-se um choque: o vento
+    //     à frente não muda nada até o choque chegar; ali, de repente, ele é apertado e empurrado junto (o tampão) e contorna
+    //     a CME. Sem choque, o vento só se desvia aos poucos. O escoamento em volta da bolha é o de um cilindro (esquema). ---
+    const SEGUNDOS_DO_VENTO = 6.5;                // segundos do desenho para uma CME de 1 000 km/s atravessar a cena
+    const AREA_POR_PONTO = 1100;                  // px² de cena para cada ponto do vento
+    const ventoDaCena = [];                       // os pontos do vento: { x, y, vx, vy, varrido } (pixels)
+    let travessiaDoVento = 0, esperaDoVento = 0, sobraDoVento = 0, tamanhoDoVento = '';
+    const sorteioDoVento = sorteador(77);
+    function semearVento() {
+      ventoDaCena.length = 0;
+      const livre = alturaLivre(), n = Math.min(420, Math.round((cena.w * livre) / AREA_POR_PONTO));
+      for (let i = 0; i < n; i++) ventoDaCena.push({ x: cena.x + sorteioDoVento() * cena.w, y: cena.y + ESPACO_DO_TITULO + sorteioDoVento() * livre, vx: 0, vy: 0, varrido: 0 });
+    }
+    function recomecarVento() {
+      travessiaDoVento = 0.05;
+      esperaDoVento = 0;
+      semearVento();
+      tamanhoDoVento = `${Math.round(cena.w)}x${Math.round(alturaLivre())}`;
+    }
+    AO_ENTRAR['choque-1'] = recomecarVento;
+    /** A CME e o choque da parte 1, agora (ou null, na pausa entre uma CME e a seguinte). */
+    function cmeDoVento(p) {
+      if (esperaDoVento > 0) return { cme: null, choque: null, mach: 0 };
+      const cme = cmeNaTravessia(p, travessiaDoVento), mach = (estado.cme - VENTO_SOLAR) / SOM_NO_VENTO;
+      return { cme, choque: mach > 1 ? choqueDaBolha(cme.W, mach) : null, mach };
+    }
+    /**
+     * A velocidade do vento num ponto (px/s na tela). Longe da CME (e antes do choque), a do vento. Perto, ele contorna a
+     * bolha como um fluido em volta de um cilindro, visto da CME; depois do choque, chega mais devagar (apertado).
+     */
+    function velocidadeDoVento(x, y, cme, choque, compressao, vVento, vCME) {
+      if (!cme || cme.alfa < 0.3) return [vVento, 0, false];
+      const dx = x - cme.x, dy = y - cme.y;
+      let U = vCME - vVento, noTampao = false;
       if (choque) {
-        aditivo(() => {
-          ctx.fillStyle = `rgba(${COR_DO_CHOQUE}, 0.12)`;
-          ctx.beginPath();
-          for (let i = -30; i <= 30; i++) {
-            const yy = cy + (i / 30) * livre * 0.48, xx = xChoque + ((yy - cy) ** 2) / (Ro * 3.2);
-            if (i === -30) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
-          }
-          for (let i = 30; i >= -30; i--) {
-            const yy = cy + (i / 30) * Ro * 1.05, xx = cx + Math.sqrt(Math.max(0, Ro * Ro - (yy - cy) ** 2));
-            ctx.lineTo(xx, yy);
-          }
-          ctx.closePath();
-          ctx.fill();
-          for (const [largura, a] of [[7, 0.25], [2.4, 0.9]]) {
-            ctx.strokeStyle = `rgba(${COR_DO_CHOQUE}, ${a})`;
-            ctx.lineWidth = largura;
-            ctx.beginPath();
-            for (let i = -30; i <= 30; i++) {
-              const yy = cy + (i / 30) * livre * 0.48, xx = xChoque + ((yy - cy) ** 2) / (Ro * 3.2) + 1.5 * Math.sin(i + t * 4);
-              if (i === -30) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
-            }
-            ctx.stroke();
-          }
-        });
+        if (Math.abs(dy) > choque.alcance || dx > choque.dx(dy)) return [vVento, 0, false];
+        U /= compressao;
+        noTampao = dx > -cme.W * 0.6;
       }
+      const W2 = cme.W * cme.W, r4 = Math.max((dx * dx + dy * dy) ** 2, W2 * W2);
+      let vx = vCME - U * (1 - (W2 * (dx * dx - dy * dy)) / r4), vy = (U * 2 * W2 * dx * dy) / r4;
+      // Atrás da bolha, o vento volta a andar como o resto do vento (a CME já passou).
+      if (U > 0 && dx < -cme.W * 0.3) {
+        const b = suave((-dx - cme.W * 0.3) / (cme.W * 1.2));
+        vx = entre(vx, vVento, b);
+        vy = entre(vy, 0, b);
+      }
+      return [vx, vy, noTampao];
+    }
+    function andarVento(dt) {
+      const p = palcoDaTravessia(), livre = alturaLivre(), topo = cena.y + ESPACO_DO_TITULO;
+      const chave = `${Math.round(cena.w)}x${Math.round(livre)}`;
+      if (chave !== tamanhoDoVento) { tamanhoDoVento = chave; semearVento(); }
+      const k = p.caminho / (SEGUNDOS_DO_VENTO * 1000);          // pixels por (km/s × segundo do desenho)
+      const vVento = k * VENTO_SOLAR, vCME = k * estado.cme;
+      // A CME anda, some à direita e, depois de uma pausa, sai outra do Sol.
+      if (esperaDoVento > 0) esperaDoVento -= dt;
+      else {
+        travessiaDoVento += (vCME * dt) / p.caminho;
+        if (travessiaDoVento >= 1) { travessiaDoVento = 0; esperaDoVento = 1; }
+      }
+      const { cme, choque, mach } = cmeDoVento(p);
+      const compressao = choque ? (4 * mach * mach) / (mach * mach + 3) : 1;
+      // O vento novo entra pela esquerda (de trás do Sol), com a mesma densidade.
+      sobraDoVento += (vVento * livre * dt) / AREA_POR_PONTO;
+      while (sobraDoVento >= 1) {
+        sobraDoVento -= 1;
+        if (ventoDaCena.length < 480) ventoDaCena.push({ x: cena.x - 2 - sorteioDoVento() * vVento * dt, y: topo + sorteioDoVento() * livre, vx: vVento, vy: 0, varrido: 0 });
+      }
+      for (let i = ventoDaCena.length - 1; i >= 0; i--) {
+        const q = ventoDaCena[i];
+        const [vx, vy, noTampao] = velocidadeDoVento(q.x, q.y, cme, choque, compressao, vVento, vCME);
+        q.vx = vx;
+        q.vy = vy;
+        q.x += vx * dt;
+        q.y += vy * dt;
+        if (cme) {
+          // O vento não entra na bolha: fica na borda e escorrega por fora.
+          const dx = q.x - cme.x, dy = q.y - cme.y, r = Math.hypot(dx, dy);
+          if (r < cme.W * 1.02 && r > 0) { q.x = cme.x + (dx / r) * cme.W * 1.02; q.y = cme.y + (dy / r) * cme.W * 1.02; }
+        }
+        q.varrido = noTampao ? 1 : Math.max(0, q.varrido - dt * 0.8);
+        if (q.x > cena.x + cena.w + 8 || q.y < topo - 40 || q.y > topo + livre + 40) ventoDaCena.splice(i, 1);
+      }
+    }
+    function desenharVento(alfa) {
+      const forca = rotulos('choque-1'), livre = alturaLivre(), t = estado.tempo, topo = cena.y + ESPACO_DO_TITULO;
+      const p = palcoDaTravessia(), { cme, choque } = cmeDoVento(p), u = estado.cme - VENTO_SOLAR, mach = u / SOM_NO_VENTO;
+      // O vento: cada ponto com um traço para trás (para onde e quão depressa ele anda).
+      const corDoVento = '225, 232, 255', corVarrida = '150, 205, 255';
+      aditivo(() => {
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 1.3;
+        for (const q of ventoDaCena) {
+          if (cme && cme.alfa > 0.5 && dentroDaCME(q.x, q.y, p.sol, cme)) continue;
+          const v = q.varrido, cor = v > 0.01 ? misturarCor(corDoVento, corVarrida, v) : corDoVento;
+          ctx.strokeStyle = `rgba(${cor}, ${0.3 + 0.4 * v})`;
+          ctx.beginPath();
+          ctx.moveTo(q.x - q.vx * 0.11, q.y - q.vy * 0.11);
+          ctx.lineTo(q.x, q.y);
+          ctx.stroke();
+          ponto(q.x, q.y, 1.2 + 0.6 * v, `rgba(${cor}, ${0.55 + 0.4 * v})`);
+        }
+      });
+      if (cme) {
+        desenharCMEDeLado(p.sol, cme.forma, { alfa: cme.alfa, pernasFracas: true });
+        if (choque) desenharChoqueDaBolha(cme, choque, t, livre * 0.55);
+      }
+      desenharSolDaTravessia(p.sol, t);
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
       escreverBloco([
         { texto: T_`CME: ${comMilhar(estado.cme)} km/s · vento: ${VENTO_SOLAR} km/s`, tamanho: 13, peso: 700, cor: '#ffffff' },
         { texto: u > 0 ? T_`a CME anda ${comMilhar(u)} km/s mais depressa que o vento` : T_`o vento anda ${comMilhar(-u)} km/s mais depressa que a CME`, tamanho: 12, cor: '#ffe6b0' },
-        { texto: choque ? T_`${numero(mach, 1)} vezes o som do vento (40 km/s): forma-se um choque` : T_`menos que o som do vento (40 km/s): sem choque`, tamanho: 12, cor: choque ? `rgb(${COR_DO_CHOQUE})` : '#cfcfcf' },
-      ], cena.x + 14, cena.y + ESPACO_DO_TITULO + 14);
-      escrever(T_`visto de quem anda junto com a CME: o vento chega pela frente`, cena.x + 14, cena.y + cena.h - 16, { tamanho: 11, cor: '#9a9a9a' });
-      if (choque) {
-        escrever(T_`choque`, xChoque + 10, cy - livre * 0.36, { tamanho: 12.5, peso: 700, placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
-        escrever(T_`tampão: o vento varrido se acumula`, (cx + Ro + xChoque) / 2, cy + Ro * 1.25, { tamanho: 11.5, alinhar: 'center', placa: true });
+        { texto: mach > 1 ? T_`${numero(mach, 1)} vezes o som do vento (40 km/s): forma-se um choque` : T_`menos que o som do vento (40 km/s): sem choque`, tamanho: 12, cor: mach > 1 ? `rgb(${COR_DO_CHOQUE})` : '#cfcfcf' },
+        { texto: T_`cada traço: para onde o vento anda (mais longo = mais depressa)`, tamanho: 11, cor: '#9a9a9a' },
+      ], cena.x + 14, topo + 14);
+      escrever(T_`o Sol fica à esquerda: tudo anda para a direita (tempo acelerado)`, cena.x + cena.w - 14, cena.y + cena.h - 14, { tamanho: 11, alinhar: 'right', cor: '#9a9a9a' });
+      if (cme && cme.alfa > 0.6 && cme.W > p.Ro * 0.6 && cme.x < cena.x + cena.w - cme.W * 0.4) {
+        const W = cme.W;
+        escrever(T_`a CME`, cme.x, cme.y + W * 0.5, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
+        if (choque) {
+          const dy = -Math.min(W * 1.45, choque.alcance * 0.8);
+          rotuloAoLado(T_`choque: o vento muda de repente`, cme.x + choque.dx(dy), cme.y + dy, { tamanho: 12, peso: 700, placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
+          const a = 0.75, xa = cme.x + W * 1.12 * Math.cos(a), ya = cme.y + W * 1.12 * Math.sin(a), xt = cme.x + W * 1.05, yt = cme.y + W * 1.6 + 6;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(xa, ya);
+          ctx.lineTo(xt, yt - 8);
+          ctx.stroke();
+          rotuloAoLado(T_`tampão: o vento varrido e apertado`, xt - 10, yt, { tamanho: 11.5, placa: true, cor: '#dbeaff' });
+        } else {
+          rotuloAoLado(u > 0 ? T_`sem choque: o vento se desvia aos poucos` : T_`o vento, mais rápido, contorna a CME`, cme.x + W * 0.5, cme.y - W - 16, { tamanho: 12, placa: true, cor: '#ffffff' });
+        }
       }
-      escrever(T_`a CME`, cx - Ro * 0.4, cy, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
       ctx.restore();
-      if (telaLarga() && livre > 260) {
-        const wq = Math.min(250, cena.w * 0.32), hq = wq * 0.52;
-        desenharQuadrinhoDaBala(cena.x + cena.w - wq - 14, cena.y + cena.h - hq - 30, wq, hq, t, forca);
+      if (telaLarga() && livre > 290) {
+        const wq = Math.min(230, cena.w * 0.28), hq = wq * 0.52;
+        desenharQuadrinhoDaBala(cena.x + 14, cena.y + cena.h - hq - 26, wq, hq, t, forca);
       }
     }
     PAINEIS.push(() => {
@@ -2714,66 +2905,103 @@
         : H_`o vento é mais rápido que a CME: <b>sem choque</b>`);
     });
 
-    // --- Tema 4, parte 2: perto do Sol, o campo também conta. As velocidades pela distância, até a Terra. ---
+    // --- Tema 4, parte 2: perto do Sol, o campo também conta. O gráfico usa a escala da régua e fica alinhado com ela:
+    //     a CME menos o vento (branco) contra a velocidade das ondas, a magnetossônica (azul). Onde a branca passa da
+    //     azul, há choque. Um cursor leva uma CME pequena do Sol à Terra, no gráfico e na régua. ---
+    const SEGUNDOS_DO_PERFIL = 10;                // segundos do desenho para o cursor ir do Sol à Terra
+    let cursorDoPerfil = 0;                       // de 0 a 1, na escala da régua (de 1 a 1,15, uma pausa na Terra)
+    AO_ENTRAR['choque-2'] = () => { cursorDoPerfil = 0; };
+    function andarPerfil(dt) { cursorDoPerfil = (cursorDoPerfil + dt / SEGUNDOS_DO_PERFIL) % 1.15; }
+    /** O inverso de escalaDaRegua: a distância (raios do Sol) numa fração da régua. */
+    const raioNaRegua = (f) => 0.9 + Math.pow(10, f * (Math.log10(RAIOS_ATE_A_TERRA - 0.9) + 1) - 1);
+    const raioDoCursor = () => raioNaRegua(Math.min(1, cursorDoPerfil));
     function desenharPerfil(alfa) {
-      const forca = rotulos('choque-2'), livre = alturaLivre();
-      const x = cena.x + 56, w = cena.w - 56 - 30, y = cena.y + ESPACO_DO_TITULO + 34, h = Math.max(80, livre - 80);
-      const maiorV = 2000, rMax = RAIOS_ATE_A_TERRA;
-      const px = (r) => x + (Math.log(r) / Math.log(rMax)) * w, py = (v) => y + h - (v / maiorV) * h;
-      // As faixas com choque.
-      const trechos = trechosComChoque(estado.cme);
-      for (const [de, ate] of trechos) {
-        ctx.fillStyle = `rgba(${COR_DO_CHOQUE}, 0.13)`;
-        ctx.fillRect(px(de), y, px(ate) - px(de), h);
+      const forca = rotulos('choque-2'), v = estado.cme, topo = cena.y + ESPACO_DO_TITULO;
+      // O eixo das distâncias é o mesmo da régua (as mesmas posições na tela).
+      const x0 = cena.x + 40, x1 = cena.x + cena.w - 50, X = (r) => x0 + (x1 - x0) * escalaDaRegua(r);
+      const y = topo + 34, h = Math.max(70, cena.y + cena.h - 30 - y);
+      const maiorV = Math.max(1000, Math.ceil(v / 250) * 250), passo = maiorV > 1000 ? 500 : 250;
+      const Y = (vel) => y + h - (limitar(vel, 0, maiorV) / maiorV) * h;
+      const diferenca = (r) => Math.max(0, velocidadeDaCME(r, v) - ventoNaDistancia(r));
+      const N = 240, rs = Array.from({ length: N + 1 }, (_, i) => raioNaRegua(i / N));
+      // A grade.
+      for (let vel = passo; vel <= maiorV; vel += passo) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+        ctx.fillRect(x0, Y(vel), x1 - x0, 1);
+        escrever(String(vel), x0 - 6, Y(vel), { tamanho: 10.5, cor: '#8a8a8a', alinhar: 'right' });
       }
-      // Os eixos.
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + h);
-      ctx.lineTo(x + w, y + h);
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x0, y + h);
+      ctx.lineTo(x1, y + h);
       ctx.stroke();
-      for (const v of [500, 1000, 1500, 2000]) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
-        ctx.fillRect(x, py(v), w, 1);
-        escrever(String(v), x - 6, py(v), { tamanho: 10.5, cor: '#8a8a8a', alinhar: 'right' });
+      for (const r of [1.5, 2, 3.5, 5, 10, 30, 100]) escrever(numero(r, r % 1 ? 1 : 0), X(r), y + h + 12, { tamanho: 10.5, cor: '#9a9a9a', alinhar: 'center' });
+      // Entre as curvas: azul onde há choque, cinza onde não há.
+      const trechos = [];
+      for (let i = 1; i <= N; i++) {
+        const sim = temChoque(rs[i], v), ultimo = trechos[trechos.length - 1];
+        if (ultimo && ultimo.sim === sim) ultimo.ate = i;
+        else trechos.push({ sim, de: i - 1, ate: i });
       }
-      for (const r of [1, 1.5, 2, 3.5, 5, 10, 20, 50, 100, rMax]) {
-        escrever(r === rMax ? T_`Terra` : numero(r, r % 1 ? 1 : 0), px(r), y + h + 12, { tamanho: 10.5, cor: r === rMax ? 'rgb(150, 196, 255)' : '#9a9a9a', alinhar: 'center' });
+      for (const tr of trechos) {
+        ctx.fillStyle = tr.sim ? `rgba(${COR_DO_CHOQUE}, 0.3)` : 'rgba(255, 255, 255, 0.05)';
+        ctx.beginPath();
+        for (let i = tr.de; i <= tr.ate; i++) ctx.lineTo(X(rs[i]), Y(diferenca(rs[i])));
+        for (let i = tr.ate; i >= tr.de; i--) ctx.lineTo(X(rs[i]), Y(velocidadeMagnetossonica(rs[i])));
+        ctx.closePath();
+        ctx.fill();
       }
-      const curva = (f, cor, largura, tracos = []) => {
+      const curva = (f, cor, largura) => {
         ctx.strokeStyle = cor;
         ctx.lineWidth = largura;
-        ctx.setLineDash(tracos);
         ctx.beginPath();
-        for (let i = 0; i <= 200; i++) {
-          const r = Math.exp((i / 200) * Math.log(rMax)), v = f(r);
-          if (i) ctx.lineTo(px(r), py(Math.min(maiorV, v))); else ctx.moveTo(px(r), py(Math.min(maiorV, v)));
-        }
+        rs.forEach((r, i) => (i ? ctx.lineTo(X(r), Y(f(r))) : ctx.moveTo(X(r), Y(f(r)))));
         ctx.stroke();
-        ctx.setLineDash([]);
       };
       curva(velocidadeMagnetossonica, `rgb(${COR_DO_CHOQUE})`, 2.4);
-      curva(ventoNaDistancia, 'rgba(200, 200, 200, 0.75)', 1.6, [5, 4]);
-      curva((r) => velocidadeDaCME(r, estado.cme), 'rgba(255, 255, 255, 0.9)', 2.2);
-      curva((r) => Math.max(0, velocidadeDaCME(r, estado.cme) - ventoNaDistancia(r)), 'rgba(255, 220, 150, 0.95)', 2, [2, 3]);
-      for (const r of [MINIMO_MAGNETOSSONICO, PICO_MAGNETOSSONICO]) ponto(px(r), py(velocidadeMagnetossonica(r)), 4, `rgb(${COR_DO_CHOQUE})`);
+      curva(diferenca, 'rgba(255, 255, 255, 0.92)', 2.2);
+      // O cursor: a CME pequena, aqui e na régua.
+      const rc = raioDoCursor(), xc = X(rc), comChoque = temChoque(rc, v);
+      tracejado(xc, y, xc, regua ? regua.y + 8 : y + h, 'rgba(255, 255, 255, 0.45)', [3, 4], 1);
+      ponto(xc, Y(velocidadeMagnetossonica(rc)), 4.5, `rgb(${COR_DO_CHOQUE})`);
+      ponto(xc, Y(diferenca(rc)), 4.5, '#ffffff');
+      const yIcone = y + h - 14;
+      ctx.strokeStyle = `rgba(${COR_DA_CME}, 0.95)`;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(xc - 5, yIcone, 8, -1.1, 1.1);
+      ctx.stroke();
+      if (comChoque) {
+        ctx.strokeStyle = `rgba(${COR_DO_CHOQUE}, 0.95)`;
+        ctx.beginPath();
+        ctx.arc(xc - 5, yIcone, 13, -0.9, 0.9);
+        ctx.stroke();
+      }
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
-      escrever(T_`velocidade (km/s)`, x, y - 16, { tamanho: 11, cor: '#bdbdbd' });
-      escrever(T_`distância do centro do Sol (raios do Sol, escala logarítmica)`, x + w, y + h + 28 < cena.y + cena.h - 2 ? y + h + 28 : y + h - 10, { tamanho: 10.5, cor: '#9a9a9a', alinhar: 'right' });
-      const legenda = [
-        [(x1, x2, yy) => { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke(); }, T_`a CME`],
-        [(x1, x2, yy) => { ctx.strokeStyle = 'rgba(200,200,200,0.75)'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke(); ctx.setLineDash([]); }, T_`o vento solar`],
-        [(x1, x2, yy) => { ctx.strokeStyle = 'rgba(255,220,150,0.95)'; ctx.setLineDash([2, 3]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke(); ctx.setLineDash([]); }, T_`a CME menos o vento`],
-        [(x1, x2, yy) => { ctx.strokeStyle = `rgb(${COR_DO_CHOQUE})`; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke(); }, T_`a velocidade magnetossônica`],
-        [(x1, x2, yy) => { ctx.fillStyle = `rgba(${COR_DO_CHOQUE}, 0.35)`; ctx.fillRect(x1 + 4, yy - 5, 26, 10); }, T_`faixa azul: com choque`],
-      ];
-      desenharLegenda(legenda, { x: x + w - 380, y: y + 4 });
-      escrever(T_`mínimo (~1,5 raio)`, px(MINIMO_MAGNETOSSONICO), py(velocidadeMagnetossonica(MINIMO_MAGNETOSSONICO)) + 16, { tamanho: 10.5, alinhar: 'center', placa: true });
-      escrever(T_`pico (~3,5 raios)`, px(PICO_MAGNETOSSONICO), py(velocidadeMagnetossonica(PICO_MAGNETOSSONICO)) - 16, { tamanho: 10.5, alinhar: 'center', placa: true });
+      escrever(T_`velocidade (km/s)`, cena.x + 8, y - 18, { tamanho: 11, cor: '#bdbdbd' });
+      // O que o cursor mostra agora.
+      const agora = T_`a ${numero(rc, rc < 10 ? 1 : 0)} raios do Sol: a CME anda ${comMilhar(diferenca(rc))} km/s mais que o vento; as ondas, ${comMilhar(velocidadeMagnetossonica(rc))} km/s`;
+      const wAgora = larguraDoTexto(agora, 11.5, 600) + 16, xAgora = limitar((x0 + x1) / 2, cena.x + 130 + wAgora / 2, cena.x + cena.w - 100 - wAgora / 2);
+      if (cena.w > 560) escrever(agora, xAgora, y - 18, { tamanho: 11.5, peso: 600, alinhar: 'center', placa: true, cor: comChoque ? `rgb(${COR_DO_CHOQUE})` : '#ffffff' });
+      rotuloAoLado(comChoque ? T_`choque` : T_`sem choque`, xc + 8, yIcone, { tamanho: 11.5, peso: 700, placa: true, cor: comChoque ? `rgb(${COR_DO_CHOQUE})` : '#cfcfcf' });
+      // Os nomes das curvas, perto do fim (à direita).
+      const rNome = 60, emCima = diferenca(rNome) >= velocidadeMagnetossonica(rNome);
+      escrever(T_`a CME menos o vento`, X(rNome), Y(diferenca(rNome)) + (emCima ? -12 : 13), { tamanho: 11.5, peso: 600, alinhar: 'center', placa: true });
+      escrever(T_`as ondas (velocidade magnetossônica)`, X(rNome), Y(velocidadeMagnetossonica(rNome)) + (emCima ? 13 : -12), { tamanho: 11.5, peso: 600, alinhar: 'center', placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
+      // Os trechos, com nome quando cabe.
+      for (const tr of trechos) {
+        const a = X(rs[tr.de]), b = X(rs[tr.ate]);
+        if (b - a < 70 || rs[tr.ate] < 1.05) continue;
+        const meio = rs[Math.round((tr.de + tr.ate) / 2)], ym = (Y(diferenca(meio)) + Y(velocidadeMagnetossonica(meio))) / 2;
+        if (Math.abs(Y(diferenca(meio)) - Y(velocidadeMagnetossonica(meio))) < 22) continue;
+        escrever(tr.sim ? T_`com choque` : T_`sem choque`, (a + b) / 2, ym, { tamanho: 11, peso: 600, alinhar: 'center', cor: tr.sim ? `rgb(${COR_DO_CHOQUE})` : '#9a9a9a' });
+      }
+      escrever(T_`mínimo (~1,5 raio)`, X(MINIMO_MAGNETOSSONICO), Y(velocidadeMagnetossonica(MINIMO_MAGNETOSSONICO)) + 16, { tamanho: 10.5, alinhar: 'center', placa: true });
+      escrever(T_`pico (~3,5 raios)`, X(PICO_MAGNETOSSONICO), Y(velocidadeMagnetossonica(PICO_MAGNETOSSONICO)) - 16, { tamanho: 10.5, alinhar: 'center', placa: true });
       ctx.restore();
     }
     /** Os trechos com choque, em palavras. */
@@ -2787,14 +3015,41 @@
       por('valor-4-2', H_`uma CME de ${comMilhar(estado.cme)} km/s <b>${trechosEmTexto(estado.cme)}</b> (esquema)`);
     });
 
-    // --- Tema 4, parte 3: o choque acelera partículas. Partículas cruzam o choque várias vezes e ganham energia (esquema). ---
-    const particulas = [];
-    let escaparam = 0;
-    AO_ENTRAR['choque-3'] = () => { particulas.length = 0; escaparam = 0; };
+    // --- Tema 4, parte 3: o choque acelera partículas (esquema). As linhas do campo do vento têm ondulações; as partículas
+    //     andam ao longo das linhas e, ao chegar numa ondulação, às vezes voltam. Depois do choque, o campo é apertado e
+    //     mais ondulado. Quem cruza o choque ganha um pouco de energia a cada travessia; as mais energéticas passam pelas
+    //     ondulações à frente e escapam, rumo à Terra, antes da CME. A CME atravessa a cena sempre no mesmo tempo. ---
+    const SEGUNDOS_DO_ACELERADOR = 15;            // segundos do desenho para a CME atravessar a cena
+    const ESPACO_DAS_DOBRAS = 85;                 // pixels entre as ondulações do vento (em média)
+    const particulas = [], dobras = [];
+    let escaparam = 0, travessiaDoAcelerador = 0, esperaDoAcelerador = 0, sobraDeParticulas = 0, tamanhoDoAcelerador = '';
+    let sobraDeDobras = [];
     const aleatorioDoChoque = sorteador(4242);
-    function novaParticula() {
-      return { x: aleatorioDoChoque() * 30, y: aleatorioDoChoque(), E: 1, dir: aleatorioDoChoque() < 0.5 ? -1 : 1, rastro: [] };
+    /** As alturas das linhas do campo (um número par de linhas, para nenhuma passar bem no meio da CME). */
+    function linhasDoAcelerador(p) {
+      const livre = alturaLivre(), n = 2 * limitar(Math.round(livre / 90), 2, 4), espaco = (livre * 0.9) / n;
+      return Array.from({ length: n }, (_, j) => p.cy + (j - (n - 1) / 2) * espaco);
     }
+    function semearDobras(p) {
+      dobras.length = 0;
+      const linhas = linhasDoAcelerador(p);
+      sobraDeDobras = linhas.map(() => aleatorioDoChoque());
+      linhas.forEach((_, j) => {
+        for (let x = cena.x + aleatorioDoChoque() * ESPACO_DAS_DOBRAS; x < cena.x + cena.w; x += ESPACO_DAS_DOBRAS * (0.6 + 0.8 * aleatorioDoChoque())) {
+          dobras.push({ linha: j, x, depois: false, passou: false, fase: aleatorioDoChoque() * 6.28, flash: 0 });
+        }
+      });
+    }
+    function recomecarAcelerador() {
+      particulas.length = 0;
+      escaparam = 0;
+      travessiaDoAcelerador = 0.05;
+      esperaDoAcelerador = 0;
+      const p = palcoDaTravessia();
+      semearDobras(p);
+      tamanhoDoAcelerador = `${Math.round(cena.w)}x${Math.round(alturaLivre())}`;
+    }
+    AO_ENTRAR['choque-3'] = recomecarAcelerador;
     /** O quanto a energia sobe a cada travessia (esquema): mais com um choque mais forte. */
     function ganhoPorTravessia(v) {
       const mach = (v - VENTO_SOLAR) / SOM_NO_VENTO;
@@ -2802,21 +3057,127 @@
       const compressao = (4 * mach * mach) / (mach * mach + 3);   // de 1 a 4: o quanto o choque aperta o plasma
       return 0.3 * (1 - 1 / compressao);
     }
+    /** A CME e o choque da parte 3, agora. */
+    function cmeDoAcelerador(p) {
+      if (esperaDoAcelerador > 0) return { cme: null, choque: null };
+      const cme = cmeNaTravessia(p, travessiaDoAcelerador), mach = (estado.cme - VENTO_SOLAR) / SOM_NO_VENTO;
+      return { cme, choque: mach > 1 ? choqueDaBolha(cme.W, mach) : null };
+    }
+    /** Onde o choque corta uma linha (x na tela), ou null se ela não passa pelo choque. */
+    function choqueNaLinha(cme, choque, y) {
+      if (!cme || !choque || cme.alfa < 0.5 || Math.abs(y - cme.y) > choque.alcance) return null;
+      return cme.x + choque.dx(y - cme.y);
+    }
+    /** A altura de uma linha do campo num ponto: reta, com um pequeno zigue-zague em cada ondulação (maior no tampão). */
+    function alturaDaLinha(y0, x, dobrasDaLinha, t) {
+      let y = y0;
+      for (const d of dobrasDaLinha) {
+        const s = x - d.x;
+        if (Math.abs(s) > 22) continue;
+        y += (d.depois ? 6 : 3.5) * (1 + 0.6 * d.flash) * Math.sin(s * 0.45 + d.fase + t * (d.depois ? 7 : 3)) * Math.exp(-((s / 8) ** 2));
+      }
+      return y;
+    }
     function andarAcelerador(dt) {
-      while (particulas.length < 46) particulas.push(novaParticula());
-      const ganho = ganhoPorTravessia(estado.cme), largura = cena.w * 0.48;
+      const p = palcoDaTravessia(), linhas = linhasDoAcelerador(p);
+      const chave = `${Math.round(cena.w)}x${Math.round(alturaLivre())}`;
+      if (chave !== tamanhoDoAcelerador) { tamanhoDoAcelerador = chave; semearDobras(p); particulas.length = 0; }
+      const v = estado.cme, Vc = p.caminho / SEGUNDOS_DO_ACELERADOR, k = Vc / Math.max(v, 1);   // pixels por (km/s × s)
+      const mach = (v - VENTO_SOLAR) / SOM_NO_VENTO, ganho = ganhoPorTravessia(v);
+      const compressao = mach > 1 ? (4 * mach * mach) / (mach * mach + 3) : 1;
+      const vVento = k * VENTO_SOLAR, vDepois = k * (v - (v - VENTO_SOLAR) / compressao);
+      // A CME anda, some à direita e, depois de uma pausa, sai outra do Sol.
+      if (esperaDoAcelerador > 0) esperaDoAcelerador -= dt;
+      else {
+        travessiaDoAcelerador += dt / SEGUNDOS_DO_ACELERADOR;
+        if (travessiaDoAcelerador >= 1) {
+          travessiaDoAcelerador = 0;
+          esperaDoAcelerador = 1.2;
+          // A próxima CME ainda não passou por nenhuma ondulação.
+          for (const d of dobras) { d.passou = false; d.depois = false; }
+        }
+      }
+      const { cme, choque } = cmeDoAcelerador(p);
+      // As ondulações: andam com o vento; o choque, ao passar, aperta o campo (mais ondulações, maiores, que andam junto
+      // com o tampão) e, quando a CME chega nelas, elas escorregam pelos lados da bolha.
+      linhas.forEach((_, j) => {
+        sobraDeDobras[j] = (sobraDeDobras[j] ?? 0) + (vVento * dt) / ESPACO_DAS_DOBRAS;
+        while (sobraDeDobras[j] >= 1) {
+          sobraDeDobras[j] -= 1;
+          // As que saem do Sol com a CME já no caminho ficam atrás dela: o choque não passa por elas.
+          if (dobras.length < 700) dobras.push({ linha: j, x: cena.x - 4, depois: false, passou: !!cme, fase: aleatorioDoChoque() * 6.28, flash: 0 });
+        }
+      });
+      for (let i = dobras.length - 1; i >= 0; i--) {
+        const d = dobras[i], y = linhas[d.linha];
+        if (y === undefined) { dobras.splice(i, 1); continue; }
+        const xs = choqueNaLinha(cme, choque, y);
+        // Uma vez só: quando o choque passa por ela.
+        if (!d.passou && xs !== null && d.x < xs) {
+          d.depois = true;
+          d.passou = true;
+          if (aleatorioDoChoque() < (compressao - 1) / 2.5) dobras.push({ linha: d.linha, x: d.x - 10, depois: true, passou: true, fase: d.fase + 2, flash: 0 });
+        }
+        if (d.depois && (xs === null || (cme && d.x < cme.x - cme.W * 0.8))) d.depois = false;
+        d.x += (d.depois ? vDepois : vVento) * dt;
+        d.flash = Math.max(0, d.flash - dt * 2.5);
+        const dy = cme ? y - cme.y : 0;
+        if (d.x > cena.x + cena.w + 24 || (d.depois && cme && Math.abs(dy) < cme.W && d.x < cme.x + Math.sqrt(cme.W * cme.W - dy * dy))) dobras.splice(i, 1);
+      }
+      // Partículas novas: o choque pega partículas do vento (sem choque, umas poucas perto da CME, só para comparar).
+      if (cme && cme.alfa > 0.6 && cme.W > p.Ro * 0.6) {
+        sobraDeParticulas += dt * (choque ? 5 : 1.2);
+        while (sobraDeParticulas >= 1) {
+          sobraDeParticulas -= 1;
+          if (particulas.filter((q) => !q.escapou).length >= (choque ? 50 : 12)) continue;
+          // Uma linha que passa pelo choque, com espaço entre o choque e a bolha (no nariz, o tampão é fino demais).
+          let j = -1, xs = null;
+          for (let tentativa = 0; tentativa < 8 && j < 0; tentativa++) {
+            const jj = Math.floor(aleatorioDoChoque() * linhas.length), xx = choqueNaLinha(cme, choque, linhas[jj]), dy = linhas[jj] - cme.y;
+            const frente = Math.abs(dy) < cme.W ? cme.x + Math.sqrt(cme.W * cme.W - dy * dy) : -Infinity;
+            if (choque && (xx === null || xx - frente < 25)) continue;
+            j = jj;
+            xs = xx;
+          }
+          if (j < 0) continue;
+          const x = xs !== null ? xs + (aleatorioDoChoque() - 0.5) * 8 : cme.x + cme.W * 1.6;
+          particulas.push({ linha: j, x, dir: aleatorioDoChoque() < 0.5 ? -1 : 1, E: 1, rastro: [], escapou: false, solta: 0 });
+        }
+      } else sobraDeParticulas = 0;
+      const s0 = Vc * 2.6, longe = Math.max(90, cena.w * 0.16);
+      const porLinha = linhas.map(() => []);
+      for (const d of dobras) porLinha[d.linha]?.push(d);
       for (let i = particulas.length - 1; i >= 0; i--) {
-        const p = particulas[i];
-        // Rebatida pelas ondulações do campo; as mais energéticas andam mais antes de serem rebatidas.
-        if (aleatorioDoChoque() < (dt * 2.2) / Math.sqrt(p.E)) p.dir = -p.dir;
-        const passo = 70 * Math.sqrt(p.E) * dt;
-        const antes = p.x;
-        p.x += p.dir * passo + (p.x > 0 ? -18 : -8) * dt;                        // o plasma leva as partículas para trás
-        if (ganho > 0 && Math.sign(antes) !== Math.sign(p.x)) p.E *= 1 + ganho;  // cruzou o choque: ganha energia
-        p.rastro.push(p.x);
-        if (p.rastro.length > 14) p.rastro.shift();
-        if (p.x > largura * 0.3 && p.E > 2.2) { escaparam += 1; particulas.splice(i, 1); }
-        else if (p.x < -largura || p.x > largura) particulas.splice(i, 1);
+        const q = particulas[i], y = linhas[q.linha];
+        if (y === undefined) { particulas.splice(i, 1); continue; }
+        const xs0 = choqueNaLinha(cme, choque, y), antes = xs0 === null ? null : q.x - xs0;
+        const xNovo = q.x + q.dir * s0 * Math.min(Math.sqrt(q.E), 3.4) * dt;
+        if (!q.escapou) {
+          // Chegou numa ondulação? Às vezes volta (as mais energéticas passam mais vezes pelas ondulações do vento).
+          let bateu = null;
+          for (const d of porLinha[q.linha]) {
+            const noCaminho = q.dir > 0 ? d.x > q.x && d.x <= xNovo : d.x < q.x && d.x >= xNovo;
+            if (noCaminho && (!bateu || Math.abs(d.x - q.x) < Math.abs(bateu.x - q.x))) bateu = d;
+          }
+          const chance = bateu ? (bateu.depois ? 0.5 : Math.min(0.9, 0.8 / Math.sqrt(q.E))) : 0;
+          if (bateu && aleatorioDoChoque() < chance) {
+            q.x = bateu.x - q.dir * 0.5;
+            q.dir = -q.dir;
+            bateu.flash = 1;
+          } else q.x = xNovo;
+        } else q.x = xNovo;
+        const xs1 = choqueNaLinha(cme, choque, y);
+        // Cruzou o choque (de um lado para o outro): ganha energia.
+        if (!q.escapou && ganho > 0 && antes !== null && xs1 !== null && Math.sign(antes) !== Math.sign(q.x - xs1)) q.E *= 1 + ganho;
+        // Bem à frente do choque: escapou. Não volta mais e corre para a direita, rumo à Terra.
+        const base = xs1 ?? (cme ? cme.x + cme.W * 1.6 : null);
+        if (!q.escapou && base !== null && q.x - base > longe) { q.escapou = true; q.dir = 1; escaparam += 1; }
+        q.solta = !q.escapou && base === null ? q.solta + dt : 0;
+        q.rastro.push(q.x);
+        if (q.rastro.length > 16) q.rastro.shift();
+        const perdida = !q.escapou && ((base !== null && base - q.x > (cme ? cme.W * 5 * Math.min(Math.sqrt(q.E), 3) : 0)) || q.solta > 1.2
+          || (cme && Math.abs(y - cme.y) < cme.W && q.x < cme.x + Math.sqrt(cme.W * cme.W - (y - cme.y) ** 2)));
+        if (perdida || q.x > cena.x + cena.w + 6 || q.x < cena.x - 6) particulas.splice(i, 1);
       }
     }
     const corDaEnergia = (E) => {
@@ -2825,63 +3186,98 @@
       return paradas[i].map((v, k) => Math.round(entre(v, paradas[i + 1][k], g))).join(', ');
     };
     function desenharAcelerador(alfa) {
-      const forca = rotulos('choque-3'), livre = alturaLivre(), t = estado.tempo, ganho = ganhoPorTravessia(estado.cme);
-      const xs = cena.x + cena.w * 0.5, y0 = cena.y + ESPACO_DO_TITULO + 20, h = livre - 40;
-      // As ondulações do campo, dos dois lados (fracas).
-      ctx.strokeStyle = 'rgba(205, 225, 255, 0.12)';
-      ctx.lineWidth = 1;
-      for (let j = 0; j < 7; j++) {
-        ctx.beginPath();
-        for (let i = 0; i <= 80; i++) {
-          const xx = cena.x + (i / 80) * cena.w, yy = y0 + ((j + 0.5) / 7) * h + 6 * Math.sin(i * 0.5 + j + t * (xx > xs ? 1.5 : 3));
-          if (i) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy);
+      const forca = rotulos('choque-3'), livre = alturaLivre(), t = estado.tempo, ganho = ganhoPorTravessia(estado.cme), topo = cena.y + ESPACO_DO_TITULO;
+      const p = palcoDaTravessia(), linhas = linhasDoAcelerador(p), { cme, choque } = cmeDoAcelerador(p);
+      const porLinha = linhas.map(() => []);
+      for (const d of dobras) porLinha[d.linha]?.push(d);
+      // As linhas do campo (mais fortes e azuladas no tampão, depois do choque).
+      const passo = 5;
+      linhas.forEach((y0, j) => {
+        const xs = choqueNaLinha(cme, choque, y0), pontos = [];
+        for (let x = cena.x - 2; x <= cena.x + cena.w + 2; x += passo) pontos.push([x, alturaDaLinha(y0, x, porLinha[j], t)]);
+        for (const tampao of [false, true]) {
+          if (tampao && xs === null) continue;
+          ctx.strokeStyle = tampao ? `rgba(${COR_DO_CHOQUE}, 0.6)` : `rgba(${COR_DAS_LINHAS}, 0.3)`;
+          ctx.lineWidth = tampao ? 1.6 : 1.2;
+          ctx.beginPath();
+          let aberto = false;
+          for (const [x, y] of pontos) {
+            const dentro = cme && cme.alfa > 0.5 && dentroDaCME(x, y, p.sol, cme);
+            const fora = tampao && (x > xs || x < cme.x - cme.W * 0.8);
+            if (dentro || fora) { aberto = false; continue; }
+            if (aberto) ctx.lineTo(x, y); else { ctx.moveTo(x, y); aberto = true; }
+          }
+          ctx.stroke();
         }
-        ctx.stroke();
-      }
-      // O choque.
-      if (ganho > 0) {
-        aditivo(() => {
-          for (const [largura, a] of [[10, 0.2], [3, 0.9]]) {
-            ctx.strokeStyle = `rgba(${COR_DO_CHOQUE}, ${a})`;
-            ctx.lineWidth = largura;
-            ctx.beginPath();
-            for (let i = 0; i <= 40; i++) {
-              const yy = y0 + (i / 40) * h, xx = xs + 3 * Math.sin(i * 0.7 + t * 3);
-              if (i) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy);
-            }
-            ctx.stroke();
-          }
-        });
-      }
-      // As partículas, com um rastro.
+      });
+      // Onde uma partícula acabou de bater numa ondulação, um brilho rápido.
       aditivo(() => {
-        for (const p of particulas) {
-          const yy = y0 + p.y * h, cor = corDaEnergia(p.E);
-          if (p.rastro.length > 1) {
-            ctx.strokeStyle = `rgba(${cor}, 0.35)`;
-            ctx.lineWidth = 1.2;
+        for (const d of dobras) {
+          if (d.flash < 0.05 || linhas[d.linha] === undefined) continue;
+          brilho(d.x, alturaDaLinha(linhas[d.linha], d.x, porLinha[d.linha], t), 9, '255, 255, 255', 0.5 * d.flash);
+        }
+      });
+      if (cme) {
+        desenharCMEDeLado(p.sol, cme.forma, { alfa: cme.alfa, pernasFracas: true });
+        if (choque) desenharChoqueDaBolha(cme, choque, t, livre * 0.55);
+      }
+      desenharSolDaTravessia(p.sol, t);
+      // As partículas, com um rastro ao longo da linha.
+      aditivo(() => {
+        for (const q of particulas) {
+          const y0 = linhas[q.linha];
+          if (y0 === undefined) continue;
+          const cor = corDaEnergia(q.E), yq = alturaDaLinha(y0, q.x, porLinha[q.linha], t);
+          if (q.rastro.length > 1) {
+            ctx.strokeStyle = `rgba(${cor}, 0.4)`;
+            ctx.lineWidth = 1.3;
             ctx.beginPath();
-            p.rastro.forEach((x, i) => (i ? ctx.lineTo(xs + x, yy) : ctx.moveTo(xs + x, yy)));
+            q.rastro.forEach((x, i) => {
+              const yy = alturaDaLinha(y0, x, porLinha[q.linha], t);
+              if (i) ctx.lineTo(x, yy); else ctx.moveTo(x, yy);
+            });
             ctx.stroke();
           }
-          brilho(xs + p.x, yy, 3 + 2.2 * Math.log(p.E + 1), cor, 0.75);
-          ponto(xs + p.x, yy, 1.4 + 0.5 * Math.log(p.E + 1), `rgb(${cor})`);
+          brilho(q.x, yq, 4 + 2.6 * Math.log(q.E + 1), cor, 0.8);
+          ponto(q.x, yq, 1.9 + 0.6 * Math.log(q.E + 1), `rgb(${cor})`);
         }
       });
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
-      const maiorE = particulas.reduce((m, p) => Math.max(m, p.E), 1);
+      const maiorE = particulas.reduce((m, q) => Math.max(m, q.E), 1);
       escreverBloco([
         { texto: ganho > 0 ? T_`choque de uma CME de ${comMilhar(estado.cme)} km/s` : T_`CME de ${comMilhar(estado.cme)} km/s: sem choque, sem acelerador`, tamanho: 13, peso: 700, cor: '#ffffff' },
-        { texto: ganho > 0 ? T_`a cada travessia, ~${Math.round(ganho * 100)}% a mais de energia (esquema)` : T_`as partículas só vão e voltam, sem ganhar energia`, tamanho: 12, cor: '#ffe6b0' },
+        { texto: ganho > 0 ? T_`a cada travessia do choque, ~${Math.round(ganho * 100)}% a mais de energia (esquema)` : T_`as partículas só vão e voltam, sem ganhar energia`, tamanho: 12, cor: '#ffe6b0' },
         { texto: T_`a mais energética: ${numero(maiorE, 1)} vezes a energia do começo`, tamanho: 12, cor: `rgb(${corDaEnergia(maiorE)})` },
         { texto: T_`escaparam para a frente: ${escaparam}`, tamanho: 12, cor: `rgb(${COR_DAS_PARTICULAS})` },
-      ], cena.x + 14, cena.y + ESPACO_DO_TITULO + 14);
-      escrever(T_`depois do choque (plasma lento e apertado)`, xs - 14, cena.y + cena.h - 16, { tamanho: 11, alinhar: 'right', cor: '#bdbdbd' });
-      escrever(T_`antes do choque: o vento chega →`, xs + 14, cena.y + cena.h - 16, { tamanho: 11, cor: '#bdbdbd' });
-      escrever(T_`as mais rápidas escapam: podem chegar à Terra →`, cena.x + cena.w - 14, y0 + 90, { tamanho: 11.5, alinhar: 'right', placa: true, cor: `rgb(${COR_DAS_PARTICULAS})` });
-      if (ganho > 0) escrever(T_`choque`, xs, y0 - 4, { tamanho: 12.5, peso: 700, alinhar: 'center', placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
+      ], cena.x + 14, topo + 14);
+      if (cme && cme.alfa > 0.6 && cme.W > p.Ro * 0.6 && cme.x < cena.x + cena.w - cme.W * 0.4) {
+        escrever(T_`a CME`, cme.x, cme.y + cme.W * 0.5, { tamanho: 12.5, peso: 600, alinhar: 'center', placa: true });
+        if (choque) {
+          const dy = -Math.min(choque.alcance, livre * 0.55) * 0.88;
+          rotuloAoLado(T_`choque`, cme.x + choque.dx(dy), cme.y + dy, { tamanho: 12.5, peso: 700, placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
+        }
+      }
+      escrever(T_`as mais rápidas escapam à frente: chegam antes da CME →`, cena.x + cena.w - 14, cena.y + cena.h - 34, { tamanho: 11.5, alinhar: 'right', placa: true, cor: `rgb(${COR_DAS_PARTICULAS})` });
+      escrever(T_`o Sol fica à esquerda: tudo anda para a direita (tempo acelerado)`, cena.x + cena.w - 14, cena.y + cena.h - 14, { tamanho: 11, alinhar: 'right', cor: '#9a9a9a' });
+      if (cena.w >= 760 && livre > 260) {
+        desenharLegenda([
+          [(xa, xb, yy) => {
+            ctx.strokeStyle = `rgba(${COR_DAS_LINHAS}, 0.7)`;
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            for (let x = xa; x <= xb; x += 1) {
+              const s = x - (xa + xb) / 2;
+              if (x > xa) ctx.lineTo(x, yy + 4 * Math.sin(s * 0.6) * Math.exp(-((s / 7) ** 2))); else ctx.moveTo(x, yy);
+            }
+            ctx.stroke();
+          }, T_`ondulações do campo: as partículas batem e voltam`],
+          [(xa, xb, yy) => {
+            [1, 4, 16, 40].forEach((E, i) => ponto(xa + 4 + i * 8, yy, 2.2, `rgb(${corDaEnergia(E)})`));
+          }, T_`partículas: de azul (pouca energia) a branco (muita)`],
+        ], { x: cena.x + 8, y: cena.y + cena.h - 58 });
+      }
       ctx.restore();
     }
     AO_VIVO.push(() => {
@@ -3009,6 +3405,10 @@
       escrever(T_`esta CME: ${numero(emUA, 2)} UA`, rx + comprimento + 8, ry - 40, { tamanho: 11.5, peso: 600, cor: `rgb(${COR_DA_CME})` });
       escrever(dentro ? T_`a sonda está dentro da CME` : T_`sonda perto da Terra`, xs, cy - 24, { tamanho: 11.5, alinhar: 'center', placa: true });
       escrever(T_`passando: ${numero(estado.duracao, 2)} dia a ${comMilhar(estado.passagem)} km/s`, cena.x + 14, cena.y + ESPACO_DO_TITULO + 14, { tamanho: 12.5, peso: 600, placa: true });
+      // De onde ela vem: o Sol fica à esquerda, longe (como na régua).
+      aditivo(() => brilho(cena.x - 40, cy, 90, '255, 200, 120', 0.3));
+      escrever(T_`← o Sol fica à esquerda, longe`, cena.x + 14, cy, { tamanho: 11, placa: true, cor: '#ffd9a0' });
+      escrever(T_`a CME vem do Sol e passa pela sonda →`, xs, cy - livre * 0.21 - 18, { tamanho: 11.5, alinhar: 'center', placa: true, cor: '#e8e8ff' });
       ctx.restore();
     }
     PAINEIS.push(() => {
@@ -3090,14 +3490,28 @@
         ctx.stroke();
         if (forca > 0.02) escrever(nome, gx - 6, y + gh / 2, { tamanho: 10.5, alinhar: 'right', cor: `rgb(${cor})` });
       });
+      // O agora: a linha liga a sonda ao ponto do gráfico que ela está medindo.
+      const xAgora = gx + f * gw, yFim = gy0 + 3 * (gh + 10) - 10;
+      tracejado(xs, topo + alturaDeCima + 3, xAgora, gy0 - 3, 'rgba(255, 255, 255, 0.3)', [3, 4], 1);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.fillRect(xAgora - 0.5, gy0, 1, yFim - gy0);
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
+      // Os nomes das partes no gráfico (embaixo da velocidade), quando a sonda já passou por elas.
+      const yNomes = gy0 + gh + 10 + gh - 7;
+      if (f > ZONAS.choque + 0.02) escrever(T_`choque`, gx + gw * ZONAS.choque + 4, yNomes, { tamanho: 10.5, peso: 700, cor: `rgb(${COR_DO_CHOQUE})` });
+      if (f > (ZONAS.choque + ZONAS.nuvem) / 2) escrever(T_`tampão`, gx + (gw * (ZONAS.choque + ZONAS.nuvem)) / 2, yNomes, { tamanho: 10.5, alinhar: 'center', cor: '#e8eeff' });
+      if (f > (ZONAS.nuvem + ZONAS.fim) / 2) escrever(T_`nuvem magnética`, gx + (gw * (ZONAS.nuvem + ZONAS.fim)) / 2, yNomes, { tamanho: 10.5, alinhar: 'center', cor: '#e0d8ff' });
+      if (comNomes() && cena.w >= 300) escrever(T_`a CME vem do Sol (à esquerda) e passa pela sonda →`, cena.x + 14, topo - 14, { tamanho: 11.5, cor: '#e8e8ff' });
       if (xChoque > cena.x + 30 && xChoque < cena.x + cena.w - 20) escrever(T_`choque`, xChoque, topo + 12, { tamanho: 12, peso: 700, alinhar: 'center', placa: true, cor: `rgb(${COR_DO_CHOQUE})` });
-      if (xChoque - xNuvem > 60 && (xChoque + xNuvem) / 2 > cena.x + 40) escrever(T_`tampão denso`, (xChoque + xNuvem) / 2, topo + alturaDeCima - 12, { tamanho: 11.5, alinhar: 'center', placa: true });
+      // O nome do tampão: no meio da parte dele que está na tela, sem encostar no nome da nuvem.
+      const meioDoTampao = (Math.min(xChoque, cena.x + cena.w - 10) + Math.max(xNuvem, cena.x)) / 2, wTampao = larguraDoTexto(T_`tampão denso`, 11.5) + 16;
+      const fimDaNuvem = (xNuvem + xFim) / 2 + (larguraDoTexto(T_`nuvem magnética: o campo gira`, 11.5) + 16) / 2;
+      if (xChoque - xNuvem > 60 && meioDoTampao > cena.x + 40 && meioDoTampao - wTampao / 2 > fimDaNuvem + 6) escrever(T_`tampão denso`, meioDoTampao, topo + alturaDeCima - 12, { tamanho: 11.5, alinhar: 'center', placa: true });
       if ((xNuvem + xFim) / 2 > cena.x + 60) escrever(T_`nuvem magnética: o campo gira`, (xNuvem + xFim) / 2, topo + alturaDeCima - 12, { tamanho: 11.5, alinhar: 'center', placa: true, cor: '#e0d8ff' });
       escrever(T_`sonda`, xs + 10, cy - 14, { tamanho: 11, cor: '#cfcfcf' });
-      escrever(T_`o que a sonda mede (esquema) →  tempo`, gx + gw, gy0 - 12, { tamanho: 10.5, alinhar: 'right', cor: '#9a9a9a' });
+      escrever(T_`o que a sonda mede (esquema): o que passa primeiro fica à esquerda  →  tempo`, gx + gw, gy0 - 12, { tamanho: 10.5, alinhar: 'right', cor: '#9a9a9a' });
       ctx.restore();
     }
     // -------------------------------------------------------------------------
@@ -3127,7 +3541,7 @@
           ? { de: 2, ate: FIM_DO_CORONOGRAFO, texto: T_`os números vêm dos coronógrafos do SOHO, que enxergam de 2 a ${FIM_DO_CORONOGRAFO} raios do Sol` }
           : { de: 2, ate: FIM_DO_CORONOGRAFO, texto: noCoronografo(VELOCIDADE_DO_CORONOGRAFO) };
         case 'choque':
-          if (parte === '2') return { de: 1, ate: RAIOS_ATE_A_TERRA, texto: T_`em azul: onde uma CME de ${comMilhar(estado.cme)} km/s tem choque (esquema)`, choque: trechosComChoque(estado.cme) };
+          if (parte === '2') return { de: 1, ate: RAIOS_ATE_A_TERRA, texto: T_`em azul: onde uma CME de ${comMilhar(estado.cme)} km/s tem choque (esquema)`, choque: trechosComChoque(estado.cme), marca: raioDoCursor() };
           if (parte === '3') return { de: 2, ate: RAIOS_ATE_A_TERRA, texto: T_`o choque acelera partículas pelo caminho, da coroa até perto da Terra` };
           return { de: 20, ate: RAIOS_ATE_A_TERRA, texto: T_`no vento solar: a ${comMilhar(estado.cme)} km/s (constante), a CME chega à Terra em ${duracao(tempoAteATerra(estado.cme))}` };
         case 'viagem':
@@ -3237,6 +3651,16 @@
             ctx.arc(xm - 5, yEixo, 10, -1.1, 1.1);
             ctx.stroke();
           }
+        }
+        if (info.marca !== undefined) {
+          // A CME do cursor do gráfico (tema 4, parte 2), no mesmo lugar da régua.
+          const xm = X(info.marca);
+          ponto(xm, yEixo, 4.5, '#ffffff');
+          ctx.strokeStyle = `rgba(${COR_DA_CME}, 0.9)`;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.arc(xm - 4, yEixo, 8, -1.1, 1.1);
+          ctx.stroke();
         }
         const meio = (a + b) / 2;
         ctx.fillStyle = `rgb(${cor})`;
@@ -3647,7 +4071,7 @@
     // O que anda sozinho em cada mundo (só com a animação rodando).
     const ANDAR = {
       visao: andarVisao, erupcao: andarErupcao, flare: andarFlare, instrumento: andarSoltura, tres: andarSoltura, halo: andarHalo, numeros: andarCatalogo,
-      acelerador: andarAcelerador, tamanho: andarTamanho, estrutura: andarEstrutura, evento: andarEvento,
+      vento: andarVento, perfil: andarPerfil, acelerador: andarAcelerador, tamanho: andarTamanho, estrutura: andarEstrutura, evento: andarEvento,
     };
 
     function desenhar() {
@@ -3718,9 +4142,9 @@
       'coroa-1': H_`Uma CME num coronógrafo no espaço.<span class="longo"> Esquema; tempo acelerado.</span>`,
       'coroa-2': H_`As três partes de uma CME.<span class="longo"> Esquema.</span>`,
       'coroa-3': H_`A mesma CME, em direções diferentes.<span class="longo"> Esquema.</span>`,
-      'choque-1': H_`A frente de uma CME no vento solar; no quadrinho, uma bala no ar.<span class="longo"> Esquema.</span>`,
-      'choque-2': H_`As velocidades do Sol até a Terra.<span class="longo"> Esquema com valores aproximados.</span>`,
-      'choque-3': H_`O choque de perto, com partículas.<span class="longo"> Esquema.</span>`,
+      'choque-1': H_`Uma CME sai do Sol e alcança o vento solar; no quadrinho, uma bala no ar.<span class="longo"> Esquema; tempo acelerado.</span>`,
+      'choque-2': H_`As velocidades do Sol até a Terra, na escala da régua.<span class="longo"> Esquema com valores aproximados.</span>`,
+      'choque-3': H_`O choque varre o vento e acelera partículas.<span class="longo"> Esquema; tempo acelerado.</span>`,
       'viagem-1': H_`A corda de fluxo de uma CME, em 3D.<span class="longo"> Esquema; fora de escala.</span>`,
       'viagem-2': H_`Uma CME passando por uma sonda.<span class="longo"> Esquema.</span>`,
       'viagem-3': H_`O que uma sonda mede quando a CME passa.<span class="longo"> Esquema.</span>`,

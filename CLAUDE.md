@@ -925,6 +925,45 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - O choque perto do Sol (`temChoque(r, final)`, `trechosComChoque(final)`):
     1 000 km/s tem choque a partir de ~1,4 raio; 800 km/s o perde perto do
     pico; 600 km/s só o forma longe (no teste). Esquema, avisado na tela.
+  - **Tema 4 refeito (2026-10-21)**, a pedido dela: estava "confuso",
+    parecia "invertido" (a cena era vista de quem anda com a CME, e o vento
+    corria para a esquerda) e as partículas "interagiam com o nada". Agora
+    tudo anda para longe do Sol, como na régua:
+    - parte 1 (`vento`): a CME sai do Sol, à esquerda, e atravessa a cena
+      (`palcoDaTravessia`, `cmeNaTravessia`; a 1 000 km/s leva 6,5 s,
+      `SEGUNDOS_DO_VENTO`). O vento (`ventoDaCena`, `andarVento`) são pontos
+      a 400 km/s com um traço para trás. Perto da bolha, ele a contorna como um
+      fluido em volta de um cilindro (`velocidadeDoVento`). Com choque
+      (`choqueDaBolha`), nada muda antes dele; depois, o vento chega mais
+      devagar (compressão 4M²/(M² + 3)), é empurrado junto e fica azulado
+      (`varrido`: o tampão). As pernas compridas da CME são um véu
+      (`pernasFracas` em `desenharCMEDeLado`). O quadrinho da bala fica
+      embaixo, à esquerda;
+    - parte 2 (`perfil`): o gráfico usa a escala e as posições da régua
+      (`escalaDaRegua`, `raioNaRegua`): só a CME menos o vento e a
+      magnetossônica, azul entre elas onde há choque. Um cursor
+      (`cursorDoPerfil`, `raioDoCursor`) leva uma CME pequena do Sol à Terra,
+      no gráfico e na régua (`marca` em `reguaDaCena`);
+    - parte 3 (`acelerador`): a mesma travessia, sempre em 15 s
+      (`SEGUNDOS_DO_ACELERADOR`), com linhas do campo que têm ondulações
+      (`dobras`; quando o choque passa, elas ficam maiores e mais juntas:
+      `passou`, `depois`). As partículas andam pelas linhas, às vezes voltam
+      numa ondulação (que brilha, `flash`; chance de 0,8/√E antes do choque e
+      0,5 depois), ganham ~22% a cada travessia do choque e, bem à frente
+      dele, escapam (`escapou`) para a direita. **Armadilha:** sem o
+      `passou`, as ondulações atrás da CME se multiplicavam a cada quadro
+      (centenas de milhares) e a página travava;
+    - acréscimo pesquisado, no aviso da parte 3: o mecanismo e as partículas
+      que chegam antes da CME (Solar Orbiter, ESA, 2025).
+  - Na mesma revisão: na erupção (tema 2, parte 1), a câmera se afasta para
+    acompanhar a corda (`afastar`, até 3,2×, com a superfície no mesmo lugar)
+    e, quando a corda sai por cima, uma seta diz que ela agora é a CME; o
+    ponto da reconexão fica a até 1,3 unidade acima dos laços novos; o ciclo
+    tem 9,5 s. Na visão geral, as partículas do choque correm para longe do
+    Sol (`desenharParticulasDoChoque` com `sol`) e o nome "4 · A onda de
+    choque" não sobe mais até o bloco de cima. Na viagem, a parte 2 diz de
+    onde a CME vem, e a parte 3 liga a sonda ao "agora" do gráfico e põe nele
+    os nomes das partes.
   - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`), com o coronógrafo
     pequeno; as partes do desenho (`TEMA_DA_ZONA`, `zonaSobOPonteiro`) levam
     aos temas 1 a 5, e o tema 6 tem um nome no canto.
@@ -940,7 +979,10 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - Para testar: `definir({ energia, direcao, fase, cme, passagem, duracao,
     classe })`, `escolherClasse(k)`, `alternar('corda')`, `soltarCME()`,
     `recomecarErupcao()` e `verAViagem()` são do escopo global;
-    `estado.relogio` escolhe o momento da CME da visão geral.
+    `estado.relogio` escolhe o momento da CME da visão geral. No tema 4,
+    `palcoDaTravessia()`, `cmeDoVento(p)`, `cmeDoAcelerador(p)`,
+    `ventoDaCena`, `particulas`, `dobras`, `escaparam` e `cursorDoPerfil`
+    também.
 - **Formato das animações com física** (aprovado na magnetopausa): duas visões
   ligadas por um zoom ("De longe" e "De perto"), painel de explicação à direita,
   barra de controles embaixo do desenho, conta em passos (fórmula, números de
