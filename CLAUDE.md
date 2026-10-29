@@ -956,14 +956,44 @@ janela mudar, atualize o contrato junto. Resumo técnico:
     - acréscimo pesquisado, no aviso da parte 3: o mecanismo e as partículas
       que chegam antes da CME (Solar Orbiter, ESA, 2025).
   - Na mesma revisão: na erupção (tema 2, parte 1), a câmera se afasta para
-    acompanhar a corda (`afastar`, até 3,2×, com a superfície no mesmo lugar)
-    e, quando a corda sai por cima, uma seta diz que ela agora é a CME; o
-    ponto da reconexão fica a até 1,3 unidade acima dos laços novos; o ciclo
-    tem 9,5 s. Na visão geral, as partículas do choque correm para longe do
+    acompanhar a corda e, quando a corda sai por cima, uma seta diz que ela
+    agora é a CME (a erupção foi refeita depois; veja o item seguinte). Na
+    visão geral, as partículas do choque correm para longe do
     Sol (`desenharParticulasDoChoque` com `sol`) e o nome "4 · A onda de
     choque" não sobe mais até o bloco de cima. Na viagem, a parte 2 diz de
     onde a CME vem, e a parte 3 liga a sonda ao "agora" do gráfico e põe nele
     os nomes das partes.
+  - **Tema 2 (a erupção) refeito em 2026-10-29**, a pedido dela ("mais
+    bonito", no estilo dos passos 3, 5 e 6 do flare, que é quase o mesmo
+    evento). O mundo `erupcao` (partes 1 e 2) é o modelo padrão de lado, em
+    unidades próprias (`E`, `ex`, `ey`: x a partir do meio, y a partir da
+    superfície):
+    - o chão do flare (`desenharChaoDaErupcao`: grânulos, cromosfera,
+      espículas e as manchas − à esquerda e + à direita);
+    - 10 linhas presas (`linhaPresa`), azuis e com setinhas que andam no
+      sentido do campo (`tracarLinhaDoCampo`), do + ao −. Antes de esticar,
+      são arcos comuns; esticadas (`esticamento`), contornam a corda e as
+      pernas se encostam embaixo dela (`pescoco`): a camada fina. **O
+      sentido importa:** por cima da corda, o campo aponta para a esquerda,
+      o mesmo sentido dos anéis da corda; por isso o + fica à direita;
+    - as 7 de dentro se reconectam uma de cada vez (`instanteDaLinha`; o
+      ponto X sobe com os laços, `alturaDoPontoX`). Embaixo, um laço nasce
+      pontudo e quente e se arredonda e esfria (`lacoNovo`, `corDoLaco`,
+      `linhaQueBrilha`); em cima, uma volta sobe do ponto X e envolve a corda
+      (`voltaEmTornoDaCorda`), com o plasma junto;
+    - como no flare: o campo entrando pelos dois lados, o ponto neutro que
+      pulsa, o clarão de cada reconexão, os elétrons que descem pelas pernas
+      e os pés que acendem em raios X e Hα (as fitas, que se afastam);
+    - a energia guardada no campo: um brilho azul (como o mapa de B² do
+      passo 3 do flare) que apaga a cada reconexão (`energiaNaErupcao`);
+    - a corda (`desenharCordaDaErupcao`): cavidade escura, anéis do campo com
+      setinhas e a proeminência em fios vermelhos. `desenharCordaEmCorte` e
+      `arcoDoCampo` (o estilo antigo) continuam no tema 1;
+    - a câmera da parte 1 se afasta até 2,3× (antes, 3,2×: ficava vazio); o
+      ciclo continua com 9,5 s, agora aparecendo e sumindo nas pontas
+      (`visibilidadeDaErupcao`);
+    - a parte 3 (CME × flare) usa o mesmo chão, os arcos azuis
+      (`arcoDeCampo`), os laços que esfriam, as fitas e a corda nova.
   - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`), com o coronógrafo
     pequeno; as partes do desenho (`TEMA_DA_ZONA`, `zonaSobOPonteiro`) levam
     aos temas 1 a 5, e o tema 6 tem um nome no canto.
@@ -979,7 +1009,8 @@ janela mudar, atualize o contrato junto. Resumo técnico:
   - Para testar: `definir({ energia, direcao, fase, cme, passagem, duracao,
     classe })`, `escolherClasse(k)`, `alternar('corda')`, `soltarCME()`,
     `recomecarErupcao()` e `verAViagem()` são do escopo global;
-    `estado.relogio` escolhe o momento da CME da visão geral. No tema 4,
+    `estado.relogio` escolhe o momento da CME da visão geral, e
+    `estado.erupcao` (0 a 9,5), o da erupção (tema 2). No tema 4,
     `palcoDaTravessia()`, `cmeDoVento(p)`, `cmeDoAcelerador(p)`,
     `ventoDaCena`, `particulas`, `dobras`, `escaparam` e `cursorDoPerfil`
     também.

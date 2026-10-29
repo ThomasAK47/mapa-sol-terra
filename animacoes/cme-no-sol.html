@@ -534,7 +534,8 @@
                 <div class="valor" id="valor-2-2"></div>
                 <p class="explicacao" data-texto="passo-2-parte-2-explicacao-2">Na camada fina, as linhas de sentidos opostos se reconectam. A parte de
                   cima delas passa a envolver a corda e a empurra para fora; a de baixo forma laços novos e quentes, presos à
-                  superfície. Esse brilho embaixo é o <b>flare</b> (veja a animação do flare).</p>
+                  superfície. Esse brilho embaixo é o <b>flare</b> (veja a animação do flare). Os elétrons que descem acendem os
+                  pés: as <b>fitas</b>.</p>
                 <p class="aviso" data-texto="passo-2-parte-2-explicacao-3">Acréscimo (modelo padrão das erupções). As linhas e as partículas são
                   esquema.</p>
               </div>
@@ -2260,97 +2261,396 @@
         : H_`energia guardada: ${Math.round(estado.energia)}% (esquema) · a corda fica parada, <b>em equilíbrio</b>`);
     });
 
-    // --- Tema 2, partes 1 e 2: a erupção. A corda dispara; embaixo dela, a camada fina e a reconexão (o flare). ---
+    // --- Tema 2, partes 1 e 2: a erupção, de lado, no estilo dos passos 3, 5 e 6 da animação do flare (o mesmo evento,
+    //     visto de perto). A corda dispara e estica os arcos de cima; embaixo dela, as pernas desses arcos se encostam
+    //     numa camada fina e se reconectam, uma de cada vez (as de dentro primeiro): embaixo nasce um laço quente (o
+    //     flare) e, em cima, uma volta a mais em torno da corda. O campo vai do pé + (à direita) ao pé − (à esquerda).
+    //     Unidades da cena: x a partir do meio e y a partir da superfície. Tudo aqui é esquema. ---
     const DURACAO_DA_ERUPCAO = 9.5;               // segundos do desenho (o ciclo recomeça sozinho)
     const MINUTOS_POR_SEGUNDO = 5;                // esquema: 1 s do desenho = 5 min do Sol
+    const RECONECTAM = 7;                         // linhas que se reconectam em cada ciclo
+    const LINHAS_DA_ERUPCAO = 10;                 // linhas presas no começo (as três de fora não chegam a se reconectar)
     function recomecarErupcao() { estado.erupcao = estado.cena === 'erupcao-2' ? 2.4 : 0; }
     AO_ENTRAR['erupcao-1'] = recomecarErupcao;
     AO_ENTRAR['erupcao-2'] = recomecarErupcao;
     function andarErupcao(dt) { estado.erupcao = (estado.erupcao + dt) % DURACAO_DA_ERUPCAO; }
     /** A altura da corda (acima da superfície, em unidades da cena) na erupção: sobe devagar e depois acelera. */
     const alturaNaErupcao = (s) => (s < 2 ? 1.8 + 0.06 * s : 1.92 + 0.35 * (Math.exp(0.95 * (s - 2)) - 1));
-    /** Quantas linhas de cima já se reconectaram. */
-    const linhasReconectadas = (s) => limitar(Math.floor((s - 2.4) * 1.6), 0, 7);
-    function desenharErupcao(alfa) {
-      const parte3 = estado.cena === 'erupcao-2';
-      const forca = parte3 ? rotulos('erupcao-2') : rotulos('erupcao-1'), t = estado.tempo, s = estado.erupcao, h = alturaNaErupcao(s);
-      caber(8, 6.2, { desvioY: -0.2 });
-      // Na parte 1, a câmera se afasta para acompanhar a corda (a superfície fica no mesmo lugar da tela). Na parte 2, ela
-      // fica perto da reconexão, e a corda sai por cima.
-      const chao = ty(-2.6), topoDaVista = cena.y + ESPACO_DO_TITULO + 14;
-      const afastar = parte3 ? 1 : limitar((h + 0.9) / ((chao - topoDaVista) / P.S), 1, 3.2);
-      if (afastar > 1) P = { ...P, S: P.S / afastar, cy: chao - (2.6 * P.S) / afastar };
-      const base = ty(-2.6), cx = tx(0), cy = ty(-2.6 + h), r = P.S * (0.42 + 0.06 * Math.max(0, h - 2));
-      const g = ctx.createLinearGradient(0, base, 0, base + Math.max(30, P.S * 0.6));
-      g.addColorStop(0, 'rgb(255, 214, 140)');
-      g.addColorStop(1, 'rgb(200, 90, 30)');
-      ctx.fillStyle = g;
-      ctx.fillRect(cena.x, base, cena.w, Math.max(P.S * 0.8, cena.y + cena.h - base));
-      const nRec = linhasReconectadas(s);
-      const topoDaCamada = cy + r;                                  // a camada fina vai da corda até os laços novos
-      const alturaDosLacos = (k) => base - P.S * (0.25 + 0.2 * k);
+    /** Quantas linhas de cima já se reconectaram (e o mesmo número sem arredondar, para as formas não pularem). */
+    const linhasReconectadas = (s) => limitar(Math.floor((s - 2.4) * 1.6), 0, RECONECTAM);
+    const reconexaoContinua = (s) => limitar((s - 2.4) * 1.6, 0, RECONECTAM);
+    /** O instante em que a linha k se reconecta (k = 1 é a de dentro). */
+    const instanteDaLinha = (k) => 2.4 + k / 1.6;
+    /** A meia distância entre os pés da linha k. */
+    const peDaLinha = (k) => 0.5 + 0.34 * k;
+    /** A altura de um laço novo, depois de arredondado. */
+    const alturaDoLacoNovo = (D) => 0.85 * D + 0.15;
+    /** O ponto neutro (B = 0): fica logo acima do laço mais novo e sobe aos poucos, conforme os laços crescem. */
+    const alturaDoPontoX = (s) => alturaDoLacoNovo(peDaLinha(limitar((s - instanteDaLinha(1)) * 1.6 + 1, 1, RECONECTAM))) + 0.35;
+    /** O quanto a corda já esticou os arcos de cima (de 0 a 1). */
+    const esticamento = (s) => suave((s - 1.1) / 1.7);
+    /** A energia guardada no campo, de 1 a 0,3: cai a cada reconexão. */
+    const energiaNaErupcao = (s) => 1 - 0.7 * limitar((s - instanteDaLinha(1) + 0.2) / (instanteDaLinha(RECONECTAM) - instanteDaLinha(1) + 0.4), 0, 1);
+    /** Aparece no começo do ciclo e some no fim, antes de recomeçar. */
+    const visibilidadeDaErupcao = (s) => Math.min(suave(s / 0.45), 1 - suave((s - (DURACAO_DA_ERUPCAO - 0.7)) / 0.6));
+
+    // As cores do flare: o campo (azul), Hα (vermelho), raios X (violeta-branco) e o plasma lançado.
+    const COR_DO_CAMPO = '134, 185, 255';
+    const COR_HALFA = '255, 104, 80';
+    const COR_RAIOS_X = '206, 196, 255';
+    const COR_DO_PLASMA = '255, 196, 160';
+    // A câmera da erupção: E.S pixels por unidade, o meio em E.cx e a superfície em E.chao.
+    let E = { S: 1, cx: 0, chao: 0 };
+    const ex = (x) => E.cx + E.S * x;
+    const ey = (y) => E.chao - E.S * y;
+    function bezier2(p0, p1, p2, t) {
+      const u = 1 - t;
+      return [u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0], u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]];
+    }
+    function bezier3(p0, p1, p2, p3, t) {
+      const u = 1 - t, a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+      return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]];
+    }
+    /** Junta a metade da direita (de baixo para cima) com o espelho dela, de cima para baixo: o campo vai da direita para a esquerda. */
+    const comEspelho = (metade) => [...metade, ...metade.slice(0, -1).reverse().map(([x, y]) => [-x, y])];
+    /** A parte de cima de uma linha que contorna a corda (metade da direita): do pescoço (a, yN) sobe até o lado (R, h) e passa por cima. */
+    function metadeDoBalao(a, yN, h, R, Rv) {
+      const pontos = [], subida = Math.max(0, h - yN);
+      for (let j = 0; j <= 14; j++) pontos.push(bezier3([a, yN], [a, yN + 0.55 * subida], [R, h - 0.45 * subida], [R, h], j / 14));
+      for (let j = 1; j <= 12; j++) pontos.push([R * Math.cos((Math.PI / 2) * (j / 12)), h + Rv * Math.sin((Math.PI / 2) * (j / 12))]);
+      return pontos;
+    }
+    /** Uma linha ainda presa: do pé + sobe, chega perto do meio (o pescoço, embaixo da corda), contorna a corda e desce até o pé −. */
+    function linhaPresa(D, a, yN, h, R, Rv) {
+      const perna = [];
+      for (let j = 0; j <= 12; j++) perna.push(bezier3([D, 0], [D, 0.72 * yN], [a + 0.2 * (D - a), yN - 0.1], [a, yN], j / 12));
+      return comEspelho([...perna, ...metadeDoBalao(a, yN, h, R, Rv).slice(1)]);
+    }
+    /** A volta de cima de uma linha que acabou de se reconectar: fechada embaixo numa ponta que sobe até a corda (q de 0 a 1). */
+    function voltaEmTornoDaCorda(yBaixo, q, h, R, Rv) {
+      const metade = [], subida = Math.max(0.01, h - yBaixo);
+      for (let j = 0; j <= 14; j++) metade.push(bezier3([0, yBaixo], [entre(0.04, 0.55, q) * R, yBaixo + entre(0.45, 0, q) * subida], [R, h - 0.55 * subida], [R, h], j / 14));
+      for (let j = 1; j <= 12; j++) metade.push([R * Math.cos((Math.PI / 2) * (j / 12)), h + Rv * Math.sin((Math.PI / 2) * (j / 12))]);
+      return comEspelho(metade);
+    }
+    /** Um laço novo, de um pé ao outro: nasce pontudo, com a ponta no ponto neutro, e se arredonda (r de 0 a 1). */
+    function lacoNovo(D, yX, H, r) {
+      const pontos = [];
+      for (let j = 0; j <= 48; j++) {
+        const pontudo = j <= 24 ? bezier2([D, 0], [D, 0.75 * yX], [0, yX], j / 24) : bezier2([0, yX], [-D, 0.75 * yX], [-D, 0], (j - 24) / 24);
+        const teta = (Math.PI * j) / 48;
+        pontos.push([entre(pontudo[0], D * Math.cos(teta), r), entre(pontudo[1], H * Math.sin(teta), r)]);
+      }
+      return pontos;
+    }
+    /** Um arco do campo de um pé ao outro (do + ao −), com o topo na altura "alto". */
+    const arcoDeCampo = (D, alto, pontas = 30) => Array.from({ length: pontas + 1 }, (_, j) => bezier3([D, 0], [D, alto * 4 / 3], [-D, alto * 4 / 3], [-D, 0], j / pontas));
+    /** Um círculo do campo em volta do eixo da corda, no sentido das voltas de fora (por cima, para a esquerda). */
+    const circuloDoCampo = (h, raio) => Array.from({ length: 41 }, (_, j) => [raio * Math.cos(-Math.PI / 2 + (2 * Math.PI * j) / 40), h + raio * Math.sin(-Math.PI / 2 + (2 * Math.PI * j) / 40)]);
+    /** Traça uma linha do campo (pontos da cena), com setinhas que andam no sentido do campo, como na animação do flare. */
+    function tracarLinhaDoCampo(pontos, { forca = 0.6, espessura = 1.2, setinhas = 0.75, fase = 0, distancia = 64 } = {}) {
+      if (forca < 0.01 || pontos.length < 2) return;
+      const tela = pontos.map(([x, y]) => [ex(x), ey(y)]);
+      ctx.strokeStyle = `rgba(${COR_DO_CAMPO}, ${forca})`;
+      ctx.lineWidth = espessura;
+      ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
-      for (let k = 1; k <= 7; k++) {
-        const pe = P.S * (0.45 + 0.36 * k);
-        if (k <= nRec) {
-          // Reconectada: embaixo, um laço novo e quente (o flare); em cima, uma volta a mais em torno da corda.
-          aditivo(() => {
-            const quente = limitar(1 - (s - 2.4 - (k - 1) / 1.6) / 6, 0.25, 1);
-            for (const [largura, a] of [[P.S * 0.07, 0.25], [P.S * 0.022, 0.9]]) {
-              ctx.strokeStyle = `rgba(255, ${Math.round(entre(200, 245, quente))}, ${Math.round(entre(120, 200, quente))}, ${a})`;
-              ctx.lineWidth = largura;
-              ctx.beginPath();
-              ctx.moveTo(cx - pe * 0.55, base);
-              ctx.bezierCurveTo(cx - pe * 0.55, alturaDosLacos(k), cx + pe * 0.55, alturaDosLacos(k), cx + pe * 0.55, base);
-              ctx.stroke();
-            }
-            // As fitas: os pés dos laços novos brilham na superfície (e se afastam).
-            brilho(cx - pe * 0.55, base, P.S * 0.12, '255, 240, 200', 0.7 * quente);
-            brilho(cx + pe * 0.55, base, P.S * 0.12, '255, 240, 200', 0.7 * quente);
-          });
-          ctx.strokeStyle = `rgba(${COR_DAS_LINHAS}, 0.55)`;
-          ctx.lineWidth = Math.max(1, P.S * 0.016);
+      ctx.beginPath();
+      tela.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.stroke();
+      if (setinhas < 0.01) return;
+      let falta = (((estado.tempo * 20 + fase) % distancia) + distancia) % distancia;
+      ctx.strokeStyle = `rgba(${COR_DO_CAMPO}, ${Math.min(1, setinhas)})`;
+      ctx.lineWidth = 1.3;
+      for (let i = 1; i < tela.length; i++) {
+        const dx = tela[i][0] - tela[i - 1][0], dy = tela[i][1] - tela[i - 1][1], trecho = Math.hypot(dx, dy);
+        if (trecho < 1e-6) continue;
+        const ux = dx / trecho, uy = dy / trecho;
+        let andado = falta;
+        while (andado <= trecho) {
+          const x = tela[i - 1][0] + ux * andado, y = tela[i - 1][1] + uy * andado;
           ctx.beginPath();
-          ctx.ellipse(cx, cy, r * (1.15 + 0.12 * k), r * (1.1 + 0.11 * k), 0, 0, Math.PI * 2);
+          ctx.moveTo(x - ux * 4.5 - uy * 3, y - uy * 4.5 + ux * 3);
+          ctx.lineTo(x, y);
+          ctx.lineTo(x - ux * 4.5 + uy * 3, y - uy * 4.5 - ux * 3);
           ctx.stroke();
-        } else {
-          // Ainda presa: o arco se estica, com as pernas puxadas para o meio, embaixo da corda.
-          const aperto = limitar((h - 1.9) / 1.5, 0, 1) * (1 - k / 9);
-          const xPerna = pe * (1 - 0.85 * aperto);
-          const topo = cy - r - P.S * (0.1 + 0.16 * k);
-          ctx.strokeStyle = `rgba(255, 210, 140, ${0.75 - k * 0.06})`;
-          ctx.lineWidth = Math.max(1.2, P.S * 0.018);
+          andado += distancia;
+        }
+        falta = andado - trecho;
+      }
+    }
+    /** Uma linha que brilha (laço quente): várias passadas, da mais larga e fraca à mais fina e forte. */
+    function linhaQueBrilha(pontos, cor, forca, larguraBase) {
+      if (forca < 0.01 || pontos.length < 2) return;
+      aditivo(() => {
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        for (const [fator, alfa] of [[4, 0.12], [2, 0.3], [0.8, 0.85]]) {
+          ctx.strokeStyle = `rgba(${cor}, ${alfa * forca})`;
+          ctx.lineWidth = Math.max(0.8, larguraBase * fator);
           ctx.beginPath();
-          ctx.moveTo(cx - pe, base);
-          ctx.bezierCurveTo(cx - pe, base - P.S * 0.6, cx - xPerna, topoDaCamada + P.S * 0.3, cx - xPerna * 1.1, cy);
-          ctx.bezierCurveTo(cx - xPerna * 1.2, topo, cx + xPerna * 1.2, topo, cx + xPerna * 1.1, cy);
-          ctx.bezierCurveTo(cx + xPerna, topoDaCamada + P.S * 0.3, cx + pe, base - P.S * 0.6, cx + pe, base);
+          pontos.forEach(([x, y], i) => (i ? ctx.lineTo(ex(x), ey(y)) : ctx.moveTo(ex(x), ey(y))));
           ctx.stroke();
         }
+      });
+    }
+    /** A cor de um laço pela temperatura: quente (branco-violeta) → morno (laranja) → frio (vermelho de Hα). */
+    function corDoLaco(idade) {
+      const q = limitar(idade, 0, 1), quente = [232, 222, 255], morno = [255, 176, 96], frio = [255, 96, 72];
+      const [a, b, f] = q < 0.4 ? [quente, morno, q / 0.4] : [morno, frio, (q - 0.4) / 0.6];
+      return a.map((v, i) => Math.round(entre(v, b[i], f))).join(', ');
+    }
+    /** Um ponto ao longo de uma perna do laço (49 pontos): f = 0 no topo e f = 1 no pé (lado 1 à direita). */
+    function pontoNaPerna(pontos, f, lado) {
+      const i = 24 - lado * f * 24, i0 = Math.floor(i), i1 = Math.min(48, i0 + 1), q = i - i0;
+      return [entre(pontos[i0][0], pontos[i1][0], q), entre(pontos[i0][1], pontos[i1][1], q)];
+    }
+    // O chão de lado, como no flare: a fotosfera com grânulos, a cromosfera com espículas e as duas manchas (+ e −).
+    const GRANULOS_DO_CHAO = (() => { const s = sorteador(51); return Array.from({ length: 150 }, () => ({ x: s(), y: s(), r: 0.6 + 0.8 * s() })); })();
+    const ESPICULAS_DO_CHAO = (() => { const s = sorteador(77); return Array.from({ length: 160 }, () => ({ x: s(), h: 0.1 + 0.16 * s(), fase: s() * 6.28, inclina: (s() - 0.5) * 0.5 })); })();
+    const MANCHA_DA_ERUPCAO = 3.6;                // onde ficam as duas manchas (meia distância entre elas)
+    /** O chão, numa faixa da cena (x, w) até o "fundo"; as manchas ficam a ± manchas do meio. */
+    function desenharChaoDaErupcao(t, { x: xFaixa = cena.x, w: wFaixa = cena.w, fundo: fundoDaFaixa = cena.y + cena.h, manchas = MANCHA_DA_ERUPCAO } = {}) {
+      const y0 = E.chao, fundo = Math.max(y0 + 30, fundoDaFaixa);
+      const foto = ctx.createLinearGradient(0, y0, 0, fundo);
+      foto.addColorStop(0, 'rgb(240, 116, 50)');
+      foto.addColorStop(1, 'rgb(96, 26, 10)');
+      ctx.fillStyle = foto;
+      ctx.fillRect(xFaixa, y0, wFaixa, fundo - y0);
+      ctx.fillStyle = 'rgba(255, 206, 150, 0.16)';
+      for (const g of GRANULOS_DO_CHAO) {
+        ctx.beginPath();
+        ctx.ellipse(xFaixa + g.x * wFaixa, y0 + 3 + g.y * (fundo - y0 - 6), g.r * 9, g.r * 3.5, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
-      // A camada fina (as linhas opostas encostadas) e a reconexão nela.
-      const fundoDaCamada = nRec > 0 ? alturaDosLacos(nRec) : base - P.S * 0.2;
-      if (h > 2.05 && topoDaCamada < fundoDaCamada) {
+      aditivo(() => {
+        const alto = Math.max(14, 0.45 * E.S), cromo = ctx.createLinearGradient(0, y0, 0, y0 - alto);
+        cromo.addColorStop(0, 'rgba(255, 80, 50, 0.45)');
+        cromo.addColorStop(1, 'rgba(255, 80, 50, 0)');
+        ctx.fillStyle = cromo;
+        ctx.fillRect(xFaixa, y0 - alto, wFaixa, alto);
+        ctx.lineCap = 'round';
+        ctx.lineWidth = Math.max(1, 0.025 * E.S);
+        ctx.strokeStyle = 'rgba(255, 110, 80, 0.3)';
+        ctx.beginPath();
+        for (const e of ESPICULAS_DO_CHAO) {
+          const x = xFaixa + e.x * wFaixa, h = Math.max(5, e.h * E.S) * (0.85 + 0.15 * Math.sin(t * 0.9 + e.fase * 2));
+          ctx.moveTo(x, y0 - 1);
+          ctx.lineTo(x + e.inclina * h + 1.5 * Math.sin(t * 1.3 + e.fase), y0 - h);
+        }
+        ctx.stroke();
+      });
+      for (const lado of [-1, 1]) {
+        const x = ex(lado * manchas);
+        ctx.fillStyle = 'rgba(110, 34, 10, 0.92)';
+        ctx.beginPath();
+        ctx.ellipse(x, y0 + 2, Math.max(16, 0.5 * E.S), Math.max(3, 0.07 * E.S), 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(24, 6, 2, 0.96)';
+        ctx.beginPath();
+        ctx.ellipse(x, y0 + 3, Math.max(9, 0.28 * E.S), Math.max(2, 0.05 * E.S), 0, 0, Math.PI * 2);
+        ctx.fill();
+        sinalDePolaridade(x, y0 + 4, lado, 7);
+      }
+    }
+    /** A corda em corte: a cavidade escura, os anéis do campo e a proeminência (fios de gás frio que brilham em Hα). */
+    function desenharCordaDaErupcao(h, r, t, forca) {
+      const x = ex(0), y = ey(h), R = r * E.S;
+      aditivo(() => brilho(x, y, R * 2.1, '140, 185, 255', 0.22 * forca));
+      const g = ctx.createRadialGradient(x, y, 0, x, y, R);
+      g.addColorStop(0, `rgba(3, 5, 16, ${0.92 * forca})`);
+      g.addColorStop(1, `rgba(18, 28, 64, ${0.8 * forca})`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.fill();
+      aditivo(() => {
+        brilho(x, y + R * 0.5, R * 0.75, COR_HALFA, 0.32 * forca);
+        ctx.lineCap = 'round';
+        ctx.lineWidth = Math.max(1, R * 0.07);
+        for (let i = 0; i < 6; i++) {
+          const fundo = 0.16 + 0.11 * i, meia = R * 0.78 * Math.sqrt(Math.max(0, 1 - fundo * fundo)), onda = Math.sin(t * 1.3 + i * 1.7) * R * 0.05;
+          ctx.strokeStyle = `rgba(255, ${120 + 14 * (i % 3)}, ${96 + 10 * (i % 2)}, ${0.5 * forca})`;
+          ctx.beginPath();
+          ctx.moveTo(x - meia, y + R * (fundo - 0.06));
+          ctx.quadraticCurveTo(x + onda, y + R * (fundo + 0.14), x + meia, y + R * (fundo - 0.06));
+          ctx.stroke();
+        }
+      });
+      for (const f of [0.34, 0.6, 0.86]) tracarLinhaDoCampo(circuloDoCampo(h, r * f), { forca: 0.75 * forca, setinhas: 0.9 * forca, distancia: Math.max(18, R * 1.4), fase: f * 40 });
+      ctx.strokeStyle = `rgba(${COR_DO_CAMPO}, ${0.55 * forca})`;
+      ctx.lineWidth = Math.max(1.2, R * 0.04);
+      ctx.beginPath();
+      ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.stroke();
+      ponto(x, y, Math.max(2, R * 0.07), `rgba(220, 235, 255, ${forca})`);
+    }
+    // As amostras da legenda da erupção.
+    const AMOSTRAS_DA_ERUPCAO = {
+      campo(x1, x2, y) { seta(x1 + 2, y, x2 - 2, y, { cor: `rgba(${COR_DO_CAMPO}, 0.95)`, espessura: 1.4, ponta: 6 }); },
+      proeminencia(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 9, COR_HALFA, 0.85)); },
+      energia(x1, x2, y) {
+        const g = ctx.createLinearGradient(x1, 0, x2, 0);
+        g.addColorStop(0, 'rgba(40, 90, 220, 0.9)');
+        g.addColorStop(1, 'rgba(170, 215, 255, 0.95)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x1, y - 4, x2 - x1, 8);
+      },
+      flare(x1, x2, y) {
         aditivo(() => {
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-          ctx.lineWidth = Math.max(1.5, P.S * 0.02);
+          ctx.strokeStyle = 'rgba(255, 200, 150, 0.95)';
+          ctx.lineWidth = 2.4;
           ctx.beginPath();
-          ctx.moveTo(cx, fundoDaCamada);
-          ctx.lineTo(cx, topoDaCamada);
+          ctx.arc(x1 + 14, y + 6, 9, Math.PI * 1.1, Math.PI * 1.9);
           ctx.stroke();
-          const xr = fundoDaCamada - Math.min((fundoDaCamada - topoDaCamada) * 0.45, P.S * 1.3);
-          brilho(cx, xr, P.S * 0.25, '255, 255, 230', 0.6 + 0.3 * Math.sin(t * 9));
         });
-        if (parte3 && nRec > 0) {
-          const xr = fundoDaCamada - Math.min((fundoDaCamada - topoDaCamada) * 0.45, P.S * 1.3);
-          for (const lado of [1, -1]) seta(cx + lado * P.S * 0.9, xr, cx + lado * P.S * 0.25, xr, { cor: 'rgba(255, 255, 255, 0.75)', espessura: 1.6, ponta: 8 });
-          seta(cx, xr - P.S * 0.15, cx, xr - P.S * 0.6, { cor: 'rgba(255, 220, 160, 0.85)', espessura: 2, ponta: 9 });
-          seta(cx, xr + P.S * 0.15, cx, xr + P.S * 0.55, { cor: 'rgba(255, 220, 160, 0.85)', espessura: 2, ponta: 9 });
+      },
+      eletron(x1, x2, y) { ponto(x1 + 14, y, 2.4, '#f4f4f4'); },
+      raiosx(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 9, COR_RAIOS_X, 0.95)); },
+      halfa(x1, x2, y) { aditivo(() => brilho(x1 + 14, y, 9, COR_HALFA, 0.95)); },
+    };
+    function desenharErupcao(alfa) {
+      const parte2 = estado.cena === 'erupcao-2';
+      const forca = parte2 ? rotulos('erupcao-2') : rotulos('erupcao-1'), t = estado.tempo, s = estado.erupcao, h = alturaNaErupcao(s);
+      const vis = visibilidadeDaErupcao(s), nRec = linhasReconectadas(s), nc = reconexaoContinua(s), e = esticamento(s), yX = alturaDoPontoX(s);
+      caber(8, 6.2, { desvioY: -0.2 });
+      // Na parte 1, a câmera se afasta um pouco para acompanhar a corda (a superfície fica no mesmo lugar da tela); depois,
+      // a corda sai por cima. Na parte 2, ela fica perto da reconexão.
+      const chao = ty(-2.6), topoDaVista = cena.y + ESPACO_DO_TITULO + 14, r = 0.42 + 0.06 * Math.max(0, h - 2);
+      const afastar = parte2 ? 1 : limitar((h + r + 0.6) / ((chao - topoDaVista) / P.S), 1, 2.3);
+      E = { S: P.S / afastar, cx: tx(0), chao };
+      desenharChaoDaErupcao(t);
+      // As voltas em torno da corda (uma para cada linha reconectada) e o tamanho das linhas que ainda estão presas.
+      const anel = (j) => r * 1.18 + 0.1 * j;
+      const raioPreso = (k) => anel(nc) + 0.07 + 0.15 * (k - nc);
+      const pescoco = (k) => {
+        const natural = 0.92 * peDaLinha(k), presa = Math.max(k > RECONECTAM ? 0.1 * (k - RECONECTAM) : 0.035, 0.035 + 0.5 * (instanteDaLinha(k) - s));
+        return entre(natural, Math.min(natural, presa), e);
+      };
+      const yPescoco = entre(0.35, yX + 0.1, e);
+      // A energia guardada no campo (como o mapa de B² do flare): um brilho azul em volta da corda e embaixo dos
+      // arcos; apaga a cada reconexão.
+      const energia = energiaNaErupcao(s), externo = raioPreso(LINHAS_DA_ERUPCAO);
+      aditivo(() => {
+        const meio = (h + externo) / 2, alto = (h + externo) / 2 + 0.4, largo = Math.max(peDaLinha(LINHAS_DA_ERUPCAO) * 0.95, externo);
+        ctx.beginPath();
+        ctx.rect(cena.x, cena.y, cena.w, chao - cena.y);
+        ctx.clip();                                // só acima da superfície
+        ctx.save();
+        ctx.translate(ex(0), ey(meio));
+        ctx.scale(largo / alto, 1);
+        brilho(0, 0, alto * E.S, '45, 100, 225', 0.3 * energia * vis);
+        ctx.restore();
+        brilho(ex(0), ey(h), anel(nc) * E.S * 1.9, '110, 170, 255', 0.2 * energia * vis);
+      });
+      // A camada fina: as pernas das linhas presas, encostadas embaixo da corda, com o campo em sentidos opostos.
+      const baseDaCorda = h - anel(nc) - 0.05;
+      if (e > 0.3 && baseDaCorda > yX) {
+        aditivo(() => {
+          const g = ctx.createLinearGradient(0, ey(yX), 0, ey(baseDaCorda));
+          g.addColorStop(0, `rgba(220, 230, 255, ${0.34 * vis * e})`);
+          g.addColorStop(1, `rgba(220, 230, 255, ${0.06 * vis * e})`);
+          ctx.fillStyle = g;
+          // Um núcleo fino e um halo mais largo e fraco.
+          for (const [meiaLargura, alfa] of [[Math.max(1.2, 0.022 * E.S), 1], [Math.max(3, 0.08 * E.S), 0.35]]) {
+            ctx.globalAlpha = alfa;
+            ctx.fillRect(ex(0) - meiaLargura, ey(baseDaCorda), 2 * meiaLargura, ey(yX) - ey(baseDaCorda));
+          }
+        });
+      }
+      // As linhas presas (os arcos de cima), de fora para dentro. Antes de esticar, são arcos comuns por cima da corda;
+      // esticadas, contornam a corda de perto e as pernas se encostam embaixo dela.
+      let linhaDeFora = null;
+      for (let k = LINHAS_DA_ERUPCAO; k > nRec; k--) {
+        const D = peDaLinha(k), justo = raioPreso(k), solto = Math.max(justo, 0.9 * D);
+        const R = entre(solto, justo, e), Rv = entre(Math.max(0.62 * solto, 1.06 * justo), 1.06 * justo, e);
+        const pontos = linhaPresa(D, pescoco(k), yPescoco, h, R, Rv);
+        if (k === LINHAS_DA_ERUPCAO) linhaDeFora = pontos;
+        tracarLinhaDoCampo(pontos, { forca: (0.62 - 0.02 * k) * vis, setinhas: 0.8 * vis, fase: k * 13 });
+      }
+      // As linhas reconectadas, parte de cima: uma volta que sobe do ponto X e envolve a corda. O plasma vai junto.
+      for (let j = 1; j <= nRec; j++) {
+        const idade = s - instanteDaLinha(j), q = suave(idade / 0.9), R = anel(j), yXj = alturaDoPontoX(instanteDaLinha(j));
+        const yBaixo = entre(yXj, h - R, q);
+        tracarLinhaDoCampo(voltaEmTornoDaCorda(yBaixo, q, h, R, R), { forca: 0.62 * vis, setinhas: 0.8 * vis, fase: j * 17 });
+        if (q < 1) {
+          aditivo(() => {
+            ctx.save();
+            ctx.translate(ex(0), ey(yBaixo + 0.08));
+            ctx.scale(1, 1.6);
+            brilho(0, 0, Math.max(5, 0.2 * E.S), COR_DO_PLASMA, 0.7 * (1 - q) * vis);
+            ctx.restore();
+          });
         }
       }
-      if (cy + r > cena.y) desenharCordaEmCorte(cx, cy, r, t);
-      // O gráfico da altura no tempo, no canto de cima, à esquerda.
-      if (comNomes() && cena.w > 420) {
+      // A corda.
+      if (ey(h - r) > cena.y) desenharCordaDaErupcao(h, r, t, vis);
+      // As linhas reconectadas, parte de baixo: os laços novos. Nascem pontudos e quentes, se arredondam e esfriam; o
+      // topo aquece a coroa (raios X moles).
+      const lacos = [];
+      for (let j = 1; j <= nRec; j++) {
+        const idade = s - instanteDaLinha(j), D = peDaLinha(j), H = alturaDoLacoNovo(D), yXj = alturaDoPontoX(instanteDaLinha(j));
+        const pontos = lacoNovo(D, yXj, H, suave(idade / 1.6));
+        lacos.push({ j, idade, D, H, pontos });
+        tracarLinhaDoCampo(pontos, { forca: 0.22 * vis, setinhas: 0.4 * vis, fase: j * 9 });
+        linhaQueBrilha(pontos, corDoLaco(idade / 3.2), vis * (0.5 + 0.5 * Math.exp(-idade / 2.5)), Math.max(1, 0.035 * E.S));
+        if (idade < 4) {
+          const topo = pontos[24];
+          aditivo(() => {
+            ctx.save();
+            ctx.translate(ex(topo[0]), ey(topo[1]));
+            ctx.scale(1.6, 1);
+            brilho(0, 0, Math.max(8, 0.42 * E.S), COR_RAIOS_X, 0.38 * vis * Math.exp(-idade / 1.8));
+            ctx.restore();
+          });
+        }
+      }
+      // O ponto neutro: o campo entra pelos dois lados (o colapso) e, ali, B = 0.
+      const reconectando = e > 0.5 && s < instanteDaLinha(RECONECTAM) + 0.6;
+      if (reconectando) {
+        const somePerto = 1 - suave((s - instanteDaLinha(RECONECTAM)) / 0.6);
+        for (const lado of [-1, 1]) {
+          for (const dy of [-0.08, 0.08]) {
+            const vai = (t * 0.7 + (dy > 0 ? 0.5 : 0)) % 1;
+            seta(ex(lado * entre(1.0, 0.36, vai)), ey(yX + dy), ex(lado * entre(0.7, 0.12, vai)), ey(yX + dy),
+              { cor: `rgba(255, 255, 255, ${0.85 * Math.sin(Math.PI * vai) * vis * somePerto})`, espessura: 2, ponta: 8 });
+          }
+        }
+        const pulso = 0.5 + 0.5 * Math.sin(t * 4);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${(0.5 + 0.3 * pulso) * vis * somePerto})`;
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.arc(ex(0), ey(yX), 4 + 2 * pulso, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      // Cada reconexão: o clarão no ponto neutro, os elétrons que descem pelas pernas do laço novo e os pés que acendem
+      // em raios X e Hα (as fitas), que ficam acesos um tempo e se afastam a cada laço maior.
+      aditivo(() => {
+        for (const l of lacos) {
+          const yXj = alturaDoPontoX(instanteDaLinha(l.j));
+          brilho(ex(0), ey(yXj), Math.max(16, 0.6 * E.S), '255, 255, 255', 0.95 * vis * Math.exp(-l.idade / 0.35));
+          for (let k = 0; k < 5; k++) {
+            const f = (l.idade - k * 0.05) / 0.55;
+            if (f < 0 || f > 1) continue;
+            for (const lado of [-1, 1]) {
+              const [x, y] = pontoNaPerna(l.pontos, f, lado);
+              ponto(ex(x), ey(y), limitar(0.045 * E.S, 1.6, 3), `rgba(245, 245, 255, ${vis})`);
+            }
+          }
+          const pe = l.idade < 0.55 ? 0 : Math.exp(-(l.idade - 0.55) / 2.2);
+          for (const lado of [-1, 1]) {
+            ctx.save();
+            ctx.translate(ex(lado * l.D), ey(0.04));
+            ctx.scale(1.7, 1);
+            brilho(0, 0, Math.max(9, 0.34 * E.S), COR_HALFA, vis * 0.9 * (0.3 + 0.7 * pe) * (l.idade > 0.5 ? 1 : 0));
+            brilho(0, 0, Math.max(4, 0.15 * E.S), COR_RAIOS_X, vis * pe);
+            ctx.restore();
+          }
+        }
+      });
+      // O gráfico da altura no tempo, no canto de cima, à esquerda (parte 1).
+      let embaixoDoGrafico = cena.y + ESPACO_DO_TITULO + 6;
+      if (!parte2 && comNomes() && cena.w > 420) {
         const gx = cena.x + 26, gy = cena.y + ESPACO_DO_TITULO + 26, gw = Math.min(170, cena.w * 0.24), gh = 70;
         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         caixaArredondada(gx - 12, gy - 20, gw + 24, gh + 44, 10);
@@ -2376,24 +2676,50 @@
         escrever(T_`tempo`, gx + gw, gy + gh + 11, { tamanho: 10.5, cor: '#9a9a9a', alinhar: 'right' });
         escrever(T_`devagar`, gx + gw * 0.18, gy + gh - 12, { tamanho: 10, cor: '#bdbdbd', alinhar: 'center' });
         escrever(T_`dispara`, gx + gw * 0.82, gy + 14, { tamanho: 10, cor: '#bdbdbd', alinhar: 'center' });
+        embaixoDoGrafico = gy + gh + 32;
       }
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
-      if (cy + r > cena.y + ESPACO_DO_TITULO + 20) escrever(T_`corda de fluxo`, cx + r + 10, cy, { tamanho: 12, peso: 600, placa: true });
-      if (h > 2.05 && topoDaCamada < fundoDaCamada) {
-        const meio = (Math.max(topoDaCamada, cena.y + ESPACO_DO_TITULO + 60) + fundoDaCamada) / 2;
-        escrever(parte3 ? T_`reconexão: as linhas opostas se juntam e se cortam` : T_`camada fina: linhas opostas encostadas`, cx + P.S * 0.35, meio, { tamanho: 11.5, placa: true });
+      const A = AMOSTRAS_DA_ERUPCAO;
+      desenharLegenda(parte2
+        ? [[A.campo, T_`campo magnético`], [A.flare, T_`laço novo e quente (o flare)`], [A.eletron, T_`elétrons`], [A.raiosx, T_`raios X`], [A.halfa, T_`Hα`]]
+        : [[A.campo, T_`campo magnético`], [A.proeminencia, T_`proeminência`], [A.energia, T_`energia guardada no campo`]],
+      { y: embaixoDoGrafico });
+      const corda = { x: ex(0), y: ey(h), r: r * E.S }, cordaNaTela = corda.y + corda.r > cena.y + ESPACO_DO_TITULO + 20;
+      if (cordaNaTela) escrever(T_`corda de fluxo`, corda.x + anel(nc) * E.S + 10, corda.y, { tamanho: 12, peso: 600, placa: true });
+      const temCamada = e > 0.3 && baseDaCorda > yX;
+      if (!parte2) {
+        if (cordaNaTela && corda.y - corda.r > cena.y + ESPACO_DO_TITULO + 20) {
+          escrever(T_`proeminência`, corda.x - anel(nc) * E.S - 10, corda.y + corda.r * 0.5, { tamanho: 11, alinhar: 'right', placa: true, cor: '#ffc2b4' });
+        }
+        if (e > 0.3 && linhaDeFora) {
+          // Ao lado da linha de fora, no "ombro" dela (acima da corda).
+          const topoDaLinha = Math.max(...linhaDeFora.map(([, y]) => y));
+          const yTexto = Math.max(ey(h + 0.7 * (topoDaLinha - h)), cena.y + ESPACO_DO_TITULO + 30);
+          let xLinha = 0, perto = Infinity;
+          for (const [x, y] of linhaDeFora) if (x > 0 && Math.abs(ey(y) - yTexto) < perto) { perto = Math.abs(ey(y) - yTexto); xLinha = x; }
+          escrever(T_`os arcos de cima se esticam`, ex(xLinha) + 10, yTexto, { tamanho: 11.5, placa: true, cor: '#cfe0ff' });
+        }
+        if (temCamada) escrever(T_`camada fina: linhas opostas encostadas`, ex(0) + 0.42 * E.S + 8, (Math.max(ey(baseDaCorda), cena.y + ESPACO_DO_TITULO + 60) + ey(yX)) / 2, { tamanho: 11.5, placa: true });
+      } else {
+        if (reconectando && temCamada) {
+          escrever(T_`ponto neutro: B = 0`, ex(0) + 14, ey(yX) - 16, { tamanho: 11.5, peso: 600, placa: true });
+          escrever(T_`reconexão: as linhas opostas se juntam e se cortam`, ex(-1.05) - 4, ey(yX), { tamanho: 11.5, alinhar: 'right', placa: true });
+        }
+        if (cordaNaTela && nRec > 0) escrever(T_`a volta de cima envolve a corda`, corda.x + anel(nc) * E.S + 10, corda.y + 22, { tamanho: 11, placa: true, cor: '#cfe0ff' });
+        const ultimo = lacos[lacos.length - 1];
+        if (ultimo) {
+          escrever(T_`laços novos e quentes: o flare`, ex(-ultimo.D) - 10, ey(ultimo.H * 0.8), { tamanho: 11.5, placa: true, cor: '#ffe6b0', alinhar: 'right' });
+          if (ultimo.idade < 1.4) escrever(T_`elétrons descem pelas linhas`, ex(ultimo.D) + 10, ey(ultimo.H * 0.8), { tamanho: 11.5, placa: true, cor: '#f0f0f0' });
+          escrever(T_`pés: raios X e Hα (as fitas se afastam)`, ex(ultimo.D) + 10, ey(0) - 14, { tamanho: 11, placa: true, cor: '#ffd2c4' });
+        }
       }
-      if (parte3 && nRec > 0) {
-        escrever(T_`laços novos e quentes: o flare`, cx - P.S * 1.5, alturaDosLacos(Math.min(nRec, 3)) - 12, { tamanho: 11.5, placa: true, cor: '#ffe6b0', alinhar: 'right' });
-        escrever(T_`as fitas`, cx + P.S * (0.45 + 0.36 * nRec) * 0.55 + 12, base - 12, { tamanho: 11, placa: true, cor: '#fff3d0' });
-      }
-      if (cy + r < cena.y + ESPACO_DO_TITULO + 4) {
+      if (ey(h - r) < cena.y + ESPACO_DO_TITULO + 4) {
         // A corda já saiu por cima: daqui em diante, ela é a CME.
         const yTopo = cena.y + ESPACO_DO_TITULO + 16;
-        seta(cx, yTopo + 34, cx, yTopo + 2, { cor: 'rgba(255, 255, 255, 0.85)', espessura: 2, ponta: 9 });
-        escrever(T_`a corda saiu por cima: agora ela é a CME (veja o tema 3)`, cx + 14, yTopo + 14, { tamanho: 11.5, peso: 600, placa: true });
+        seta(ex(0), yTopo + 34, ex(0), yTopo + 2, { cor: 'rgba(255, 255, 255, 0.85)', espessura: 2, ponta: 9 });
+        escrever(T_`a corda saiu por cima: agora ela é a CME (veja o tema 3)`, ex(0) + 14, yTopo + 14, { tamanho: 11.5, peso: 600, placa: true });
       }
       if (afastar > 1.15) escrever(T_`a câmera se afasta para acompanhar a corda`, cena.x + 14, cena.y + cena.h - 16, { tamanho: 11, placa: true, cor: '#cfcfcf' });
       escrever(T_`t = ${comMilhar(s * MINUTOS_POR_SEGUNDO)} min (esquema)`, cena.x + cena.w - 110, cena.y + cena.h - 16, { tamanho: 11.5, alinhar: 'right', placa: true });
@@ -3711,30 +4037,35 @@
       const classe = FLARES_COM_CME[estado.classe], tamanho = [0.55, 0.8, 1.15][estado.classe];
       const atual = flares.atual, comCME = Boolean(atual && atual.cme);
       const sobe = comCME ? suave(limitar((t - 0.3) / (CICLO_DO_FLARE - 0.9), 0, 1)) : 0;
-      // A superfície, os arcos (que se abrem quando a CME sai) e o brilho do flare embaixo.
-      const g = ctx.createLinearGradient(0, base, 0, base + S * 0.6);
-      g.addColorStop(0, 'rgb(255, 214, 140)');
-      g.addColorStop(1, 'rgb(200, 90, 30)');
-      ctx.fillStyle = g;
-      ctx.fillRect(cena.x, base, wCena, topo + hCena - base);
-      ctx.lineCap = 'round';
+      // O chão e os arcos do campo, no estilo da erupção (partes 1 e 2): os arcos seguram a corda e, quando a CME sai,
+      // se abrem e apagam.
+      E = { S, cx, chao: base };
+      desenharChaoDaErupcao(estado.tempo, { x: cena.x, w: wCena, fundo: topo + hCena, manchas: 3 });
       for (let k = 1; k <= 5; k++) {
-        const pe = S * (0.6 + 0.4 * k), alto = base - S * (1.05 + 0.24 * k) - sobe * S * 0.5 * k;
-        arcoDoCampo(cx - pe, cx + pe, base, alto, `rgba(255, 210, 140, ${(0.7 - k * 0.08) * (1 - 0.6 * sobe)})`, Math.max(1.2, S * 0.02));
+        const fica = 1 - 0.6 * sobe;
+        tracarLinhaDoCampo(arcoDeCampo(0.6 + 0.4 * k, 1.05 + 0.24 * k + sobe * 0.5 * k), { forca: (0.66 - 0.05 * k) * fica, setinhas: 0.8 * fica, fase: k * 11 });
       }
-      const b = Math.exp(-t / 0.9) * suave(t / 0.12);
-      aditivo(() => {
-        brilho(cx, base - S * 0.2, S * 0.95 * tamanho, '255, 232, 175', 0.95 * b);
-        for (let k = 0; k < 4; k++) arcoDoCampo(cx - S * 0.11 * (k + 1) * tamanho, cx + S * 0.11 * (k + 1) * tamanho, base, base - S * 0.17 * (k + 1) * tamanho, `rgba(255, 240, 205, ${0.85 * b})`, 2);
-      });
+      // O flare: um clarão e laços pequenos que acendem quentes e esfriam; os pés deles brilham em raios X e Hα.
+      const b = Math.exp(-t / 0.9) * suave(t / 0.12), lacos = Math.exp(-t / 1.8) * suave(t / 0.12);
+      aditivo(() => brilho(cx, base - S * 0.2, S * 0.95 * tamanho, '255, 232, 175', 0.95 * b));
+      for (let k = 0; k < 4; k++) {
+        const D = 0.11 * (k + 1) * tamanho;
+        linhaQueBrilha(arcoDeCampo(D, 0.17 * (k + 1) * tamanho, 20), corDoLaco(t / 2.4 + k * 0.05), lacos, Math.max(1, 0.03 * S));
+        aditivo(() => {
+          for (const lado of [-1, 1]) {
+            ctx.save();
+            ctx.translate(ex(lado * D), ey(0.03));
+            ctx.scale(1.7, 1);
+            brilho(0, 0, Math.max(6, 0.22 * S), COR_HALFA, 0.75 * lacos);
+            brilho(0, 0, Math.max(3, 0.1 * S), COR_RAIOS_X, 0.8 * b);
+            ctx.restore();
+          }
+        });
+      }
       // A corda: fica (flare sem CME) ou dispara (flare com CME) e sai por cima.
-      const yCorda = base - S * 1.2 - sobe * (hCena + S), rCorda = S * 0.36 * (1 + 0.9 * sobe), alfaDaCorda = 1 - suave((sobe - 0.7) / 0.3);
-      if (alfaDaCorda > 0.02) {
-        ctx.save();
-        ctx.globalAlpha *= alfaDaCorda;
-        desenharCordaEmCorte(cx, yCorda, rCorda, estado.tempo);
-        ctx.restore();
-      }
+      const hCorda = 1.2 + sobe * (hCena / S + 1), rCorda = 0.36 * (1 + 0.9 * sobe), alfaDaCorda = 1 - suave((sobe - 0.7) / 0.3);
+      const yCorda = ey(hCorda);
+      if (alfaDaCorda > 0.02) desenharCordaDaErupcao(hCorda, rCorda, estado.tempo, alfaDaCorda);
       // As barras: quantos flares de cada classe vêm com uma CME.
       const xb = largo ? cena.x + wCena + 24 : cena.x + 24, wb = largo ? cena.w - wCena - 48 : cena.w - 48;
       const yb = largo ? topo + 92 : topo + hCena + 34, hb = largo ? Math.min(livre * 0.46, 200) : Math.max(40, livre - hCena - 76);
@@ -3768,7 +4099,7 @@
       const textoDoFlare = !atual ? '' : comCME ? T_`flare ${classe.classe} com CME: a corda sai` : T_`flare ${classe.classe} sem CME: a corda fica`;
       if (textoDoFlare && t < CICLO_DO_FLARE - 0.2) escrever(textoDoFlare, cx, topo + 16, { tamanho: 13, peso: 700, alinhar: 'center', placa: true, cor: comCME ? 'rgb(255, 190, 170)' : '#ffffff' });
       escrever(T_`o flare: o brilho embaixo`, cx + S * 1.1, base - S * 0.15, { tamanho: 11.5, placa: true, cor: '#ffe6b0' });
-      if (alfaDaCorda > 0.3 && yCorda > topo + 40) escrever(T_`a corda de fluxo (a futura CME)`, cx + rCorda + 10, yCorda, { tamanho: 11.5, placa: true });
+      if (alfaDaCorda > 0.3 && yCorda > topo + 40) escrever(T_`a corda de fluxo (a futura CME)`, cx + rCorda * S + 10, yCorda, { tamanho: 11.5, placa: true });
       ctx.restore();
     }
     AO_VIVO.push(() => {
