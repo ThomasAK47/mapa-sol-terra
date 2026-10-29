@@ -2066,20 +2066,36 @@
     let O = { S: 1, cx: 0, cy: 0 };
     const ox = (X, Y) => O.cx + O.S * (X + 0.32 * Y);
     const oy = (Y, Z) => O.cy - O.S * (0.4 * Y + Z);
+    // A fotosfera vista de cima, com as cores do chão da erupção (tema 2): grânulos claros e divisas escuras.
     const TEXTURA_DA_SUPERFICIE = (() => {
       const W = 512, H = 256, c = novaTela(W, H), g = c.getContext('2d'), s = sorteador(808);
-      g.fillStyle = 'rgb(236, 150, 60)';
+      g.fillStyle = 'rgb(206, 88, 36)';
       g.fillRect(0, 0, W, H);
-      for (let i = 0; i < 2600; i++) {
-        const claro = s() < 0.55;
-        g.fillStyle = claro ? `rgba(255, 236, 170, ${0.15 + 0.2 * s()})` : `rgba(140, 60, 10, ${0.12 + 0.14 * s()})`;
+      for (let i = 0; i < 1500; i++) {
+        g.fillStyle = `rgba(255, 186, 120, ${0.1 + 0.16 * s()})`;
         g.beginPath();
-        g.arc(s() * W, s() * H, 2 + 4 * s(), 0, Math.PI * 2);
+        g.arc(s() * W, s() * H, 3 + 4 * s(), 0, Math.PI * 2);
+        g.fill();
+      }
+      for (let i = 0; i < 900; i++) {
+        g.fillStyle = `rgba(96, 26, 10, ${0.1 + 0.14 * s()})`;
+        g.beginPath();
+        g.arc(s() * W, s() * H, 1 + 2 * s(), 0, Math.PI * 2);
         g.fill();
       }
       return c;
     })();
-    /** O plano da superfície (de X0 a X1, de Y0 a Y1), com a textura (uma transformação afim leva a textura ao paralelogramo). */
+    const ESPESSURA_DA_SUPERFICIE = 0.3;           // o bloco da fotosfera (só para o desenho ter volume)
+    /** Um polígono de pontos da vista oblíqua, [X, Y, Z]. */
+    function caminhoObliquo(pontos) {
+      ctx.beginPath();
+      pontos.forEach(([X, Y, Z], i) => (i ? ctx.lineTo(ox(X, Y), oy(Y, Z)) : ctx.moveTo(ox(X, Y), oy(Y, Z))));
+      ctx.closePath();
+    }
+    /**
+     * O bloco da superfície (de X0 a X1, de Y0 a Y1): em cima, a textura (uma transformação afim leva a textura ao
+     * paralelogramo); na frente e à direita, o corte, com o mesmo degradê do chão da erupção.
+     */
     function desenharSuperficie(X0, X1, Y0, Y1) {
       ctx.save();
       const sx = (X1 - X0) / TEXTURA_DA_SUPERFICIE.width, sy = (Y1 - Y0) / TEXTURA_DA_SUPERFICIE.height;
@@ -2087,6 +2103,72 @@
       ctx.transform(O.S * sx, 0, -O.S * 0.32 * sy, O.S * 0.4 * sy, ox(X0, Y1), oy(Y1, 0));
       ctx.drawImage(TEXTURA_DA_SUPERFICIE, 0, 0);
       ctx.restore();
+      const fundo = -ESPESSURA_DA_SUPERFICIE;
+      for (const [face, escurece] of [[[[X0, Y0, 0], [X1, Y0, 0], [X1, Y0, fundo], [X0, Y0, fundo]], 0], [[[X1, Y0, 0], [X1, Y1, 0], [X1, Y1, fundo], [X1, Y0, fundo]], 0.3]]) {
+        const corte = ctx.createLinearGradient(0, oy(Y0, 0), 0, oy(Y0, fundo));
+        corte.addColorStop(0, 'rgb(240, 116, 50)');
+        corte.addColorStop(1, 'rgb(96, 26, 10)');
+        ctx.fillStyle = corte;
+        caminhoObliquo(face);
+        ctx.fill();
+        if (escurece) {
+          ctx.fillStyle = `rgba(0, 0, 0, ${escurece})`;
+          ctx.fill();
+        }
+      }
+      // Os grânulos do corte da frente, como no chão da erupção.
+      ctx.save();
+      caminhoObliquo([[X0, Y0, 0], [X1, Y0, 0], [X1, Y0, fundo], [X0, Y0, fundo]]);
+      ctx.clip();
+      ctx.fillStyle = 'rgba(255, 206, 150, 0.16)';
+      const x0 = ox(X0, Y0), w = ox(X1, Y0) - x0, y0 = oy(Y0, 0), h = oy(Y0, fundo) - y0;
+      for (const g of GRANULOS_DO_CHAO) {
+        ctx.beginPath();
+        ctx.ellipse(x0 + g.x * w, y0 + 2 + g.y * (h - 4), g.r * 7, g.r * 2.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    /**
+     * A cromosfera sobre a superfície: um véu vermelho, mais forte no fundo, onde se olha de lado; ali, as espículas
+     * aparecem contra o céu, como no chão da erupção.
+     */
+    function desenharCromosferaObliqua(X0, X1, Y0, Y1, t) {
+      aditivo(() => {
+        caminhoObliquo([[X0, Y0, 0], [X1, Y0, 0], [X1, Y1, 0], [X0, Y1, 0]]);
+        ctx.fillStyle = 'rgba(255, 80, 50, 0.1)';
+        ctx.fill();
+        const alto = 0.4, borda = ctx.createLinearGradient(0, oy(Y1, 0), 0, oy(Y1, alto));
+        borda.addColorStop(0, 'rgba(255, 80, 50, 0.45)');
+        borda.addColorStop(1, 'rgba(255, 80, 50, 0)');
+        ctx.fillStyle = borda;
+        caminhoObliquo([[X0, Y1, 0], [X1, Y1, 0], [X1, Y1, alto], [X0, Y1, alto]]);
+        ctx.fill();
+        ctx.lineCap = 'round';
+        ctx.lineWidth = Math.max(1, 0.022 * O.S);
+        ctx.strokeStyle = 'rgba(255, 110, 80, 0.3)';
+        ctx.beginPath();
+        for (const [i, e] of ESPICULAS_DO_CHAO.entries()) {
+          // Cada espícula nasce perto da borda do fundo (o sorteio do chão da erupção dá o X; o Y vem da ordem).
+          const X = entre(X0, X1, e.x), Y = entre(Y1 - 0.3, Y1, (i * 0.618) % 1), h = e.h * (0.85 + 0.15 * Math.sin(t * 0.9 + e.fase * 2));
+          ctx.moveTo(ox(X, Y), oy(Y, 0));
+          ctx.lineTo(ox(X, Y) + e.inclina * h * O.S + 1.5 * Math.sin(t * 1.3 + e.fase), oy(Y, h));
+        }
+        ctx.stroke();
+      });
+    }
+    /** Uma mancha na superfície (vista de cima), com o sinal da polaridade, como as do chão da erupção. */
+    function manchaObliqua(X, Y, sinal) {
+      const x = ox(X, Y), y = oy(Y, 0), r = 0.3 * O.S;
+      ctx.fillStyle = 'rgba(110, 34, 10, 0.92)';
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(24, 6, 2, 0.96)';
+      ctx.beginPath();
+      ctx.ellipse(x, y, r * 0.55, r * 0.22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      sinalDePolaridade(x, y, sinal, 7);
     }
 
     // --- Tema 1: os pés das linhas andam com a superfície; os laços se torcem, guardam energia e, de vez em quando, se
@@ -2098,38 +2180,62 @@
       const s = t % PERIODO_DA_COROA;
       return { s, torcao: s < 9 ? 1.3 * suave(s / 9) : s < 11 ? 1.3 : 0, erupcao: s >= 9 && s < 11 ? (s - 9) / 2 : s >= 11 ? 1 : 0, volta: s >= 11 ? suave((s - 11) / 2.5) : 0 };
     }
+    // A superfície da vista oblíqua (de X0 a X1, de Y0 a Y1) e as manchas: a − na frente da linha entre as polaridades
+    // e a + atrás dela, para onde os pés de cada lado andam.
+    const PLANO_DA_REGIAO = [-2.9, 2.9, -1.3, 1.3];
+    const MANCHAS_DA_REGIAO = [{ X: -2.35, Y: -0.9, sinal: -1 }, { X: 2.35, Y: 0.9, sinal: 1 }];
     function desenharMexe(alfa) {
       const forca = rotulos('antes-1'), t = estado.tempoNaCena, f = faseDaCoroa(t);
       caber(6.4, 4.4, { desvioY: 0.2 });
       O = { S: P.S, cx: P.cx, cy: P.cy + P.S * 0.9 };
-      desenharSuperficie(-2.9, 2.9, -1.3, 1.3);
+      desenharSuperficie(...PLANO_DA_REGIAO);
+      for (const m of MANCHAS_DA_REGIAO) manchaObliqua(m.X, m.Y, m.sinal);
+      desenharCromosferaObliqua(...PLANO_DA_REGIAO, estado.tempo);
       // A linha que separa as duas polaridades.
-      tracejado(ox(-2.8, 0), oy(0, 0), ox(2.8, 0), oy(0, 0), 'rgba(80, 30, 0, 0.6)', [6, 5], 1.4);
+      tracejado(ox(-2.8, 0), oy(0, 0), ox(2.8, 0), oy(0, 0), 'rgba(255, 226, 200, 0.55)', [6, 5], 1.4);
       const brilhoDosLacos = f.erupcao > 0 && f.erupcao < 1 ? 1 - f.erupcao : f.erupcao >= 1 ? f.volta : 1;
+      // A energia guardada (esquema): cresce com a torção, sai na erupção e volta pouca.
+      const energia = f.erupcao >= 1 ? 0.06 * f.volta : f.erupcao > 0 ? (1 - f.erupcao) : (f.torcao / 1.3) ** 2;
+      // Os laços, do pé + (atrás da linha) ao pé − (na frente dela).
+      const lacos = LACOS_DA_REGIAO.map((l) => {
+        const meio = 1 - Math.abs(l.x) / 2.6, s = (f.erupcao >= 1 ? 0 : f.torcao) * meio;
+        const A = { X: l.x - s, Y: -0.6 }, B = { X: l.x + s, Y: 0.6 };
+        const comprimento = Math.hypot(B.X - A.X, B.Y - A.Y);
+        const h = (l.altura + 0.3 * comprimento) * (1 + (f.erupcao > 0 && f.erupcao < 1 ? 5 * f.erupcao * meio : 0));
+        const tela = Array.from({ length: 25 }, (_, j) => {
+          const u = j / 24, X = entre(B.X, A.X, u), Y = entre(B.Y, A.Y, u);
+          return [ox(X, Y), oy(Y, h * Math.sin(Math.PI * u))];
+        });
+        return { A, B, h, tela, quente: limitar(s / 1.1, 0, 1) };
+      });
+      // O brilho azul da energia, como no tema 2: em volta dos laços, mais forte no meio deles.
+      const alturaMedia = lacos.reduce((soma, l) => soma + l.h, 0) / lacos.length;
       aditivo(() => {
+        const alto = 0.5 * alturaMedia + 0.35, largo = 2.6;
+        ctx.save();
+        ctx.translate(ox(0, 0), oy(0, 0.5 * alturaMedia));
+        ctx.scale(largo / alto, 1);
+        brilho(0, 0, alto * O.S, '45, 100, 225', 0.5 * energia);
+        ctx.restore();
         ctx.lineCap = 'round';
-        for (const [k, l] of LACOS_DA_REGIAO.entries()) {
-          const meio = 1 - Math.abs(l.x) / 2.6, s = (f.erupcao >= 1 ? 0 : f.torcao) * meio;
-          const A = { X: l.x - s, Y: -0.6 }, B = { X: l.x + s, Y: 0.6 };
-          const comprimento = Math.hypot(B.X - A.X, B.Y - A.Y);
-          const h = (l.altura + 0.3 * comprimento) * (1 + (f.erupcao > 0 && f.erupcao < 1 ? 5 * f.erupcao * meio : 0));
-          const quente = limitar(s / 1.1, 0, 1);
-          for (const [largura, alfaDaLinha] of [[5, 0.18], [1.6, 0.85]]) {
-            ctx.strokeStyle = `rgba(255, ${Math.round(entre(190, 240, quente))}, ${Math.round(entre(110, 190, quente))}, ${alfaDaLinha * brilhoDosLacos})`;
-            ctx.lineWidth = largura * (P.S / 90);
-            ctx.beginPath();
-            for (let j = 0; j <= 24; j++) {
-              const u = j / 24, X = entre(A.X, B.X, u), Y = entre(A.Y, B.Y, u), Z = h * Math.sin(Math.PI * u);
-              if (j) ctx.lineTo(ox(X, Y), oy(Y, Z)); else ctx.moveTo(ox(X, Y), oy(Y, Z));
-            }
-            ctx.stroke();
-          }
-          // Os pés: pontinhos claros (um de cada polaridade).
-          if (k % 2 === 0) {
-            ponto(ox(A.X, A.Y), oy(A.Y, 0), 2.5, `rgba(${COR_NEGATIVA}, ${0.9 * brilhoDosLacos})`);
-            ponto(ox(B.X, B.Y), oy(B.Y, 0), 2.5, `rgba(${COR_POSITIVA}, ${0.9 * brilhoDosLacos})`);
-          }
+        ctx.lineJoin = 'round';
+        for (const l of lacos) {
+          ctx.strokeStyle = `rgba(110, 170, 255, ${0.18 * energia * brilhoDosLacos})`;
+          ctx.lineWidth = 6 * (P.S / 90);
+          ctx.beginPath();
+          l.tela.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+          ctx.stroke();
         }
+      });
+      for (const [k, l] of lacos.entries()) {
+        tracarNaTela(l.tela, { forca: (0.62 + 0.3 * l.quente) * brilhoDosLacos, espessura: Math.max(1.2, 1.6 * (P.S / 90)), setinhas: 0.85 * brilhoDosLacos, fase: k * 13 });
+        // Os pés: pontinhos da cor de cada polaridade.
+        if (k % 2 === 0) {
+          ponto(ox(l.A.X, l.A.Y), oy(l.A.Y, 0), 2.5, `rgba(${COR_NEGATIVA}, ${0.9 * brilhoDosLacos})`);
+          ponto(ox(l.B.X, l.B.Y), oy(l.B.Y, 0), 2.5, `rgba(${COR_POSITIVA}, ${0.9 * brilhoDosLacos})`);
+        }
+      }
+      aditivo(() => {
         // A erupção: um clarão na linha do meio e uma bolha de coroa que sobe e vai embora.
         if (f.erupcao > 0 && f.erupcao < 1) {
           brilho(ox(0, 0), oy(0, 0.1), P.S * 1.4, '255, 236, 190', 0.8 * Math.sin(Math.PI * f.erupcao));
@@ -2143,29 +2249,34 @@
         seta(ox(-0.5, -1.05), oy(-1.05, 0), ox(-1.4, -1.05), oy(-1.05, 0), { cor: `rgba(255, 255, 255, ${brilhoDasSetas})`, espessura: 2, ponta: 9 });
         seta(ox(0.5, 1.05), oy(1.05, 0), ox(1.4, 1.05), oy(1.05, 0), { cor: `rgba(255, 255, 255, ${brilhoDasSetas})`, espessura: 2, ponta: 9 });
       }
-      // A energia guardada (esquema), numa barra.
-      const energia = f.erupcao >= 1 ? 0.06 * f.volta : f.erupcao > 0 ? (1 - f.erupcao) : (f.torcao / 1.3) ** 2;
-      const bx = cena.x + 22, by = cena.y + cena.h - 30, bw = Math.min(180, cena.w * 0.3);
-      if (comNomes()) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-        caixaArredondada(bx, by, bw, 8, 4);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255, 200, 120)';
-        caixaArredondada(bx, by, Math.max(4, bw * energia), 8, 4);
-        ctx.fill();
-      }
       if (forca < 0.02) return;
       ctx.save();
       ctx.globalAlpha *= forca;
-      escrever(T_`energia guardada no campo (esquema)`, bx, by - 10, { tamanho: 11, cor: '#cfcfcf' });
       const dias = Math.round((f.s < 9 ? f.s : 9) * 1.5);
       const linha = f.erupcao > 0 && f.erupcao < 1 ? T_`o campo se reconfigura: parte da coroa vai embora (uma CME)` : f.erupcao >= 1 ? T_`depois: laços novos, mais calmos` : T_`os pés andam com a superfície: os laços se torcem`;
-      escreverBloco([
+      const bloco = escreverBloco([
         { texto: f.erupcao >= 1 ? T_`depois da erupção` : T_`dia ${dias}`, tamanho: 14, peso: 700, cor: '#ffffff' },
         { texto: linha, tamanho: 12, cor: '#ffe6b0' },
       ], cena.x + 14, cena.y + ESPACO_DO_TITULO + 14);
-      escrever(T_`linha entre as duas polaridades`, ox(2.6, 0), oy(0, 0) + 14, { tamanho: 10.5, cor: '#5a2a08', alinhar: 'right', contorno: false });
-      escrever(T_`superfície (fotosfera)`, ox(-2.7, 1.25), oy(1.25, 0) - 10, { tamanho: 11, cor: '#ffe6b0' });
+      const legenda = desenharLegenda([[AMOSTRAS_DA_ERUPCAO.campo, T_`campo magnético`]], { x: bloco.x, y: bloco.y + bloco.h + 8 });
+      // A energia guardada, numa barra embaixo da legenda, com o azul do brilho (como na legenda do tema 2).
+      const rotuloDaBarra = T_`energia guardada no campo (esquema)`, bw = Math.min(180, cena.w * 0.3);
+      const bx = bloco.x + 10, by = legenda.y + legenda.h + 32;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+      caixaArredondada(bloco.x, by - 24, Math.max(bw, larguraDoTexto(rotuloDaBarra, 11)) + 20, 40, 9);
+      ctx.fill();
+      escrever(rotuloDaBarra, bx, by - 11, { tamanho: 11, cor: '#cfcfcf' });
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      caixaArredondada(bx, by, bw, 8, 4);
+      ctx.fill();
+      const azul = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      azul.addColorStop(0, 'rgb(40, 90, 220)');
+      azul.addColorStop(1, 'rgb(170, 215, 255)');
+      ctx.fillStyle = azul;
+      caixaArredondada(bx, by, Math.max(4, bw * energia), 8, 4);
+      ctx.fill();
+      escrever(T_`linha entre as duas polaridades`, ox(2.6, 0), oy(0, 0) + 14, { tamanho: 10.5, cor: '#ffe2d0', alinhar: 'right', placa: true });
+      escrever(T_`superfície (fotosfera)`, ox(-2.7, 1.25), oy(1.25, 0) - 12, { tamanho: 11, cor: '#ffe2d0', placa: true });
       ctx.restore();
     }
     AO_VIVO.push(() => {
@@ -2176,65 +2287,34 @@
           : H_`dia ${Math.round(f.s * 1.5)}: os laços se torcem e guardam <b>${Math.round(100 * (f.torcao / 1.3) ** 2)}%</b> da energia que vão soltar (esquema)`);
     });
 
-    // --- Tema 1, parte 2: a corda de fluxo presa pelos arcos (corte de lado). ---
+    // --- Tema 1, parte 2: a corda de fluxo presa pelos arcos (corte de lado), no estilo da erupção (tema 2): o mesmo
+    //     chão, os arcos azuis do pé + (à direita) ao pé − (à esquerda), a mesma corda e a energia guardada como um
+    //     brilho azul. Com a energia no limite, a corda fica na altura em que a erupção começa. ---
     const ENERGIA_CRITICA = 80;                   // % (esquema): a partir daqui, não há mais equilíbrio
     const alturaDeEquilibrio = (energia) => 0.95 + 0.85 * (Math.min(energia, ENERGIA_CRITICA) / ENERGIA_CRITICA) ** 2;
-    /** A corda de fluxo em corte: anéis torcidos e a proeminência apoiada embaixo. */
-    function desenharCordaEmCorte(x, y, r, t, { brilhoDaCorda = 1 } = {}) {
-      aditivo(() => brilho(x, y, r * 1.5, '200, 215, 255', 0.18 * brilhoDaCorda));
-      ctx.fillStyle = 'rgba(10, 12, 30, 0.55)';
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-      // A proeminência: gás mais frio e denso, apoiado na parte de baixo da corda.
-      aditivo(() => {
-        for (let i = 0; i < 18; i++) {
-          const a = Math.PI * (0.15 + 0.7 * ((i * 0.618) % 1)), d = r * (0.35 + 0.45 * ((i * 0.37) % 1));
-          brilho(x + d * Math.cos(a) * 0.9, y + d * Math.sin(a) * 0.75, r * 0.22, COR_DA_PROEMINENCIA, 0.35 * brilhoDaCorda);
-        }
-      });
-      ctx.lineWidth = Math.max(1, r * 0.035);
-      for (let i = 1; i <= 4; i++) {
-        const ri = r * (0.22 * i);
-        ctx.strokeStyle = `rgba(${COR_DAS_LINHAS}, ${(0.9 - i * 0.12) * brilhoDaCorda})`;
-        ctx.beginPath();
-        ctx.arc(x, y, ri, 0, Math.PI * 2);
-        ctx.stroke();
-        const fase = -t * (1.1 - i * 0.15) + i * 1.7;
-        pontaDeSeta(x + ri * Math.cos(fase), y + ri * Math.sin(fase), Math.sin(fase), -Math.cos(fase), Math.max(5, r * 0.12), `rgba(${COR_DAS_LINHAS}, ${0.95 * brilhoDaCorda})`);
-      }
-      ponto(x, y, Math.max(2, r * 0.06), `rgba(${COR_DAS_LINHAS}, ${brilhoDaCorda})`);
-    }
-    /** Um arco do campo de um pé a outro, passando por cima de uma altura. */
-    function arcoDoCampo(x1, x2, yBase, yTopo, cor, largura) {
-      ctx.strokeStyle = cor;
-      ctx.lineWidth = largura;
-      ctx.beginPath();
-      ctx.moveTo(x1, yBase);
-      ctx.bezierCurveTo(x1, yBase + (yTopo - yBase) * 1.33, x2, yBase + (yTopo - yBase) * 1.33, x2, yBase);
-      ctx.stroke();
-    }
+    const RAIO_DA_CORDA_PRESA = 0.42;
+    const MANCHA_DA_CORDA_PRESA = 2.6;            // as manchas ficam perto dos pés dos arcos de fora
+    /** Os arcos de cima (as amarras): mais altos que a corda; sobem um pouco com ela. */
+    const arcosDaCordaPresa = (h) => Array.from({ length: 6 }, (_, i) => ({
+      D: 0.55 + 0.38 * (i + 1),
+      alto: h + RAIO_DA_CORDA_PRESA + (0.12 + 0.2 * (i + 1)) * (1 + 0.15 * (h - 0.95)),
+    }));
     function desenharPresa(alfa) {
       const forca = rotulos('antes-2'), t = estado.tempo;
       caber(7, 4.6, { desvioY: -0.3 });
       const base = ty(-1.6), h = alturaDeEquilibrio(estado.energia), semEquilibrio = estado.energia > ENERGIA_CRITICA;
       const treme = semEquilibrio ? 0.03 * Math.sin(t * 23) : 0;
-      const cx = tx(0), cy = ty(-1.6 + h + treme), r = P.S * 0.42;
-      // A superfície.
-      const g = ctx.createLinearGradient(0, base, 0, base + P.S * 0.6);
-      g.addColorStop(0, 'rgb(255, 214, 140)');
-      g.addColorStop(1, 'rgb(200, 90, 30)');
-      ctx.fillStyle = g;
-      ctx.fillRect(cena.x, base, cena.w, P.S * 0.8);
-      // Os arcos de cima (as amarras): mais altos que a corda.
-      ctx.lineCap = 'round';
-      for (let k = 1; k <= 6; k++) {
-        const pe = P.S * (0.55 + 0.38 * k), topo = cy - r - P.S * (0.12 + 0.2 * k) * (1 + 0.15 * (h - 0.95));
-        arcoDoCampo(cx - pe, cx + pe, base, topo, `rgba(255, 210, 140, ${0.75 - k * 0.07})`, Math.max(1.2, P.S * 0.018));
-      }
-      // Laços pequenos embaixo da corda.
-      for (let k = 1; k <= 2; k++) arcoDoCampo(cx - P.S * 0.18 * k, cx + P.S * 0.18 * k, base, base - P.S * 0.12 * k, 'rgba(255, 210, 140, 0.4)', 1.2);
-      desenharCordaEmCorte(cx, cy, r, t);
+      E = { S: P.S, cx: tx(0), chao: base };
+      const cx = ex(0), cy = ey(h + treme), r = E.S * RAIO_DA_CORDA_PRESA;
+      desenharChaoDaErupcao(t, { manchas: MANCHA_DA_CORDA_PRESA });
+      // A energia guardada no campo: cresce com o controle (no limite, é a do começo da erupção).
+      const arcos = arcosDaCordaPresa(h), externo = arcos[arcos.length - 1].alto - h;
+      desenharEnergiaDoCampo(h, externo, Math.max(arcos[arcos.length - 1].D * 0.95, externo), RAIO_DA_CORDA_PRESA * 1.18, estado.energia / ENERGIA_CRITICA);
+      // Os arcos de cima e dois laços pequenos embaixo da corda. No topo, o campo de todos aponta para a esquerda: por
+      // cima da corda, no mesmo sentido das voltas dela; embaixo, no sentido contrário ao da volta de baixo.
+      arcos.forEach((a, i) => tracarLinhaDoCampo(arcoDeCampo(a.D, a.alto), { forca: 0.66 - 0.05 * (i + 1), setinhas: 0.8, fase: (i + 1) * 11 }));
+      for (let k = 1; k <= 2; k++) tracarLinhaDoCampo(arcoDeCampo(0.18 * k, 0.12 * k, 16), { forca: 0.45, setinhas: 0.6, fase: k * 7, distancia: 30 });
+      desenharCordaDaErupcao(h + treme, RAIO_DA_CORDA_PRESA, t, 1);
       // As forças: a corda empurra para cima; os arcos seguram para baixo.
       const para = P.S * 0.5 * (estado.energia / 100) + 10, desce = P.S * 0.5 * (Math.min(estado.energia, ENERGIA_CRITICA) / 100) + 10;
       seta(cx, cy - r * 0.2, cx, cy - r * 0.2 - para - r * 0.6, { cor: 'rgb(255, 150, 120)', espessura: 3, ponta: 11 });
@@ -2244,14 +2324,20 @@
       ctx.save();
       ctx.globalAlpha *= forca;
       escrever(T_`corda de fluxo`, cx + r + 10, cy + r * 0.2, { tamanho: 12.5, peso: 600, placa: true });
-      escrever(T_`proeminência`, cx, cy + r + 14, { tamanho: 11, alinhar: 'center', placa: true, cor: `rgb(${COR_DA_PROEMINENCIA})` });
-      escrever(T_`a corda empurra para cima`, cx, cy - r * 0.8 - para - 14, { tamanho: 11.5, alinhar: 'center', placa: true, cor: 'rgb(255, 170, 140)' });
-      escrever(T_`os arcos seguram (as amarras)`, cx + r * 1.6 + 8, cy - r - P.S * 0.75, { tamanho: 11.5, placa: true, cor: 'rgb(170, 210, 255)' });
-      escrever(T_`superfície`, cena.x + 14, base + 14, { tamanho: 11, cor: '#5a2a08', contorno: false });
-      escreverBloco([
+      escrever(T_`proeminência`, cx, cy + r + 14, { tamanho: 11, alinhar: 'center', placa: true, cor: '#ffc2b4' });
+      const empurra = T_`a corda empurra para cima`, yEmpurra = cy - r * 0.8 - para - 14, ySeguram = cy - r - P.S * 0.75;
+      escrever(empurra, cx, yEmpurra, { tamanho: 11.5, alinhar: 'center', placa: true, cor: 'rgb(255, 170, 140)' });
+      // Com muita energia, os dois rótulos ficam na mesma altura: o dos arcos vai um pouco para a direita.
+      const xSeguram = cx + Math.max(r * 1.6 + 8, Math.abs(yEmpurra - ySeguram) < 24 ? larguraDoTexto(empurra, 11.5) / 2 + 24 : 0);
+      escrever(T_`os arcos seguram (as amarras)`, xSeguram, ySeguram, { tamanho: 11.5, placa: true, cor: 'rgb(170, 210, 255)' });
+      escrever(T_`superfície`, cena.x + 14, base + 16, { tamanho: 11, cor: '#ffe2d0', placa: true });
+      const bloco = escreverBloco([
         { texto: semEquilibrio ? T_`sem equilíbrio` : T_`em equilíbrio`, tamanho: 14, peso: 700, cor: semEquilibrio ? 'rgb(255, 150, 120)' : '#ffffff' },
         { texto: semEquilibrio ? T_`a corda vai disparar (veja o tema 2)` : T_`mais energia: a corda sobe um pouco e para`, tamanho: 12, cor: '#ffe6b0' },
       ], cena.x + 14, cena.y + ESPACO_DO_TITULO + 14);
+      const A = AMOSTRAS_DA_ERUPCAO;
+      desenharLegenda([[A.campo, T_`campo magnético`], [A.proeminencia, T_`proeminência`], [A.energia, T_`energia guardada no campo`]],
+        { x: bloco.x, y: bloco.y + bloco.h + 8 });
       ctx.restore();
     }
     PAINEIS.push(() => {
@@ -2348,9 +2434,10 @@
     /** Um círculo do campo em volta do eixo da corda, no sentido das voltas de fora (por cima, para a esquerda). */
     const circuloDoCampo = (h, raio) => Array.from({ length: 41 }, (_, j) => [raio * Math.cos(-Math.PI / 2 + (2 * Math.PI * j) / 40), h + raio * Math.sin(-Math.PI / 2 + (2 * Math.PI * j) / 40)]);
     /** Traça uma linha do campo (pontos da cena), com setinhas que andam no sentido do campo, como na animação do flare. */
-    function tracarLinhaDoCampo(pontos, { forca = 0.6, espessura = 1.2, setinhas = 0.75, fase = 0, distancia = 64 } = {}) {
-      if (forca < 0.01 || pontos.length < 2) return;
-      const tela = pontos.map(([x, y]) => [ex(x), ey(y)]);
+    function tracarLinhaDoCampo(pontos, opcoes) { tracarNaTela(pontos.map(([x, y]) => [ex(x), ey(y)]), opcoes); }
+    /** O mesmo, com os pontos já na tela (a vista oblíqua do tema 1 usa esta). */
+    function tracarNaTela(tela, { forca = 0.6, espessura = 1.2, setinhas = 0.75, fase = 0, distancia = 64 } = {}) {
+      if (forca < 0.01 || tela.length < 2) return;
       ctx.strokeStyle = `rgba(${COR_DO_CAMPO}, ${forca})`;
       ctx.lineWidth = espessura;
       ctx.lineJoin = 'round';
@@ -2485,6 +2572,24 @@
       ctx.stroke();
       ponto(x, y, Math.max(2, R * 0.07), `rgba(220, 235, 255, ${forca})`);
     }
+    /**
+     * A energia guardada no campo (como o mapa de B² do flare): um brilho azul embaixo dos arcos, até um pouco acima da
+     * linha de fora (que passa a "externo" do centro da corda), e outro em volta da corda. Só acima da superfície.
+     */
+    function desenharEnergiaDoCampo(h, externo, largo, anelDaCorda, forca) {
+      aditivo(() => {
+        const meio = (h + externo) / 2, alto = (h + externo) / 2 + 0.4;
+        ctx.beginPath();
+        ctx.rect(cena.x, cena.y, cena.w, E.chao - cena.y);
+        ctx.clip();
+        ctx.save();
+        ctx.translate(ex(0), ey(meio));
+        ctx.scale(largo / alto, 1);
+        brilho(0, 0, alto * E.S, '45, 100, 225', 0.3 * forca);
+        ctx.restore();
+        brilho(ex(0), ey(h), anelDaCorda * E.S * 1.9, '110, 170, 255', 0.2 * forca);
+      });
+    }
     // As amostras da legenda da erupção.
     const AMOSTRAS_DA_ERUPCAO = {
       campo(x1, x2, y) { seta(x1 + 2, y, x2 - 2, y, { cor: `rgba(${COR_DO_CAMPO}, 0.95)`, espessura: 1.4, ponta: 6 }); },
@@ -2528,21 +2633,9 @@
         return entre(natural, Math.min(natural, presa), e);
       };
       const yPescoco = entre(0.35, yX + 0.1, e);
-      // A energia guardada no campo (como o mapa de B² do flare): um brilho azul em volta da corda e embaixo dos
-      // arcos; apaga a cada reconexão.
-      const energia = energiaNaErupcao(s), externo = raioPreso(LINHAS_DA_ERUPCAO);
-      aditivo(() => {
-        const meio = (h + externo) / 2, alto = (h + externo) / 2 + 0.4, largo = Math.max(peDaLinha(LINHAS_DA_ERUPCAO) * 0.95, externo);
-        ctx.beginPath();
-        ctx.rect(cena.x, cena.y, cena.w, chao - cena.y);
-        ctx.clip();                                // só acima da superfície
-        ctx.save();
-        ctx.translate(ex(0), ey(meio));
-        ctx.scale(largo / alto, 1);
-        brilho(0, 0, alto * E.S, '45, 100, 225', 0.3 * energia * vis);
-        ctx.restore();
-        brilho(ex(0), ey(h), anel(nc) * E.S * 1.9, '110, 170, 255', 0.2 * energia * vis);
-      });
+      // A energia guardada no campo: apaga a cada reconexão.
+      const externo = raioPreso(LINHAS_DA_ERUPCAO);
+      desenharEnergiaDoCampo(h, externo, Math.max(peDaLinha(LINHAS_DA_ERUPCAO) * 0.95, externo), anel(nc), energiaNaErupcao(s) * vis);
       // A camada fina: as pernas das linhas presas, encostadas embaixo da corda, com o campo em sentidos opostos.
       const baseDaCorda = h - anel(nc) - 0.05;
       if (e > 0.3 && baseDaCorda > yX) {

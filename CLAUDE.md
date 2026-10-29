@@ -985,15 +985,42 @@ janela mudar, atualize o contrato junto. Resumo técnico:
       pulsa, o clarão de cada reconexão, os elétrons que descem pelas pernas
       e os pés que acendem em raios X e Hα (as fitas, que se afastam);
     - a energia guardada no campo: um brilho azul (como o mapa de B² do
-      passo 3 do flare) que apaga a cada reconexão (`energiaNaErupcao`);
+      passo 3 do flare) que apaga a cada reconexão (`energiaNaErupcao`,
+      desenhado por `desenharEnergiaDoCampo`, que o tema 1 também usa);
     - a corda (`desenharCordaDaErupcao`): cavidade escura, anéis do campo com
-      setinhas e a proeminência em fios vermelhos. `desenharCordaEmCorte` e
-      `arcoDoCampo` (o estilo antigo) continuam no tema 1;
+      setinhas e a proeminência em fios vermelhos;
     - a câmera da parte 1 se afasta até 2,3× (antes, 3,2×: ficava vazio); o
       ciclo continua com 9,5 s, agora aparecendo e sumindo nas pontas
       (`visibilidadeDaErupcao`);
     - a parte 3 (CME × flare) usa o mesmo chão, os arcos azuis
       (`arcoDeCampo`), os laços que esfriam, as fitas e a corda nova.
+  - **Tema 1 (antes da erupção) no mesmo estilo, também em 2026-10-29**, para
+    a passagem do tema 1 ao 2 não mudar o visual. A física e os textos do
+    painel não mudaram:
+    - parte 2 (`desenharPresa`): o chão da erupção (manchas a ±2,6,
+      `MANCHA_DA_CORDA_PRESA`), os 6 arcos de cima (`arcosDaCordaPresa`) e os
+      2 laços pequenos embaixo da corda como linhas azuis com setinhas, do +
+      (à direita) ao − (à esquerda), a corda nova e o brilho azul da energia,
+      que cresce com o controle (`energia / ENERGIA_CRITICA`: no limite, é o
+      do começo da erupção, e a corda fica na altura em que a erupção
+      começa, 1,8). As setas das forças e os rótulos continuam; a legenda
+      (campo, proeminência, energia) fica embaixo do bloco de cima. Com muita
+      energia, o rótulo dos arcos vai para a direita, para não cobrir o da
+      corda;
+    - parte 1 (`desenharMexe`, a vista oblíqua `ox`/`oy`): a superfície é um
+      bloco (`desenharSuperficie`: grânulos em cima e, na frente e à
+      direita, o corte com o degradê do chão da erupção), com a cromosfera
+      (`desenharCromosferaObliqua`: véu vermelho e espículas na borda do
+      fundo) e as manchas (`MANCHAS_DA_REGIAO`, `manchaObliqua`): a − na
+      frente da linha das polaridades e a + atrás, para onde os pés de cada
+      lado andam. Os laços são linhas azuis com setinhas, do pé + (atrás) ao
+      pé − (na frente), traçadas por `tracarNaTela` (a versão de
+      `tracarLinhaDoCampo` com os pontos já na tela). Com a torção, o campo
+      por cima também aponta para a esquerda, como no tema 2. A energia é um
+      brilho azul em volta dos laços, e a barra (com o azul da legenda do
+      tema 2) fica embaixo da legenda, no canto de cima;
+    - `desenharCordaEmCorte` e `arcoDoCampo` (o estilo antigo) saíram do
+      arquivo.
   - A visão geral: uma CME de 1 200 km/s (`cmeNoRelogio`), com o coronógrafo
     pequeno; as partes do desenho (`TEMA_DA_ZONA`, `zonaSobOPonteiro`) levam
     aos temas 1 a 5, e o tema 6 tem um nome no canto.
