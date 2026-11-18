@@ -1,125 +1,353 @@
 {
-  "versao": 1,
+  "versao": 2,
+  "escalaDosCards": 2,
   "zonas": [
     {
       "id": "sol",
       "nome": "Sol",
       "detalhe": "interior e superfície",
       "ordem": 1,
-      "largura": 1200
-    },
-    {
-      "id": "atmosfera-solar",
-      "nome": "Atmosfera solar e eventos",
-      "detalhe": "coroa, flares, CMEs, buracos coronais",
-      "ordem": 2,
-      "largura": 1200
+      "largura": 1898
     },
     {
       "id": "meio-interplanetario",
       "nome": "Meio interplanetário",
       "detalhe": "vento solar, campo magnético interplanetário",
-      "ordem": 3,
-      "largura": 1200
+      "ordem": 2,
+      "largura": 2932
     },
     {
       "id": "magnetosfera",
       "nome": "Magnetosfera",
       "detalhe": "",
-      "ordem": 4,
-      "largura": 1200
+      "ordem": 3,
+      "largura": 3004
     },
     {
       "id": "ionosfera-termosfera",
       "nome": "Ionosfera e termosfera",
       "detalhe": "",
-      "ordem": 5,
-      "largura": 1200
+      "ordem": 4,
+      "largura": 2044
     },
     {
       "id": "superficie-terrestre",
-      "nome": "Superfície terrestre e efeitos",
+      "nome": "Superfície terrestre",
       "detalhe": "",
-      "ordem": 6,
-      "largura": 1200
+      "ordem": 5,
+      "largura": 2112
     }
   ],
   "cards": [
     {
-      "id": "c-exemplo1",
-      "titulo": "[exemplo] Assunto A",
-      "descricao": "",
-      "zona": "sol",
-      "x": 800,
-      "y": -140,
-      "pai": null,
-      "recolhido": false,
-      "tags": [],
-      "animacao": null,
-      "linkDocs": null,
-      "criadoEm": "2026-09-30T18:00:00.000Z",
-      "atualizadoEm": "2026-09-30T18:00:00.000Z"
-    },
-    {
-      "id": "c-exemplo2",
-      "titulo": "[exemplo] Assunto B",
-      "descricao": "",
-      "zona": "atmosfera-solar",
-      "x": 600,
-      "y": 120,
-      "pai": null,
-      "recolhido": false,
-      "tags": [],
-      "animacao": null,
-      "linkDocs": null,
-      "criadoEm": "2026-09-30T18:00:00.000Z",
-      "atualizadoEm": "2026-09-30T18:00:00.000Z"
-    },
-    {
-      "id": "c-exemplo3",
-      "titulo": "[exemplo] Assunto C",
-      "descricao": "",
-      "zona": "meio-interplanetario",
-      "x": 600,
-      "y": -60,
-      "pai": null,
-      "recolhido": false,
-      "tags": [],
-      "animacao": null,
-      "linkDocs": null,
-      "criadoEm": "2026-09-30T18:00:00.000Z",
-      "atualizadoEm": "2026-09-30T18:00:00.000Z"
-    },
-    {
       "id": "c-exemplo4",
-      "titulo": "[exemplo] Assunto D",
+      "titulo": "Magnetopausa",
+      "descricao": "É a fronteira que separa o campo magnético da terra com o vento solar, não é estática, se move conforme a intensidade do vento solar.",
+      "zona": "magnetosfera",
+      "x": 729,
+      "y": -2601,
+      "pai": null,
+      "recolhido": false,
+      "escala": 1,
+      "tags": [],
+      "animacoes": [
+        "magnetopausa.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-09-30T18:00:00.000Z",
+      "atualizadoEm": "2026-10-01T20:18:19.891Z"
+    },
+    {
+      "id": "c-b6zltsaq",
+      "titulo": "Vento Solar",
+      "descricao": "Fluxo sempre constante de partículas carregadas, principalmete de prótons e elétrons.",
+      "zona": "meio-interplanetario",
+      "x": 1488,
+      "y": -3568,
+      "pai": null,
+      "recolhido": false,
+      "escala": 1,
+      "tags": [
+        "vento solar"
+      ],
+      "animacoes": [
+        "vento-solar-bz.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-01T19:13:11.876Z",
+      "atualizadoEm": "2026-10-06T20:11:58.557Z"
+    },
+    {
+      "id": "c-p870cc7v",
+      "titulo": "Flare Solar",
+      "descricao": "Explosão súbita e gigante de energia e radiação na superficie do sol.",
+      "zona": "sol",
+      "x": -763,
+      "y": -2157,
+      "pai": null,
+      "recolhido": false,
+      "escala": 0.92,
+      "tags": [],
+      "animacoes": [
+        "flare-solar.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-01T19:17:43.642Z",
+      "atualizadoEm": "2026-11-03T18:07:20.437Z"
+    },
+    {
+      "id": "c-vesgmtjw",
+      "titulo": "Buraco Coronal",
+      "descricao": "Região de baixa densidade, emite menos luz em todos os comprimentos de onda.",
+      "zona": "sol",
+      "x": -1886,
+      "y": -3192,
+      "pai": "c-m5y0m1lm",
+      "recolhido": false,
+      "escala": 0.91,
+      "tags": [],
+      "animacoes": [],
+      "linkDocs": null,
+      "criadoEm": "2026-10-01T19:29:18.495Z",
+      "atualizadoEm": "2026-11-03T18:10:05.815Z"
+    },
+    {
+      "id": "c-ve6wkfmy",
+      "titulo": "CME",
+      "descricao": "Ejeção de Massa Coronal. Enorme explosão de plasma e campos magnéticos se desprendem da coroa solar.",
+      "zona": "sol",
+      "x": 190,
+      "y": -3227,
+      "pai": null,
+      "recolhido": false,
+      "escala": 1,
+      "tags": [],
+      "animacoes": [
+        "cme-no-sol.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-01T19:38:29.698Z",
+      "atualizadoEm": "2026-10-16T23:00:38.419Z"
+    },
+    {
+      "id": "c-m5y0m1lm",
+      "titulo": "Ciclo de Atividade Solar",
+      "descricao": "Um clico leva em torno de 11 anos.",
+      "zona": "sol",
+      "x": -3560,
+      "y": -3456,
+      "pai": "c-befamkw4",
+      "recolhido": false,
+      "escala": 0.94,
+      "tags": [
+        "ciclo solar"
+      ],
+      "animacoes": [
+        "ciclo-solar.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-01T19:41:07.116Z",
+      "atualizadoEm": "2026-10-21T18:58:57.093Z"
+    },
+    {
+      "id": "c-p98voqr2",
+      "titulo": "Magnetosfera",
       "descricao": "",
       "zona": "magnetosfera",
-      "x": 600,
-      "y": 160,
+      "x": 1591,
+      "y": -3809,
       "pai": null,
       "recolhido": false,
+      "escala": 1.67,
       "tags": [],
-      "animacao": null,
+      "animacoes": [],
       "linkDocs": null,
-      "criadoEm": "2026-09-30T18:00:00.000Z",
-      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+      "criadoEm": "2026-10-01T22:57:04.562Z",
+      "atualizadoEm": "2026-10-06T17:00:53.283Z"
     },
     {
-      "id": "c-exemplo5",
-      "titulo": "[exemplo] Assunto E",
+      "id": "c-npf1hald",
+      "titulo": "Campo Geomagnético",
       "descricao": "",
-      "zona": "ionosfera-termosfera",
-      "x": 600,
-      "y": -120,
+      "zona": "magnetosfera",
+      "x": 2509,
+      "y": -2360,
       "pai": null,
       "recolhido": false,
+      "escala": 1.21,
       "tags": [],
-      "animacao": null,
+      "animacoes": [
+        "geomagnetico-1-campo-num-ponto.html",
+        "geomagnetico-2-linhas-de-campo.html",
+        "geomagnetico-3-alem-do-dipolo.html"
+      ],
       "linkDocs": null,
-      "criadoEm": "2026-09-30T18:00:00.000Z",
-      "atualizadoEm": "2026-09-30T18:00:00.000Z"
+      "criadoEm": "2026-10-02T11:54:43.782Z",
+      "atualizadoEm": "2026-10-06T18:10:00.706Z"
+    },
+    {
+      "id": "c-y2sgmj1i",
+      "titulo": "Corrente de Anel",
+      "descricao": "",
+      "zona": "magnetosfera",
+      "x": 1753,
+      "y": -1605,
+      "pai": null,
+      "recolhido": false,
+      "escala": 1,
+      "tags": [],
+      "animacoes": [
+        "corrente-de-anel.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-07T21:49:03.593Z",
+      "atualizadoEm": "2026-10-07T21:49:21.672Z"
+    },
+    {
+      "id": "c-befamkw4",
+      "titulo": "Sol",
+      "descricao": "Estrela do no sistema solar.",
+      "zona": "sol",
+      "x": -904,
+      "y": -4424,
+      "pai": null,
+      "recolhido": false,
+      "escala": 3,
+      "tags": [],
+      "animacoes": [
+        "estrutura-do-sol.html"
+      ],
+      "linkDocs": null,
+      "criadoEm": "2026-10-13T19:51:58.392Z",
+      "atualizadoEm": "2026-10-21T18:59:19.554Z"
     }
   ],
-  "conexoes": []
+  "conexoes": [
+    {
+      "id": "x-0f1sgwcj",
+      "de": "c-b6zltsaq",
+      "para": "c-exemplo4",
+      "texto": "Interação Constante",
+      "direcional": true,
+      "criadoEm": "2026-10-01T19:15:05.556Z",
+      "atualizadoEm": "2026-10-01T19:15:42.827Z"
+    },
+    {
+      "id": "x-7q0no9px",
+      "de": "c-p870cc7v",
+      "para": "c-b6zltsaq",
+      "texto": "Agrava",
+      "direcional": true,
+      "criadoEm": "2026-10-01T19:20:03.366Z",
+      "atualizadoEm": "2026-10-01T19:23:34.936Z"
+    },
+    {
+      "id": "x-nmlfjyrt",
+      "de": "c-m5y0m1lm",
+      "para": "c-vesgmtjw",
+      "texto": "Aumenta/Diminui",
+      "direcional": false,
+      "criadoEm": "2026-10-01T19:45:16.320Z",
+      "atualizadoEm": "2026-10-14T16:49:41.876Z"
+    },
+    {
+      "id": "x-as4m9i1v",
+      "de": "c-p98voqr2",
+      "para": "c-npf1hald",
+      "texto": "Resultado do",
+      "direcional": true,
+      "criadoEm": "2026-10-06T17:00:59.489Z",
+      "atualizadoEm": "2026-10-06T17:01:44.734Z"
+    },
+    {
+      "id": "x-tqczt26o",
+      "de": "c-p98voqr2",
+      "para": "c-exemplo4",
+      "texto": "Linha de frente",
+      "direcional": true,
+      "criadoEm": "2026-10-06T17:03:56.898Z",
+      "atualizadoEm": "2026-10-06T17:04:01.538Z"
+    },
+    {
+      "id": "x-01myclgg",
+      "de": "c-befamkw4",
+      "para": "c-b6zltsaq",
+      "texto": "",
+      "direcional": true,
+      "criadoEm": "2026-10-13T20:12:19.391Z",
+      "atualizadoEm": "2026-10-13T20:12:19.391Z"
+    },
+    {
+      "id": "x-z4htjf8q",
+      "de": "c-befamkw4",
+      "para": "c-m5y0m1lm",
+      "texto": "Possui",
+      "direcional": true,
+      "criadoEm": "2026-10-13T20:12:45.799Z",
+      "atualizadoEm": "2026-10-20T17:14:54.930Z"
+    },
+    {
+      "id": "x-5cya80wm",
+      "de": "c-befamkw4",
+      "para": "c-p870cc7v",
+      "texto": "Produz",
+      "direcional": true,
+      "criadoEm": "2026-10-13T20:13:03.311Z",
+      "atualizadoEm": "2026-10-13T20:13:12.919Z"
+    },
+    {
+      "id": "x-ml3kq4e8",
+      "de": "c-befamkw4",
+      "para": "c-vesgmtjw",
+      "texto": "Possui",
+      "direcional": true,
+      "criadoEm": "2026-10-13T20:13:54.151Z",
+      "atualizadoEm": "2026-10-20T17:13:39.481Z"
+    },
+    {
+      "id": "x-kq4p7ml9",
+      "de": "c-p870cc7v",
+      "para": "c-ve6wkfmy",
+      "texto": "possivel produto",
+      "direcional": true,
+      "criadoEm": "2026-10-19T12:53:48.374Z",
+      "atualizadoEm": "2026-10-19T12:53:57.808Z"
+    },
+    {
+      "id": "x-hgsiqfkz",
+      "de": "c-vesgmtjw",
+      "para": "c-p870cc7v",
+      "texto": "Pode Produzir",
+      "direcional": true,
+      "criadoEm": "2026-10-20T17:16:32.054Z",
+      "atualizadoEm": "2026-10-21T18:57:23.489Z"
+    },
+    {
+      "id": "x-a4m56xb1",
+      "de": "c-befamkw4",
+      "para": "c-ve6wkfmy",
+      "texto": "",
+      "direcional": true,
+      "criadoEm": "2026-10-22T13:18:54.822Z",
+      "atualizadoEm": "2026-10-22T13:18:54.822Z"
+    },
+    {
+      "id": "x-su0qhu1n",
+      "de": "c-vesgmtjw",
+      "para": "c-ve6wkfmy",
+      "texto": "",
+      "direcional": true,
+      "criadoEm": "2026-11-03T18:06:45.357Z",
+      "atualizadoEm": "2026-11-03T18:06:45.357Z"
+    },
+    {
+      "id": "x-pe5tk80k",
+      "de": "c-ve6wkfmy",
+      "para": "c-b6zltsaq",
+      "texto": "",
+      "direcional": true,
+      "criadoEm": "2026-11-03T18:10:42.413Z",
+      "atualizadoEm": "2026-11-03T18:10:42.413Z"
+    }
+  ]
 }
